@@ -1,7 +1,10 @@
 package com.godlike
 
+import com.godlike.items.ModItems
 import net.fabricmc.api.ModInitializer
 import org.slf4j.LoggerFactory
+
+const val MOD_ID = "godlike"
 
 object Godlike : ModInitializer {
     private val logger = LoggerFactory.getLogger("godlike")
@@ -11,5 +14,8 @@ object Godlike : ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 		logger.info("Hello Fabric world!")
+
+		// Register items
+		ModItems()
 	}
 }
