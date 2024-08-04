@@ -3,9 +3,9 @@
 	"id": "godlike",
 	"version": "${version}",
 	"name": "Godlike",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "A Minecraft mod that makes you godlike.",
 	"authors": [
-		"Me!"
+		"Abe Linsenmayer"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
