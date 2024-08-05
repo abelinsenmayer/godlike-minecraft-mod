@@ -21,6 +21,6 @@ class ModItems {
         }
 
         // All items should be registered here
-        val DEV_WAND = ModItems.register(Item(Item.Settings()), "dev_wand")
+        val DEV_WAND = register(DevWand(), "dev_wand")
     }
 }

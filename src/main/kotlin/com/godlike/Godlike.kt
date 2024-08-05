@@ -1,5 +1,6 @@
 package com.godlike
 
+import com.godlike.components.ModComponents
 import com.godlike.items.ModItems
 import net.fabricmc.api.ModInitializer
 import org.slf4j.LoggerFactory
@@ -17,5 +18,8 @@ object Godlike : ModInitializer {
 
 		// Register items
 		ModItems()
+
+		// Register components
+		ModComponents()
 	}
 }
