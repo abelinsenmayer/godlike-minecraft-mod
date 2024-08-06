@@ -1,3 +1,5 @@
 {
-  "item.godlike.dev_wand": "Dev Wand"
+  "item.godlike.dev_wand": "Dev Wand",
+  "category.godlike": "Godlike",
+  "key.godlike.selection_mode": "Toggle Selection Mode"
 }

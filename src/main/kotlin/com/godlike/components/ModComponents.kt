@@ -12,9 +12,13 @@ class ModComponents : EntityComponentInitializer {
     companion object {
         @JvmField
         val CURSORS: ComponentKey<BlockPosListComponent> = ComponentRegistry.getOrCreate(Identifier.of(MOD_ID, "cursors"), BlockPosListComponent::class.java)
+
+        @JvmField
+        val SELECTION_MODE: ComponentKey<BooleanComponent> = ComponentRegistry.getOrCreate(Identifier.of(MOD_ID, "selection_mode"), BooleanComponent::class.java)
     }
 
     override fun registerEntityComponentFactories(registry: EntityComponentFactoryRegistry) {
         registry.registerFor(PlayerEntity::class.java, CURSORS) { e: PlayerEntity -> BlockPosListComponent(e) }
+        registry.registerFor(PlayerEntity::class.java, SELECTION_MODE) { e: PlayerEntity -> BooleanComponent(e) }
     }
 }
