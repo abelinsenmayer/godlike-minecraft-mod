@@ -10,10 +10,11 @@ import org.ladysnake.cca.api.v3.entity.EntityComponentInitializer
 
 class ModComponents : EntityComponentInitializer {
     companion object {
+        @JvmField
         val CURSORS: ComponentKey<BlockPosListComponent> = ComponentRegistry.getOrCreate(Identifier.of(MOD_ID, "cursors"), BlockPosListComponent::class.java)
     }
 
     override fun registerEntityComponentFactories(registry: EntityComponentFactoryRegistry) {
-        registry.registerFor(PlayerEntity::class.java, CURSORS) { _: PlayerEntity -> BlockPosListComponent() }
+        registry.registerFor(PlayerEntity::class.java, CURSORS) { e: PlayerEntity -> BlockPosListComponent(e) }
     }
 }

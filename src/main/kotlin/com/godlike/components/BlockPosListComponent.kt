@@ -2,46 +2,77 @@ package com.godlike.components
 
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.RegistryWrapper
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.BlockPos
 import org.ladysnake.cca.api.v3.component.Component
+import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent
+import org.slf4j.LoggerFactory
+import java.util.*
 
 const val positions = "block-pos-list"
 
 /**
- * A component that stores a list of BlockPos
+ * A component that stores a list of BlockPos.
+ * The implementation is thread-safe and synced between client and server.
  */
-class BlockPosListComponent : Component {
-    private val positions : MutableList<BlockPos> = mutableListOf()
+class BlockPosListComponent(private val provider : Any) : AutoSyncedComponent {
+    private val logger = LoggerFactory.getLogger("godlike")
+    private val positions : MutableList<BlockPos> = Collections.synchronizedList(mutableListOf())
+
+    override fun shouldSyncWith(player: ServerPlayerEntity?): Boolean {
+        // we only want to sync this data with the player that owns it
+        // this reduces network traffic and prevents other players from seeing the cursor positions
+        return player == provider
+    }
 
     override fun readFromNbt(tag: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup) {
-        tag.getLongArray(com.godlike.components.positions).forEach {
-            positions.add(BlockPos.fromLong(it))
-        }
+        clearPositions()
+        addAllPositions(tag.getLongArray(com.godlike.components.positions).map { BlockPos.fromLong(it) })
     }
 
     override fun writeToNbt(tag: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup) {
-        this.positions.map { it.asLong() }.toLongArray().let {
-            tag.putLongArray(com.godlike.components.positions, it)
+        synchronized(positions) {
+            positions.map { it.asLong() }.toLongArray().let {
+                tag.putLongArray(com.godlike.components.positions, it)
+            }
         }
     }
 
     fun addPosition(pos: BlockPos) {
-        positions.add(pos)
+        synchronized(positions) {
+            positions.add(pos)
+            logger.info("added positions: $positions")
+            ModComponents.CURSORS.sync(provider)
+        }
     }
 
     fun addAllPositions(posList: List<BlockPos>) {
-        positions.addAll(posList)
+        synchronized(positions) {
+            positions.addAll(posList)
+            logger.info("added all positions: $positions")
+            ModComponents.CURSORS.sync(provider)
+        }
     }
 
     fun getPositions(): List<BlockPos> {
-        return positions
+        synchronized(positions) {
+            return positions.toList()
+        }
     }
 
     fun clearPositions() {
-        positions.clear()
+        synchronized(positions) {
+            positions.clear()
+            logger.info("cleared positions: $positions")
+            ModComponents.CURSORS.sync(provider)
+        }
     }
 
     fun removePosition(pos: BlockPos) {
-        positions.remove(pos)
+        synchronized(positions) {
+            positions.remove(pos)
+            logger.info("removed positions: $positions")
+            ModComponents.CURSORS.sync(provider)
+        }
     }
 }

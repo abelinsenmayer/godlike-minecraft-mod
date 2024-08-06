@@ -17,11 +17,14 @@ class DevWand : Item(Settings()) {
     private val logger = LoggerFactory.getLogger("godlike")
 
     override fun use(world: World, user: PlayerEntity, hand: Hand?): TypedActionResult<ItemStack> {
+
+
         if (user.isSneaking) {
-            val cursors = getAllCursors(user)
+            val cursors = ModComponents.CURSORS.get(user).getPositions()
             if (!world.isClient) {
                 for (cursor in cursors) {
                     world.setBlockState(cursor, Blocks.DIAMOND_BLOCK.defaultState)
+                    ModComponents.CURSORS.get(user).clearPositions()
                 }
             }
         }
@@ -29,21 +32,13 @@ class DevWand : Item(Settings()) {
     }
 
     override fun useOnBlock(context: ItemUsageContext): ActionResult {
-        context.player?.let {
-            if (!it.isSneaking) {
-                addCursor(it, context.blockPos)
+        if (!context.world.isClient) {
+            context.player?.let {
+                if (!it.isSneaking) {
+                    ModComponents.CURSORS.get(it).addPosition(context.blockPos)
+                }
             }
         }
         return super.useOnBlock(context)
-    }
-
-    fun getAllCursors(player: PlayerEntity): List<BlockPos> {
-        ModComponents.CURSORS.get(player).let {
-            return it.getPositions()
-        }
-    }
-
-    fun addCursor(player: PlayerEntity, pos: BlockPos) {
-        ModComponents.CURSORS.get(player).addPosition(pos)
     }
 }
