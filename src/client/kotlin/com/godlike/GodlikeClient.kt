@@ -10,5 +10,8 @@ object GodlikeClient : ClientModInitializer {
 
 		// Register keybinds
 		ModKeybinds.registerKeybinds()
+
+		// Start client ticking
+		ClientTickHandler.start()
 	}
 }

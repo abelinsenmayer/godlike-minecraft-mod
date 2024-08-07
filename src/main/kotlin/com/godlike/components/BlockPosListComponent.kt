@@ -16,7 +16,6 @@ const val positions = "block-pos-list"
  * The implementation is thread-safe and synced between client and server.
  */
 class BlockPosListComponent(private val provider : Any) : AutoSyncedComponent {
-    private val logger = LoggerFactory.getLogger("godlike")
     private val positions : MutableList<BlockPos> = Collections.synchronizedList(mutableListOf())
 
     override fun shouldSyncWith(player: ServerPlayerEntity?): Boolean {
@@ -41,16 +40,16 @@ class BlockPosListComponent(private val provider : Any) : AutoSyncedComponent {
     fun addPosition(pos: BlockPos) {
         synchronized(positions) {
             positions.add(pos)
-            logger.info("added positions: $positions")
             ModComponents.CURSORS.sync(provider)
+            ModComponents.CURSOR_PREVIEWS.sync(provider)
         }
     }
 
     fun addAllPositions(posList: List<BlockPos>) {
         synchronized(positions) {
             positions.addAll(posList)
-            logger.info("added all positions: $positions")
             ModComponents.CURSORS.sync(provider)
+            ModComponents.CURSOR_PREVIEWS.sync(provider)
         }
     }
 
@@ -63,16 +62,16 @@ class BlockPosListComponent(private val provider : Any) : AutoSyncedComponent {
     fun clearPositions() {
         synchronized(positions) {
             positions.clear()
-            logger.info("cleared positions: $positions")
             ModComponents.CURSORS.sync(provider)
+            ModComponents.CURSOR_PREVIEWS.sync(provider)
         }
     }
 
     fun removePosition(pos: BlockPos) {
         synchronized(positions) {
             positions.remove(pos)
-            logger.info("removed positions: $positions")
             ModComponents.CURSORS.sync(provider)
+            ModComponents.CURSOR_PREVIEWS.sync(provider)
         }
     }
 }

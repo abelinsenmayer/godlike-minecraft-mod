@@ -58,7 +58,9 @@
 	"custom": {
 		"cardinal-components": [
 			"godlike:cursors",
-			"godlike:selection_mode"
+			"godlike:selection_mode",
+			"godlike:cursor_previews",
+			"godlike:target_pos"
 		]
 	}
 }

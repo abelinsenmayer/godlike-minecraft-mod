@@ -3,12 +3,14 @@ package com.godlike
 import com.godlike.components.ModComponents
 import com.godlike.items.ModItems
 import net.fabricmc.api.ModInitializer
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 const val MOD_ID = "godlike"
 
 object Godlike : ModInitializer {
-    private val logger = LoggerFactory.getLogger("godlike")
+	@JvmField
+    val logger: Logger = LoggerFactory.getLogger("godlike")
 
 	override fun onInitialize() {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
