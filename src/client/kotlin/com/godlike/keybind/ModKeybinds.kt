@@ -1,6 +1,7 @@
 package com.godlike.keybind
 
 import com.godlike.components.ModComponents
+import com.godlike.networking.BlockPosListPacket
 import com.godlike.networking.ModNetworking.CHANNEL
 import com.godlike.networking.ServerBoundPacket
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -51,7 +52,10 @@ object ModKeybinds {
                 // if the player is in selection mode, send a packet to the server to add the preview to their cursor selection
                 val inSelectionMode = ModComponents.SELECTION_MODE.get(client.player!!).getValue()
                 if (inSelectionMode) {
-                    CHANNEL.clientHandle().send(ServerBoundPacket("do_select!!"))
+                    CHANNEL.clientHandle().send(
+                        BlockPosListPacket(ModComponents.CURSOR_PREVIEWS.get(client.player!!).getPositions()
+                            .plus(ModComponents.TARGET_POSITION.get(client.player!!).getPos()))
+                    )
                 }
             }
         })
