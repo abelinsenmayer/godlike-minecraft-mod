@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
-import static com.godlike.render.RenderUtilKt.highlightBlockPos;
+import static com.godlike.render.RenderUtilKt.outlineBlockPos;
 
 @Mixin(WorldRenderer.class)
 public abstract class WorldRendererMixin {
@@ -36,17 +36,17 @@ public abstract class WorldRendererMixin {
         // highlight cursors
         List<BlockPos> cursors = ModComponents.CURSORS.get(player).getPositions();
         for (BlockPos cursor : cursors) {
-            highlightBlockPos(cursor, player, camera, 245f, 40f, 145f, 1.0f);
+            outlineBlockPos(cursor, player, camera, 245f, 40f, 145f, 1.0f);
         }
 
         // highlight selection previews
         List<BlockPos> previews = ModComponents.CURSOR_PREVIEWS.get(player).getPositions();
         for (BlockPos preview : previews) {
-            highlightBlockPos(preview, player, camera, 0f, 0f, 0f, 1.0f);
+            outlineBlockPos(preview, player, camera, 0f, 0f, 0f, 1.0f);
         }
 
         // highlight the block the player is targeting
         BlockPos targetPos = ModComponents.TARGET_POSITION.get(player).getPos();
-        highlightBlockPos(targetPos, player, camera, 30f, 254f, 245f, 1.0f);
+        outlineBlockPos(targetPos, player, camera, 30f, 254f, 245f, 1.0f);
     }
 }
