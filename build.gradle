@@ -18,10 +18,16 @@ repositories {
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more information about repositories.
 
+	// Cardinal Components API
 	maven {
-		// Cardinal Components API
 		name = "Ladysnake Mods"
 		url = "https://maven.ladysnake.org/releases"
+
+	}
+
+	// owo-lib
+	maven {
+		url = "https://maven.wispforest.io"
 	}
 }
 
@@ -54,6 +60,9 @@ dependencies {
 	// Cardinal Components API
 	modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-base:6.1.1")
 	modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-entity:6.1.1")
+
+	// owo-lib
+	modImplementation("io.wispforest:owo-lib:0.12.11+1.21")
 }
 
 processResources {

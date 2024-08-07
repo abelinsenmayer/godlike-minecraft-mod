@@ -2,6 +2,7 @@ package com.godlike
 
 import com.godlike.components.ModComponents
 import com.godlike.items.ModItems
+import com.godlike.networking.ModNetworking
 import net.fabricmc.api.ModInitializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -23,5 +24,8 @@ object Godlike : ModInitializer {
 
 		// Register components
 		ModComponents()
+
+		// Initialize networking
+		ModNetworking.register()
 	}
 }

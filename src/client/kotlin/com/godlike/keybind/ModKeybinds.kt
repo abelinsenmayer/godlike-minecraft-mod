@@ -1,6 +1,8 @@
 package com.godlike.keybind
 
 import com.godlike.components.ModComponents
+import com.godlike.networking.ModNetworking.CHANNEL
+import com.godlike.networking.ServerBoundPacket
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.minecraft.client.MinecraftClient
@@ -25,6 +27,15 @@ object ModKeybinds {
             )
         )
 
+        val doSelectKeybind = KeyBindingHelper.registerKeyBinding(
+            KeyBinding(
+                "key.godlike.do_select",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_V,
+                "category.godlike"
+            )
+        )
+
         ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick { client: MinecraftClient ->
             while (selectionModeKeybind.wasPressed()) {
                 // toggle whether the player is in selection mode
@@ -34,6 +45,14 @@ object ModKeybinds {
 
                 val message = if (mode) "Selection mode enabled" else "Selection mode disabled"
                 client.player!!.sendMessage(Text.literal(message), false)
+            }
+
+            while (doSelectKeybind.wasPressed()) {
+                // if the player is in selection mode, send a packet to the server to add the preview to their cursor selection
+                val inSelectionMode = ModComponents.SELECTION_MODE.get(client.player!!).getValue()
+                if (inSelectionMode) {
+                    CHANNEL.clientHandle().send(ServerBoundPacket("do_select!!"))
+                }
             }
         })
     }
