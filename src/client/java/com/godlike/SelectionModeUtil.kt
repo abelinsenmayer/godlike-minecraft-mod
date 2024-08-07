@@ -1,6 +1,5 @@
 package com.godlike
 
-import com.godlike.Godlike.logger
 import com.godlike.components.ModComponents
 import net.minecraft.client.MinecraftClient
 import net.minecraft.util.hit.HitResult
@@ -51,13 +50,31 @@ fun showSelectionPreview(client: MinecraftClient) {
     // set the looked-at block as the player's targeted position
     ModComponents.TARGET_POSITION.get(player).setPos(blockPos)
 
-//    // get the last cursor placed by the player
-//    val lastCursor = ModComponents.CURSORS.get(player).getPositions().lastOrNull()
-//    if (lastCursor != null) {
-//        // highlight the plane of blocks between the last cursor placed and where the player is looking
-//        // TODO
-//    } else {
-//        // highlight the block the player is looking at
-//        highlightPosition(player, blockPos, Color(36, 248, 78, 255))
-//    }
+    // get the last cursor placed by the player
+    val lastCursor = ModComponents.CURSORS.get(player).getPositions().lastOrNull()
+    if (lastCursor != null) {
+        // highlight the plane of blocks between the last cursor placed and where the player is looking
+        val plane = getHorizontalPlaneBetween(lastCursor, blockPos)
+        ModComponents.CURSOR_PREVIEWS.get(player).clearPositions()
+        ModComponents.CURSOR_PREVIEWS.get(player).addAllPositions(plane)
+    }
+}
+
+/**
+ * Gets the horizontal plane of blocks with opposite corners at the given positions.
+ * The plane is at the y coordinate of the first position.
+ */
+fun getHorizontalPlaneBetween(pos1: BlockPos, pos2: BlockPos): List<BlockPos> {
+    val minX = minOf(pos1.x, pos2.x)
+    val maxX = maxOf(pos1.x, pos2.x)
+    val minZ = minOf(pos1.z, pos2.z)
+    val maxZ = maxOf(pos1.z, pos2.z)
+
+    val positions = mutableListOf<BlockPos>()
+    for (x in minX..maxX) {
+        for (z in minZ..maxZ) {
+            positions.add(BlockPos(x, pos1.y, z))
+        }
+    }
+    return positions
 }

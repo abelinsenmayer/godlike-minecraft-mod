@@ -42,10 +42,16 @@ public abstract class WorldRendererMixin {
             return;
         }
 
-        // render a wireframe at each cursor
+        // highlight cursors
         List<BlockPos> cursors = ModComponents.CURSORS.get(player).getPositions();
         for (BlockPos cursor : cursors) {
             highlightBlockPos(cursor, player, camera, 245f, 40f, 145f, 1.0f);
+        }
+
+        // highlight selection previews
+        List<BlockPos> previews = ModComponents.CURSOR_PREVIEWS.get(player).getPositions();
+        for (BlockPos preview : previews) {
+            highlightBlockPos(preview, player, camera, 0f, 0f, 0f, 1.0f);
         }
 
         // highlight the block the player is targeting
