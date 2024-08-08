@@ -4,5 +4,5 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
 
-public record BlockPosListPacket(List<BlockPos> blockPosList) {
+public record DoSelectionPacket(List<BlockPos> cursorPreviews, BlockPos targetPosition) {
 }

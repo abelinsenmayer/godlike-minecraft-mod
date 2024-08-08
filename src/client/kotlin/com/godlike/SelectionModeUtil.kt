@@ -19,6 +19,8 @@ fun showSelectionPreview(client: MinecraftClient) {
     // TODO: instead of making a raycast, find the block the player is looking at based on their existing selection.
     // TODO: this way it can go through walls...
 
+    // TODO extract raycast logic to a separate function
+
 //    val hitResult = client.cameraEntity!!.raycast(MAX_RAYCAST_DISTANCE, 1.0f, true)
     val cameraEntity = client.cameraEntity!!
     val vec3d: Vec3d = cameraEntity.getCameraPosVec(1.0f)
@@ -38,7 +40,6 @@ fun showSelectionPreview(client: MinecraftClient) {
     if (hitResult.type != HitResult.Type.BLOCK) {
         return
     }
-
     // get the block position the player is looking at
     val pos = hitResult.pos
     var blockPos = BlockPos(pos.x.toInt()-1, pos.y.toInt(), pos.z.toInt()-1)
@@ -50,19 +51,30 @@ fun showSelectionPreview(client: MinecraftClient) {
     // set the looked-at block as the player's targeted position
     ModComponents.TARGET_POSITION.get(player).setPos(blockPos)
 
-    // get the last cursor placed by the player
-    val lastCursor = ModComponents.CURSORS.get(player).getPositions().lastOrNull()
-    if (lastCursor != null) {
-        // highlight the plane of blocks between the last cursor placed and where the player is looking
-        val plane = getHorizontalPlaneBetween(lastCursor, blockPos)
+    val anchors = ModComponents.CURSOR_ANCHORS.get(player).getPositions()
+    if (anchors.isNotEmpty()) {
+        // highlight the plane of blocks between the existing anchors and the target position
+        val plane = expandHorizontalPlaneTo(ModComponents.CURSOR_ANCHORS.get(player).getPositions(), blockPos)
         ModComponents.CURSOR_PREVIEWS.get(player).clearPositions()
         ModComponents.CURSOR_PREVIEWS.get(player).addAllPositions(plane)
     }
 }
 
 /**
+ * Expands the horizontal plane of blocks between the given anchors to include the target position.
+ */
+fun expandHorizontalPlaneTo(anchors: List<BlockPos>, target: BlockPos): List<BlockPos> {
+    val positions = mutableListOf<BlockPos>()
+    for (anchor in anchors) {
+        val plane = getHorizontalPlaneBetween(anchor, target)
+        positions.addAll(plane)
+    }
+    return positions
+}
+
+/**
  * Gets the horizontal plane of blocks with opposite corners at the given positions.
- * The plane is at the y coordinate of the first position.
+ * The plane is at the y coordinate of pos1.
  */
 fun getHorizontalPlaneBetween(pos1: BlockPos, pos2: BlockPos): List<BlockPos> {
     val minX = minOf(pos1.x, pos2.x)

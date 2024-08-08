@@ -1,9 +1,8 @@
 package com.godlike.keybind
 
 import com.godlike.components.ModComponents
-import com.godlike.networking.BlockPosListPacket
+import com.godlike.networking.DoSelectionPacket
 import com.godlike.networking.ModNetworking.CHANNEL
-import com.godlike.networking.ServerBoundPacket
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.minecraft.client.MinecraftClient
@@ -53,8 +52,10 @@ object ModKeybinds {
                 val inSelectionMode = ModComponents.SELECTION_MODE.get(client.player!!).getValue()
                 if (inSelectionMode) {
                     CHANNEL.clientHandle().send(
-                        BlockPosListPacket(ModComponents.CURSOR_PREVIEWS.get(client.player!!).getPositions()
-                            .plus(ModComponents.TARGET_POSITION.get(client.player!!).getPos()))
+                        DoSelectionPacket(
+                            ModComponents.CURSOR_PREVIEWS.get(client.player!!).getPositions(),
+                            ModComponents.TARGET_POSITION.get(client.player!!).getPos()
+                        )
                     )
                 }
             }

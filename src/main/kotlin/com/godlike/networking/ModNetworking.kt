@@ -5,7 +5,6 @@ import com.godlike.MOD_ID
 import com.godlike.components.ModComponents
 import io.wispforest.owo.network.OwoNetChannel
 import net.minecraft.util.Identifier
-import org.apache.logging.log4j.core.jmx.Server
 
 object ModNetworking {
     @JvmField
@@ -17,9 +16,9 @@ object ModNetworking {
             logger.info("Received message on server: ${packet.message}")
         }
 
-        CHANNEL.registerServerbound(BlockPosListPacket::class.java) { packet, ctx ->
-            logger.info("Received message on server: ${packet.blockPosList}")
-            ModComponents.CURSORS.get(ctx.player).addAllPositions(packet.blockPosList)
+        CHANNEL.registerServerbound(DoSelectionPacket::class.java) { packet, ctx ->
+            ModComponents.CURSORS.get(ctx.player).addAllPositions(packet.cursorPreviews)
+            ModComponents.CURSOR_ANCHORS.get(ctx.player).addPosition(packet.targetPosition)
         }
     }
 }

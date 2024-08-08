@@ -33,11 +33,9 @@ public abstract class WorldRendererMixin {
             return;
         }
 
-        // highlight cursors
-        List<BlockPos> cursors = ModComponents.CURSORS.get(player).getPositions();
-        for (BlockPos cursor : cursors) {
-            outlineBlockPos(cursor, player, camera, 245f, 40f, 145f, 1.0f);
-        }
+        // highlight the block the player is targeting
+        BlockPos targetPos = ModComponents.TARGET_POSITION.get(player).getPos();
+        outlineBlockPos(targetPos, player, camera, 30f, 254f, 245f, 1.0f);
 
         // highlight selection previews
         List<BlockPos> previews = ModComponents.CURSOR_PREVIEWS.get(player).getPositions();
@@ -45,8 +43,10 @@ public abstract class WorldRendererMixin {
             outlineBlockPos(preview, player, camera, 0f, 0f, 0f, 1.0f);
         }
 
-        // highlight the block the player is targeting
-        BlockPos targetPos = ModComponents.TARGET_POSITION.get(player).getPos();
-        outlineBlockPos(targetPos, player, camera, 30f, 254f, 245f, 1.0f);
+        // highlight cursors
+        List<BlockPos> cursors = ModComponents.CURSORS.get(player).getPositions();
+        for (BlockPos cursor : cursors) {
+            outlineBlockPos(cursor, player, camera, 245f, 40f, 145f, 1.0f);
+        }
     }
 }

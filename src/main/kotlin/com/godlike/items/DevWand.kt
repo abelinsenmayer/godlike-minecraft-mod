@@ -24,6 +24,7 @@ class DevWand : Item(Settings()) {
                 for (cursor in cursors) {
                     world.setBlockState(cursor, Blocks.DIAMOND_BLOCK.defaultState)
                     ModComponents.CURSORS.get(user).clearPositions()
+                    ModComponents.CURSOR_ANCHORS.get(user).clearPositions()
                 }
             }
         }

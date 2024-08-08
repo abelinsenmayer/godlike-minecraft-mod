@@ -18,9 +18,13 @@ class ModComponents : EntityComponentInitializer {
         @JvmField
         val CURSOR_PREVIEWS: ComponentKey<BlockPosListComponent> = ComponentRegistry.getOrCreate(Identifier.of(MOD_ID, "cursor_previews"), BlockPosListComponent::class.java)
         @JvmField
+        val CURSOR_ANCHORS: ComponentKey<BlockPosListComponent> = ComponentRegistry.getOrCreate(Identifier.of(MOD_ID, "cursor_anchors"), BlockPosListComponent::class.java)
+        @JvmField
         val SELECTION_MODE: ComponentKey<BooleanComponent> = ComponentRegistry.getOrCreate(Identifier.of(MOD_ID, "selection_mode"), BooleanComponent::class.java)
         @JvmField
         val TARGET_POSITION: ComponentKey<BlockPosComponent> = ComponentRegistry.getOrCreate(Identifier.of(MOD_ID, "target_pos"), BlockPosComponent::class.java)
+
+        val CURSOR_COMPONENT_TYPES = listOf(CURSORS, CURSOR_PREVIEWS, CURSOR_ANCHORS)
     }
 
     override fun registerEntityComponentFactories(registry: EntityComponentFactoryRegistry) {
@@ -28,6 +32,7 @@ class ModComponents : EntityComponentInitializer {
 
         registry.registerFor(PlayerEntity::class.java, CURSORS) { e: PlayerEntity -> BlockPosListComponent(e) }
         registry.registerFor(PlayerEntity::class.java, SELECTION_MODE) { e: PlayerEntity -> BooleanComponent(e) }
+        registry.registerFor(PlayerEntity::class.java, CURSOR_ANCHORS) { e: PlayerEntity -> BlockPosListComponent(e) }
         registry.registerFor(PlayerEntity::class.java, TARGET_POSITION) { e: PlayerEntity -> BlockPosComponent(e) }
         registry.registerFor(PlayerEntity::class.java, CURSOR_PREVIEWS) { e: PlayerEntity -> BlockPosListComponent(e) }
     }

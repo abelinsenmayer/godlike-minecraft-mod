@@ -60,6 +60,7 @@
 			"godlike:cursors",
 			"godlike:selection_mode",
 			"godlike:cursor_previews",
+			"godlike:cursor_anchors",
 			"godlike:target_pos"
 		]
 	}
