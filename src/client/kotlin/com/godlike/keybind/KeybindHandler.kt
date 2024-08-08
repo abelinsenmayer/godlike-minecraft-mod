@@ -7,6 +7,7 @@ import com.godlike.keybind.ModKeybinds.TOGGLE_SELECTION_MODE
 import com.godlike.keybind.ModKeybinds.TOGGLE_SELECT_DIRECTION
 import com.godlike.networking.DoSelectionPacket
 import com.godlike.networking.ModNetworking
+import com.godlike.toggleSelectionMode
 import net.minecraft.client.MinecraftClient
 import net.minecraft.text.Text
 import org.lwjgl.glfw.GLFW
@@ -19,12 +20,7 @@ fun handleModInputEvents() {
     val client = MinecraftClient.getInstance()
 
     while (TOGGLE_SELECTION_MODE.wasPressed()) {
-        var mode = ModComponents.SELECTION_MODE.get(client.player!!).getValue()
-        mode = !mode
-        ModComponents.SELECTION_MODE.get(client.player!!).setValue(mode)
-
-        val message = if (mode) "Selection mode enabled" else "Selection mode disabled"
-        client.player!!.sendMessage(Text.literal(message), false)
+        client.player!!.toggleSelectionMode()
     }
 
     while (TOGGLE_SELECT_DIRECTION.wasPressed()) {

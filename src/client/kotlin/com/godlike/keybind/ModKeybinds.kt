@@ -38,6 +38,8 @@ object ModKeybinds {
         )
     )
 
+    val SELECTION_MODE_KEYBINDS = listOf(TOGGLE_SELECT_DIRECTION, DO_SELECT)
+
     fun registerKeybinds() {
         logger.info("Registering keybinds")
         // noop, just ensures static initializer is run

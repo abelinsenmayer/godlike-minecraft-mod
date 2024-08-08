@@ -1,7 +1,14 @@
 package com.godlike
 
+import com.godlike.Godlike.logger
 import com.godlike.components.ModComponents
+import com.godlike.keybind.ModKeybinds.DO_SELECT
+import com.godlike.keybind.ModKeybinds.SELECTION_MODE_KEYBINDS
+import com.godlike.mixin.client.KeyBindingMixin
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.network.ClientPlayerEntity
+import net.minecraft.client.option.KeyBinding
+import net.minecraft.text.Text
 import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
@@ -10,6 +17,27 @@ import net.minecraft.world.RaycastContext.FluidHandling
 import net.minecraft.world.RaycastContext.ShapeType
 
 const val MAX_RAYCAST_DISTANCE = 40.0
+
+fun ClientPlayerEntity.toggleSelectionMode() {
+    // set the player to selection mode
+    var mode = ModComponents.SELECTION_MODE.get(this).getValue()
+    mode = !mode
+    ModComponents.SELECTION_MODE.get(this).setValue(mode)
+    val message = if (mode) "Selection mode enabled" else "Selection mode disabled"
+    this.sendMessage(Text.literal(message), false)
+
+    if (mode) {
+        // promote selection keybinds to the top of the keybind map
+        val bindingMap = KeyBindingMixin.getKeyToBindings()
+        SELECTION_MODE_KEYBINDS.forEach { keybind ->
+            bindingMap[(keybind as KeyBindingMixin).boundKey] = keybind
+        }
+    } else {
+        // restore the keybinds to their original positions
+        KeyBinding.updateKeysByCode()
+    }
+
+}
 
 /**
  * Called every tick on the client side when the player is in selection mode.
