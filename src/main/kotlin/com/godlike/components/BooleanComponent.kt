@@ -32,4 +32,17 @@ class BooleanComponent(private val provider : Any) : AutoSyncedComponent {
     fun getValue(): Boolean {
         return this.value.get()
     }
+
+    /* ****** helper functions for setting the selection direction ****** */
+    fun setVertical() {
+        setValue(true)
+    }
+
+    fun setHorizontal() {
+        setValue(false)
+    }
+
+    fun toggle() {
+        setValue(!getValue())
+    }
 }

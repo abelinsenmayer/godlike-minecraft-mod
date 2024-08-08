@@ -53,11 +53,52 @@ fun showSelectionPreview(client: MinecraftClient) {
 
     val anchors = ModComponents.CURSOR_ANCHORS.get(player).getPositions()
     if (anchors.isNotEmpty()) {
-        // highlight the plane of blocks between the existing anchors and the target position
-        val plane = expandHorizontalPlaneTo(ModComponents.CURSOR_ANCHORS.get(player).getPositions(), blockPos)
-        ModComponents.CURSOR_PREVIEWS.get(player).clearPositions()
-        ModComponents.CURSOR_PREVIEWS.get(player).addAllPositions(plane)
+        if (ModComponents.SELECTION_DIRECTION.get(player).getValue()) {
+            // highlight the vertical column of blocks between the existing anchors and the target position
+            val column = extendVerticalPlaneTo(anchors, blockPos)
+            ModComponents.CURSOR_PREVIEWS.get(player).clearPositions()
+            ModComponents.CURSOR_PREVIEWS.get(player).addAllPositions(column)
+        } else {
+            // highlight the plane of blocks between the existing anchors and the target position
+            val plane = expandHorizontalPlaneTo(anchors, blockPos)
+            ModComponents.CURSOR_PREVIEWS.get(player).clearPositions()
+            ModComponents.CURSOR_PREVIEWS.get(player).addAllPositions(plane)
+        }
     }
+}
+
+/**
+ * Extends the vertical plane of blocks between the given anchors to include the target position.
+ */
+fun extendVerticalPlaneTo(anchors: List<BlockPos>, target: BlockPos): List<BlockPos> {
+    val positions = mutableListOf<BlockPos>()
+    for (anchor in anchors) {
+        val column = getVerticalPlaneBetween(anchor, target)
+        positions.addAll(column)
+    }
+    return positions
+}
+
+/**
+ * Gets the vertical plane of blocks with opposite corners at the given positions.
+ */
+fun getVerticalPlaneBetween(pos1: BlockPos, pos2: BlockPos): List<BlockPos> {
+    val minY = minOf(pos1.y, pos2.y)
+    val maxY = maxOf(pos1.y, pos2.y)
+    val minX = minOf(pos1.x, pos2.x)
+    val maxX = maxOf(pos1.x, pos2.x)
+    val minZ = minOf(pos1.z, pos2.z)
+    val maxZ = maxOf(pos1.z, pos2.z)
+
+    val positions = mutableListOf<BlockPos>()
+    for (y in minY..maxY) {
+        for (x in minX..maxX) {
+            for (z in minZ..maxZ) {
+                positions.add(BlockPos(x, y, z))
+            }
+        }
+    }
+    return positions
 }
 
 /**

@@ -13,11 +13,7 @@ import net.minecraft.world.World
 import org.slf4j.LoggerFactory
 
 class DevWand : Item(Settings()) {
-    private val logger = LoggerFactory.getLogger("godlike")
-
     override fun use(world: World, user: PlayerEntity, hand: Hand?): TypedActionResult<ItemStack> {
-
-
         if (user.isSneaking) {
             val cursors = ModComponents.CURSORS.get(user).getPositions()
             if (!world.isClient) {
