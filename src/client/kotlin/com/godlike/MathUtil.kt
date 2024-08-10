@@ -97,14 +97,28 @@ fun vecIntersectWithXOrZ(origin: Vec3d, direction: Vec3d, intersection: Vec3d, u
     }
 }
 
-/**
- * Extends the vertical plane of blocks between the given anchors to include the target position.
- */
-fun extendVerticalPlaneTo(anchors: List<Vec3d>, target: Vec3d): List<Vec3d> {
+fun getVolumeBetween(anchors: List<Vec3d>, target: Vec3d): List<Vec3d> {
+    // find the bounds of the volume created by the target and the anchors
+    val sortedByX = anchors.sortedBy { it.x }
+    val xMin = minOf(sortedByX.first().x, target.x)
+    val xMax = maxOf(sortedByX.last().x, target.x)
+
+    val sortedByZ = anchors.sortedBy { it.z }
+    val zMin = minOf(sortedByZ.first().z, target.z)
+    val zMax = maxOf(sortedByZ.last().z, target.z)
+
+    val sortedByY = anchors.sortedBy { it.y }
+    val yMin = minOf(sortedByY.first().y, target.y)
+    val yMax = maxOf(sortedByY.last().y, target.y)
+
+    // collect all the positions in the volume
     val positions = mutableListOf<Vec3d>()
-    for (anchor in anchors) {
-        val plane = getVerticalPlaneBetween(anchor, target)
-        positions.addAll(plane)
+    for (x in xMin.toInt()..xMax.toInt()) {
+        for (y in yMin.toInt()..yMax.toInt()) {
+            for (z in zMin.toInt()..zMax.toInt()) {
+                positions.add(Vec3d(x.toDouble(), y.toDouble(), z.toDouble()))
+            }
+        }
     }
     return positions
 }
@@ -127,18 +141,6 @@ fun getVerticalPlaneBetween(pos1: Vec3d, pos2: Vec3d): List<Vec3d> {
                 positions.add(Vec3d(x.toDouble(), y.toDouble(), z.toDouble()))
             }
         }
-    }
-    return positions
-}
-
-/**
- * Expands the horizontal plane of blocks between the given anchors to include the target position.
- */
-fun expandHorizontalPlaneTo(anchors: List<Vec3d>, target: Vec3d): List<Vec3d> {
-    val positions = mutableListOf<Vec3d>()
-    for (anchor in anchors) {
-        val plane = getHorizontalPlaneBetween(anchor, target)
-        positions.addAll(plane)
     }
     return positions
 }

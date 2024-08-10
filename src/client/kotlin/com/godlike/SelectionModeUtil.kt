@@ -8,6 +8,7 @@ import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.text.Text
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Vec3d
 
 const val MAX_RAYCAST_DISTANCE = 40.0
 
@@ -51,6 +52,7 @@ fun showSelectionPreview(client: MinecraftClient) {
             val cameraRotationVec = camera.getRotationVec(1.0f)
             val cameraPositionVec = camera.getCameraPosVec(1.0f)
             val plane: List<BlockPos>
+
             if (ModComponents.SELECTING_VERTICAL.get(player).getValue()) {
                 val selectingFar = ModComponents.SELECTING_FAR.get(player).getValue()
                 val targetPos = vecIntersectWithXOrZ(cameraPositionVec, cameraRotationVec, anchors.last().toVec3d(), selectingFar)
@@ -66,7 +68,25 @@ fun showSelectionPreview(client: MinecraftClient) {
         }
         else -> {
             // multiple anchors, so we highlight the volume of blocks between the last anchor and where the player is looking
-            // TODO
+            val camera = client.cameraEntity!!
+            val cameraRotationVec = camera.getRotationVec(1.0f)
+            val cameraPositionVec = camera.getCameraPosVec(1.0f)
+            val volume: List<BlockPos>
+
+            if (ModComponents.SELECTING_VERTICAL.get(player).getValue()) {
+                val selectingFar = ModComponents.SELECTING_FAR.get(player).getValue()
+                var targetPos = vecIntersectWithXOrZ(cameraPositionVec, cameraRotationVec, anchors.last().toVec3d(), selectingFar)
+                // we only want to extend the selection on the y-axis, so we clamp the x and z values to the last anchor
+                targetPos = Vec3d(anchors.last().x.toDouble(), targetPos.y, anchors.last().z.toDouble())
+                ModComponents.TARGET_POSITION.get(player).setPos(targetPos.toBlockPos())
+                volume = getVolumeBetween(anchors.map { it.toVec3d() }, targetPos,).map { it.toBlockPos() }
+            } else {
+                val targetPos = vecIntersectWithY(cameraPositionVec, cameraRotationVec, anchors.last().y)
+                ModComponents.TARGET_POSITION.get(player).setPos(targetPos.toBlockPos())
+                volume = getVolumeBetween(anchors.map { it.toVec3d() }, targetPos).map { it.toBlockPos() }
+            }
+            ModComponents.CURSOR_PREVIEWS.get(player).clearPositions()
+            ModComponents.CURSOR_PREVIEWS.get(player).addAllPositions(volume)
         }
     }
 }
