@@ -1,8 +1,6 @@
 package com.godlike.keybind
 
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
-import net.minecraft.client.MinecraftClient
 import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
 import org.lwjgl.glfw.GLFW
@@ -20,11 +18,20 @@ object ModKeybinds {
         )
     )
 
-    val TOGGLE_SELECT_DIRECTION: KeyBinding = KeyBindingHelper.registerKeyBinding(
+    val TOGGLE_SELECT_VERTICAL: KeyBinding = KeyBindingHelper.registerKeyBinding(
         KeyBinding(
             "key.godlike.toggle_select_direction",
             InputUtil.Type.KEYSYM,
             GLFW.GLFW_KEY_V,
+            "category.godlike"
+        )
+    )
+
+    val TOGGLE_SELECT_FAR: KeyBinding = KeyBindingHelper.registerKeyBinding(
+        KeyBinding(
+            "key.godlike.toggle_select_depth",
+            InputUtil.Type.KEYSYM,
+            GLFW.GLFW_KEY_B,
             "category.godlike"
         )
     )
@@ -38,7 +45,7 @@ object ModKeybinds {
         )
     )
 
-    val SELECTION_MODE_KEYBINDS = listOf(TOGGLE_SELECT_DIRECTION, DO_SELECT)
+    val SELECTION_MODE_KEYBINDS = listOf(TOGGLE_SELECT_VERTICAL, DO_SELECT, TOGGLE_SELECT_FAR)
 
     fun registerKeybinds() {
         logger.info("Registering keybinds")

@@ -62,7 +62,8 @@
 			"godlike:cursor_previews",
 			"godlike:cursor_anchors",
 			"godlike:target_pos",
-			"godlike:selection_direction"
+			"godlike:selecting_vertical",
+			"godlike:selecting_far"
 		]
 	}
 }
