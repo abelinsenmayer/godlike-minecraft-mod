@@ -7,7 +7,7 @@ import com.godlike.keybind.ModKeybinds.TOGGLE_SELECT_FAR
 import com.godlike.keybind.ModKeybinds.TOGGLE_SELECT_VERTICAL
 import com.godlike.networking.DoSelectionPacket
 import com.godlike.networking.ModNetworking
-import com.godlike.toggleSelectionMode
+import com.godlike.util.toggleSelectionMode
 import net.minecraft.client.MinecraftClient
 import net.minecraft.text.Text
 

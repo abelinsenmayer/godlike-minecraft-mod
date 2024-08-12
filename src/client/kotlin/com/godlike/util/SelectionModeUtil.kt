@@ -1,4 +1,4 @@
-package com.godlike
+package com.godlike.util
 
 import com.godlike.components.ModComponents
 import com.godlike.keybind.ModKeybinds.SELECTION_MODE_KEYBINDS
@@ -9,8 +9,6 @@ import net.minecraft.client.option.KeyBinding
 import net.minecraft.text.Text
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
-
-const val MAX_RAYCAST_DISTANCE = 40.0
 
 fun ClientPlayerEntity.toggleSelectionMode() {
     // set the player to selection mode

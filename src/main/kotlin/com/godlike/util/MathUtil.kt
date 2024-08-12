@@ -1,40 +1,15 @@
-package com.godlike
+package com.godlike.util
 
-import net.minecraft.client.MinecraftClient
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
-import net.minecraft.world.RaycastContext
 import kotlin.math.pow
 import kotlin.math.sqrt
+
+const val MAX_RAYCAST_DISTANCE = 40.0
 
 fun BlockPos.toVec3d(): Vec3d = Vec3d(x.toDouble(), y.toDouble(), z.toDouble())
 
 fun Vec3d.toBlockPos(): BlockPos = BlockPos(x.toInt(), y.toInt(), z.toInt())
-
-fun blockRaycastFromPlayer(): BlockPos {
-    val client = MinecraftClient.getInstance()
-    val cameraEntity = MinecraftClient.getInstance().cameraEntity!!
-    val vec3d: Vec3d = cameraEntity.getCameraPosVec(1.0f)
-    val vec3d2: Vec3d = cameraEntity.getRotationVec(1.0f)
-    val vec3d3 = vec3d.add(vec3d2.x * MAX_RAYCAST_DISTANCE, vec3d2.y * MAX_RAYCAST_DISTANCE, vec3d2.z * MAX_RAYCAST_DISTANCE)
-    val hitResult = cameraEntity.world.raycast(
-        RaycastContext(
-            vec3d,
-            vec3d3,
-            RaycastContext.ShapeType.COLLIDER,
-            RaycastContext.FluidHandling.ANY,
-            cameraEntity
-        )
-    )
-    // get the block position the player is looking at
-    val pos = hitResult.pos
-    var blockPos = BlockPos(pos.x.toInt()-1, pos.y.toInt(), pos.z.toInt()-1)
-    // if the position is air, we need to offset it in the direction we're looking to get the solid block
-    if (client.world!!.getBlockState(blockPos).isAir) {
-        blockPos = blockPos.offset(hitResult.side.opposite)
-    }
-    return blockPos;
-}
 
 /**
  * Given a direction vector, finds where that vector intersects the given y coordinate when extended from the origin.
@@ -53,7 +28,7 @@ fun vecIntersectWithY(origin: Vec3d, direction: Vec3d, y: Int): Vec3d {
         newZ = (origin.z + (newZ - origin.z) * ratio).toInt()
     }
 
-    return Vec3d((newX-1).toDouble(), y.toDouble(), (newZ-1).toDouble())
+    return Vec3d((newX).toDouble(), y.toDouble(), (newZ).toDouble())
 }
 
 /**
@@ -75,7 +50,7 @@ fun vecIntersectWithXOrZ(origin: Vec3d, direction: Vec3d, intersection: Vec3d, u
         newX = (origin.x + (newX - origin.x) * ratio).toInt()
         newY = (origin.y + (newY - origin.y) * ratio).toInt()
     }
-    val zPlaneIntersect = Vec3d((newX).toDouble(), newY.toDouble(), (intersection.z))
+    val zPlaneIntersect = Vec3d((newX).toDouble(), newY.toDouble()-1, (intersection.z))
 
     // find where the direction vector intersects the X plane
     val xFactor = (intersection.x - origin.x) / direction.x
@@ -88,7 +63,7 @@ fun vecIntersectWithXOrZ(origin: Vec3d, direction: Vec3d, intersection: Vec3d, u
         newZ = (origin.z + (newZ - origin.z) * ratio).toInt()
         newY2 = (origin.y + (newY2 - origin.y) * ratio).toInt()
     }
-    val xPlaneIntersect = Vec3d((intersection.x), newY2.toDouble(), (newZ).toDouble())
+    val xPlaneIntersect = Vec3d((intersection.x), newY2.toDouble()-1, (newZ).toDouble())
 
     return if (useMax) {
         if (distance > distance2) zPlaneIntersect else xPlaneIntersect

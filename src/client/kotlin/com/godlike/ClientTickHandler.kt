@@ -1,6 +1,7 @@
 package com.godlike
 
 import com.godlike.components.ModComponents
+import com.godlike.util.showSelectionPreview
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.MinecraftClient
 import org.slf4j.LoggerFactory
