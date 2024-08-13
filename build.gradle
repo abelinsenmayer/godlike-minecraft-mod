@@ -28,6 +28,17 @@ repositories {
 	maven {
 		url = "https://maven.wispforest.io"
 	}
+
+	maven {
+		name = "Valkyrien Skies Internal"
+		url = 'https://maven.valkyrienskies.org'
+		if (project.vs_maven_username && project.vs_maven_password) {
+			credentials {
+				username = project.vs_maven_username
+				password = project.vs_maven_password
+			}
+		}
+	}
 }
 
 loom {
@@ -62,6 +73,9 @@ dependencies {
 
 	// owo-lib
 	modImplementation("io.wispforest:owo-lib:0.12.11+1.21")
+
+	// Valkyrien skies
+	modApi("org.valkyrienskies:valkyrienskies-120-fabric:2.1.3-beta.1+a52f38bd68")
 }
 
 processResources {
