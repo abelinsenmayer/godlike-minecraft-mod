@@ -12,7 +12,7 @@ import net.minecraft.util.TypedActionResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import org.valkyrienskies.core.util.datastructures.DenseBlockPosSet
-import org.valkyrienskies.mod.common.assembly.createNewShipWithBlocks
+//import org.valkyrienskies.mod.common.assembly
 
 class DevWand : Item(Settings()) {
     override fun use(world: World, user: PlayerEntity, hand: Hand?): TypedActionResult<ItemStack> {
