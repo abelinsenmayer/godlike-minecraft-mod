@@ -27,6 +27,8 @@ fun ClientPlayerEntity.toggleSelectionMode() {
     } else {
         // restore the keybinds to their original positions
         KeyBinding.updateKeysByCode()
+        ModComponents.CURSOR_PREVIEWS.get(this).clearPositions()
+        ModComponents.TARGET_POSITION.get(this).setPos(BlockPos(0, -3000, 0))
     }
 }
 

@@ -2,34 +2,27 @@ package com.godlike.items
 
 import com.godlike.components.ModComponents
 import com.godlike.util.toVec3d
+import com.godlike.vs2.ShipUtil
 import net.minecraft.entity.FallingBlockEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.particle.ParticleTypes
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Hand
 import net.minecraft.util.TypedActionResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
-import org.valkyrienskies.core.util.datastructures.DenseBlockPosSet
-//import org.valkyrienskies.mod.common.assembly
 
 class DevWand : Item(Settings()) {
     override fun use(world: World, user: PlayerEntity, hand: Hand?): TypedActionResult<ItemStack> {
         if (user.isSneaking) {
             val cursors = ModComponents.CURSORS.get(user).getPositions()
-            /* BEGIN TEST CODE */
 
             if (!world.isClient) {
-                val blockSet = DenseBlockPosSet()
-                cursors.forEach { cursor ->
-                    blockSet.add(cursor.x, cursor.y, cursor.z)
-                }
-                val center = cursors.map { it.toVec3d() }.reduce { acc, vec -> acc.add(vec) }.multiply(1.0 / cursors.size)
-//                val ship = createNewShipWithBlocks(blockSet, center, world)
+                ShipUtil.assembleShipFromPositions(cursors, world as ServerWorld)
             }
 
-            /* END TEST CODE */
             ModComponents.CURSORS.get(user).clearPositions()
             ModComponents.CURSOR_ANCHORS.get(user).clearPositions()
         }
