@@ -1,12 +1,9 @@
 package com.godlike.components
 
-import net.minecraft.nbt.NbtCompound
-import net.minecraft.registry.RegistryWrapper
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.math.BlockPos
-import org.ladysnake.cca.api.v3.component.Component
-import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent
-import org.slf4j.LoggerFactory
+import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
+import net.minecraft.core.BlockPos
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.server.level.ServerPlayer
 import java.util.*
 
 const val positions = "block-pos-list"
@@ -18,18 +15,18 @@ const val positions = "block-pos-list"
 class BlockPosListComponent(private val provider : Any) : AutoSyncedComponent {
     private val positions : MutableList<BlockPos> = Collections.synchronizedList(mutableListOf())
 
-    override fun shouldSyncWith(player: ServerPlayerEntity?): Boolean {
+    override fun shouldSyncWith(player: ServerPlayer?): Boolean {
         // we only want to sync this data with the player that owns it
         // this reduces network traffic and prevents other players from seeing the cursor positions
         return player == provider
     }
 
-    override fun readFromNbt(tag: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup) {
+    override fun readFromNbt(tag: CompoundTag) {
         clearPositions()
-        addAllPositions(tag.getLongArray(com.godlike.components.positions).map { BlockPos.fromLong(it) })
+        addAllPositions(tag.getLongArray(com.godlike.components.positions).map { BlockPos.of(it) })
     }
 
-    override fun writeToNbt(tag: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup) {
+    override fun writeToNbt(tag: CompoundTag) {
         synchronized(positions) {
             positions.map { it.asLong() }.toLongArray().let {
                 tag.putLongArray(com.godlike.components.positions, it)

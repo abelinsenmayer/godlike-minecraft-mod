@@ -3,7 +3,7 @@ package com.godlike
 import com.godlike.components.ModComponents
 import com.godlike.util.showSelectionPreview
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.minecraft.client.MinecraftClient
+import net.minecraft.client.Minecraft
 import org.slf4j.LoggerFactory
 
 /**
@@ -16,7 +16,7 @@ object ClientTickHandler {
         // This code will run every tick on the client side
         ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick {
             // if the player is in selection mode, display a preview of their selection
-            val client = MinecraftClient.getInstance()
+            val client = Minecraft.getInstance()
             client.player?.let {
                 val inSelectionMode = ModComponents.SELECTION_MODE.get(client.player!!).getValue()
                 if (inSelectionMode) {

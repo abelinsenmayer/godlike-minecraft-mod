@@ -1,26 +1,25 @@
 package com.godlike.components
 
-import net.minecraft.nbt.NbtCompound
-import net.minecraft.registry.RegistryWrapper
-import net.minecraft.server.network.ServerPlayerEntity
-import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent
+import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.server.level.ServerPlayer
 import java.util.concurrent.atomic.AtomicBoolean
 
 const val booleanValue = "boolean-value"
 
 class BooleanComponent(private val provider : Any) : AutoSyncedComponent {
     private var value = AtomicBoolean(false)
-    override fun shouldSyncWith(player: ServerPlayerEntity?): Boolean {
+    override fun shouldSyncWith(player: ServerPlayer?): Boolean {
         // we only want to sync this data with the player that owns it
         // this reduces network traffic
         return player == provider
     }
 
-    override fun readFromNbt(tag: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup) {
+    override fun readFromNbt(tag: CompoundTag) {
         setValue(tag.getBoolean(booleanValue))
     }
 
-    override fun writeToNbt(tag: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup) {
+    override fun writeToNbt(tag: CompoundTag) {
         tag.putBoolean(booleanValue, getValue())
     }
 

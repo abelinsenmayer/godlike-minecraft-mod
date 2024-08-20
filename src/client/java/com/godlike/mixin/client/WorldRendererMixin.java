@@ -1,10 +1,14 @@
 package com.godlike.mixin.client;
 
 import com.godlike.components.ModComponents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.*;
-import net.minecraft.util.math.BlockPos;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.core.BlockPos;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,20 +19,14 @@ import java.util.List;
 
 import static com.godlike.render.RenderUtilKt.outlineBlockPos;
 
-@Mixin(WorldRenderer.class)
+@Mixin(LevelRenderer.class)
 public abstract class WorldRendererMixin {
-    @Inject(at = @At("TAIL"), method = "render")
-    private void render(
-            RenderTickCounter tickCounter,
-            boolean renderBlockOutline,
-            Camera camera,
-            GameRenderer gameRenderer,
-            LightmapTextureManager lightmapTextureManager,
-            Matrix4f matrix4f,
-            Matrix4f matrix4f2,
-            CallbackInfo ci
+    @Inject(at = @At("TAIL"), method = "renderLevel")
+    private void renderLevel(
+            PoseStack poseStack, float partialTick, long finishNanoTime, boolean renderBlockOutline, Camera camera,
+            GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projectionMatrix, CallbackInfo ci
     ) {
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) {
             return;
         }

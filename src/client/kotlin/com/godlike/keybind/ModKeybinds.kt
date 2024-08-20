@@ -1,45 +1,45 @@
 package com.godlike.keybind
 
+import com.mojang.blaze3d.platform.InputConstants
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
-import net.minecraft.client.option.KeyBinding
-import net.minecraft.client.util.InputUtil
+import net.minecraft.client.KeyMapping
 import org.lwjgl.glfw.GLFW
 import org.slf4j.LoggerFactory
 
 object ModKeybinds {
     private val logger = LoggerFactory.getLogger("godlike")
 
-    val TOGGLE_SELECTION_MODE: KeyBinding = KeyBindingHelper.registerKeyBinding(
-        KeyBinding(
+    val TOGGLE_SELECTION_MODE: KeyMapping = KeyBindingHelper.registerKeyBinding(
+        KeyMapping(
             "key.godlike.selection_mode",
-            InputUtil.Type.KEYSYM,
+            InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_C,
             "category.godlike"
         )
     )
 
-    val TOGGLE_SELECT_VERTICAL: KeyBinding = KeyBindingHelper.registerKeyBinding(
-        KeyBinding(
+    val TOGGLE_SELECT_VERTICAL: KeyMapping = KeyBindingHelper.registerKeyBinding(
+        KeyMapping(
             "key.godlike.toggle_select_direction",
-            InputUtil.Type.KEYSYM,
+            InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_V,
             "category.godlike"
         )
     )
 
-    val TOGGLE_SELECT_FAR: KeyBinding = KeyBindingHelper.registerKeyBinding(
-        KeyBinding(
+    val TOGGLE_SELECT_FAR: KeyMapping = KeyBindingHelper.registerKeyBinding(
+        KeyMapping(
             "key.godlike.toggle_select_depth",
-            InputUtil.Type.KEYSYM,
+            InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_B,
             "category.godlike"
         )
     )
 
-    val DO_SELECT: KeyBinding = KeyBindingHelper.registerKeyBinding(
-        KeyBinding(
+    val DO_SELECT: KeyMapping = KeyBindingHelper.registerKeyBinding(
+        KeyMapping(
             "key.godlike.do_select",
-            InputUtil.Type.MOUSE,
+            InputConstants.Type.MOUSE,
             GLFW.GLFW_MOUSE_BUTTON_RIGHT,
             "category.godlike"
         )

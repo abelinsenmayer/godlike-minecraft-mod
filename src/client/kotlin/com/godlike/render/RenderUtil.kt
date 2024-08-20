@@ -1,34 +1,36 @@
 package com.godlike.render
 
 import com.godlike.mixin.client.WorldRendererAccessor
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.network.ClientPlayerEntity
-import net.minecraft.client.render.Camera
-import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.util.math.MatrixStack
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.shape.VoxelShapes
+import com.mojang.blaze3d.vertex.PoseStack
+import net.minecraft.client.Camera
+import net.minecraft.client.Minecraft
+import net.minecraft.client.player.LocalPlayer
+import net.minecraft.client.renderer.RenderType
+import net.minecraft.core.BlockPos
+import net.minecraft.world.phys.AABB
 
 /**
  * Highlights the given position by rendering a cube outline around it.
  */
 fun outlineBlockPos(
-    targetPos: BlockPos, player: ClientPlayerEntity, camera: Camera, red: Float, green: Float, blue: Float, alpha: Float
+    targetPos: BlockPos, player: LocalPlayer, camera: Camera, red: Float, green: Float, blue: Float, alpha: Float
 ) {
-    val cameraPos = camera.pos
+    val cameraPos = camera.position
     val vertexConsumer =
-        (MinecraftClient.getInstance().worldRenderer as WorldRendererAccessor).bufferBuilders.entityVertexConsumers.getBuffer(
-            RenderLayer.getLines()
+        (Minecraft.getInstance().levelRenderer as WorldRendererAccessor).bufferBuilders.outlineBufferSource().getBuffer(
+            RenderType.LINES
         )
-    val shape = VoxelShapes.fullCube()
-
     WorldRendererAccessor.invokeDrawCuboidShapeOutline(
-        MatrixStack(),
+        PoseStack(),
         vertexConsumer,
-        shape,
-        targetPos.x - cameraPos.getX(),
-        targetPos.y - cameraPos.getY(),
-        targetPos.z - cameraPos.getZ(),
+        AABB(
+            targetPos.x - cameraPos.x,
+            targetPos.y - cameraPos.y,
+            targetPos.z - cameraPos.z,
+            targetPos.x + 1 - cameraPos.x,
+            targetPos.y + 1 - cameraPos.y,
+            targetPos.z + 1 - cameraPos.z
+        ),
         red, green, blue, alpha
     )
 }

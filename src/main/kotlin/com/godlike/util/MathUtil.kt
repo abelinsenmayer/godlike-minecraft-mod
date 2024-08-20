@@ -1,21 +1,17 @@
 package com.godlike.util
 
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
+import net.minecraft.core.Vec3i
+import net.minecraft.world.phys.Vec3
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 const val MAX_RAYCAST_DISTANCE = 40.0
 
-fun BlockPos.toVec3d(): Vec3d = Vec3d(x.toDouble(), y.toDouble(), z.toDouble())
-
-fun Vec3d.toBlockPos(): BlockPos = BlockPos(x.toInt(), y.toInt(), z.toInt())
-
 /**
  * Given a direction vector, finds where that vector intersects the given y coordinate when extended from the origin.
  * If the point is out of range, it is clamped to the max distance away.
  */
-fun vecIntersectWithY(origin: Vec3d, direction: Vec3d, y: Int): Vec3d {
+fun vecIntersectWithY(origin: Vec3, direction: Vec3, y: Int): Vec3i {
     val factor = (y - origin.y) / direction.y
     var newX = (origin.x + direction.x * factor).toInt()
     var newZ = (origin.z + direction.z * factor).toInt()
@@ -28,7 +24,7 @@ fun vecIntersectWithY(origin: Vec3d, direction: Vec3d, y: Int): Vec3d {
         newZ = (origin.z + (newZ - origin.z) * ratio).toInt()
     }
 
-    return Vec3d((newX).toDouble(), y.toDouble(), (newZ).toDouble())
+    return Vec3i(newX, y, newZ)
 }
 
 /**
@@ -38,7 +34,7 @@ fun vecIntersectWithY(origin: Vec3d, direction: Vec3d, y: Int): Vec3d {
  * either plane, returns the passed in intersection point.
  * If useMax is true, the intersection point further from the origin is used. Otherwise, uses the closer intersection.
  */
-fun vecIntersectWithXOrZ(origin: Vec3d, direction: Vec3d, intersection: Vec3d, useMax: Boolean): Vec3d {
+fun vecIntersectWithXOrZ(origin: Vec3, direction: Vec3, intersection: Vec3i, useMax: Boolean): Vec3i {
     // find where the direction vector intersects the Z plane
     val zFactor = (intersection.z - origin.z) / direction.z
     var newY = (origin.y + direction.y * zFactor).toInt()
@@ -50,7 +46,7 @@ fun vecIntersectWithXOrZ(origin: Vec3d, direction: Vec3d, intersection: Vec3d, u
         newX = (origin.x + (newX - origin.x) * ratio).toInt()
         newY = (origin.y + (newY - origin.y) * ratio).toInt()
     }
-    val zPlaneIntersect = Vec3d((newX).toDouble(), newY.toDouble()-1, (intersection.z))
+    val zPlaneIntersect = Vec3i(newX, newY-1, intersection.z)
 
     // find where the direction vector intersects the X plane
     val xFactor = (intersection.x - origin.x) / direction.x
@@ -63,7 +59,7 @@ fun vecIntersectWithXOrZ(origin: Vec3d, direction: Vec3d, intersection: Vec3d, u
         newZ = (origin.z + (newZ - origin.z) * ratio).toInt()
         newY2 = (origin.y + (newY2 - origin.y) * ratio).toInt()
     }
-    val xPlaneIntersect = Vec3d((intersection.x), newY2.toDouble()-1, (newZ).toDouble())
+    val xPlaneIntersect = Vec3i((intersection.x), newY2-1, newZ)
 
     return if (useMax) {
         if (distance > distance2) zPlaneIntersect else xPlaneIntersect
@@ -72,7 +68,7 @@ fun vecIntersectWithXOrZ(origin: Vec3d, direction: Vec3d, intersection: Vec3d, u
     }
 }
 
-fun getVolumeBetween(anchors: List<Vec3d>, target: Vec3d): List<Vec3d> {
+fun getVolumeBetween(anchors: List<Vec3i>, target: Vec3i): List<Vec3i> {
     // find the bounds of the volume created by the target and the anchors
     val sortedByX = anchors.sortedBy { it.x }
     val xMin = minOf(sortedByX.first().x, target.x)
@@ -87,11 +83,11 @@ fun getVolumeBetween(anchors: List<Vec3d>, target: Vec3d): List<Vec3d> {
     val yMax = maxOf(sortedByY.last().y, target.y)
 
     // collect all the positions in the volume
-    val positions = mutableListOf<Vec3d>()
-    for (x in xMin.toInt()..xMax.toInt()) {
-        for (y in yMin.toInt()..yMax.toInt()) {
-            for (z in zMin.toInt()..zMax.toInt()) {
-                positions.add(Vec3d(x.toDouble(), y.toDouble(), z.toDouble()))
+    val positions = mutableListOf<Vec3i>()
+    for (x in xMin..xMax) {
+        for (y in yMin..yMax) {
+            for (z in zMin..zMax) {
+                positions.add(Vec3i(x, y, z))
             }
         }
     }
@@ -101,7 +97,7 @@ fun getVolumeBetween(anchors: List<Vec3d>, target: Vec3d): List<Vec3d> {
 /**
  * Gets the vertical plane of blocks with opposite corners at the given positions.
  */
-fun getVerticalPlaneBetween(pos1: Vec3d, pos2: Vec3d): List<Vec3d> {
+fun getVerticalPlaneBetween(pos1: Vec3i, pos2: Vec3i): List<Vec3i> {
     val minY = minOf(pos1.y, pos2.y)
     val maxY = maxOf(pos1.y, pos2.y)
     val minX = minOf(pos1.x, pos2.x)
@@ -109,11 +105,11 @@ fun getVerticalPlaneBetween(pos1: Vec3d, pos2: Vec3d): List<Vec3d> {
     val minZ = minOf(pos1.z, pos2.z)
     val maxZ = maxOf(pos1.z, pos2.z)
 
-    val positions = mutableListOf<Vec3d>()
-    for (y in minY.toInt()..maxY.toInt()) {
-        for (x in minX.toInt()..maxX.toInt()) {
-            for (z in minZ.toInt()..maxZ.toInt()) {
-                positions.add(Vec3d(x.toDouble(), y.toDouble(), z.toDouble()))
+    val positions = mutableListOf<Vec3i>()
+    for (y in minY..maxY) {
+        for (x in minX..maxX) {
+            for (z in minZ..maxZ) {
+                positions.add(Vec3i(x, y, z))
             }
         }
     }
@@ -124,16 +120,16 @@ fun getVerticalPlaneBetween(pos1: Vec3d, pos2: Vec3d): List<Vec3d> {
  * Gets the horizontal plane of blocks with opposite corners at the given positions.
  * The plane is at the y coordinate of pos1.
  */
-fun getHorizontalPlaneBetween(pos1: Vec3d, pos2: Vec3d): List<Vec3d> {
+fun getHorizontalPlaneBetween(pos1: Vec3i, pos2: Vec3i): List<Vec3i> {
     val minX = minOf(pos1.x, pos2.x)
     val maxX = maxOf(pos1.x, pos2.x)
     val minZ = minOf(pos1.z, pos2.z)
     val maxZ = maxOf(pos1.z, pos2.z)
 
-    val positions = mutableListOf<Vec3d>()
-    for (x in minX.toInt()..maxX.toInt()) {
-        for (z in minZ.toInt()..maxZ.toInt()) {
-            positions.add(Vec3d(x.toDouble(), pos1.y, z.toDouble()))
+    val positions = mutableListOf<Vec3i>()
+    for (x in minX..maxX) {
+        for (z in minZ..maxZ) {
+            positions.add(Vec3i(x, pos1.y, z))
         }
     }
     return positions

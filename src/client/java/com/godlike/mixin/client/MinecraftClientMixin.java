@@ -7,9 +7,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static com.godlike.keybind.KeybindHandlerKt.handleModInputEvents;
 
-@Mixin(net.minecraft.client.MinecraftClient.class)
+@Mixin(net.minecraft.client.Minecraft.class)
 public class MinecraftClientMixin {
-    @Inject(method = "handleInputEvents", at = @At("HEAD"))
+    @Inject(method = "handleKeybinds", at = @At("HEAD"))
     private void handleInputEvents(CallbackInfo info) {
         handleModInputEvents();
     }

@@ -8,47 +8,47 @@ import com.godlike.keybind.ModKeybinds.TOGGLE_SELECT_VERTICAL
 import com.godlike.networking.DoSelectionPacket
 import com.godlike.networking.ModNetworking
 import com.godlike.util.toggleSelectionMode
-import net.minecraft.client.MinecraftClient
-import net.minecraft.text.Text
+import net.minecraft.client.Minecraft
+import net.minecraft.network.chat.Component
 
 /**
  * Called at the top of the client tick to handle input events. This means that it is called before any other
  * keybinds are processed.
  */
 fun handleModInputEvents() {
-    val client = MinecraftClient.getInstance()
+    val client = Minecraft.getInstance()
 
-    while (TOGGLE_SELECTION_MODE.wasPressed()) {
+    while (TOGGLE_SELECTION_MODE.consumeClick()) {
         client.player!!.toggleSelectionMode()
     }
 
-    while (TOGGLE_SELECT_VERTICAL.wasPressed()) {
+    while (TOGGLE_SELECT_VERTICAL.consumeClick()) {
         val inSelectionMode = ModComponents.SELECTION_MODE.get(client.player!!).getValue()
         if (inSelectionMode) {
             ModComponents.SELECTING_VERTICAL.get(client.player!!).toggle()
-            client.player!!.sendMessage(
-                Text.literal(
+            client.player!!.sendSystemMessage(
+                Component.literal(
                     if (ModComponents.SELECTING_VERTICAL.get(client.player!!).getValue()) "Vertical selection"
                     else "Horizontal selection"
-                ), false
+                )
             )
         }
     }
 
-    while (TOGGLE_SELECT_FAR.wasPressed()) {
+    while (TOGGLE_SELECT_FAR.consumeClick()) {
         val inSelectionMode = ModComponents.SELECTION_MODE.get(client.player!!).getValue()
         if (inSelectionMode) {
             ModComponents.SELECTING_FAR.get(client.player!!).toggle()
-            client.player!!.sendMessage(
-                Text.literal(
+            client.player!!.sendSystemMessage(
+                Component.literal(
                     if (ModComponents.SELECTING_FAR.get(client.player!!).getValue()) "Selecting far"
                     else "Selecting near"
-                ), false
+                )
             )
         }
     }
 
-    while (DO_SELECT.wasPressed()) {
+    while (DO_SELECT.consumeClick()) {
         // send a packet to the server to add the preview to their cursor selection
         val inSelectionMode = ModComponents.SELECTION_MODE.get(client.player!!).getValue()
         if (inSelectionMode) {

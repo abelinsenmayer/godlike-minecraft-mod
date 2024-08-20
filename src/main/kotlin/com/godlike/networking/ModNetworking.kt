@@ -4,11 +4,11 @@ import com.godlike.Godlike.logger
 import com.godlike.MOD_ID
 import com.godlike.components.ModComponents
 import io.wispforest.owo.network.OwoNetChannel
-import net.minecraft.util.Identifier
+import net.minecraft.resources.ResourceLocation
 
 object ModNetworking {
     @JvmField
-    val CHANNEL: OwoNetChannel = OwoNetChannel.create(Identifier.of(MOD_ID, "main"))
+    val CHANNEL: OwoNetChannel = OwoNetChannel.create(ResourceLocation.tryBuild(MOD_ID, "main"))
 
     fun register() {
         logger.info("Registering network channel")
