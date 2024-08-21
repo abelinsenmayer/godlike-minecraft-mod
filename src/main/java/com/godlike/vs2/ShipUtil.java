@@ -4,8 +4,8 @@ package com.godlike.vs2;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import org.joml.Vector3i;
-import org.valkyrienskies.core.util.datastructures.DenseBlockPosSet;
-import org.valkyrienskies.mod.common.assembly.ShipAssemblyKt;
+//import org.valkyrienskies.core.impl.datastructures.DenseBlockPosSet;
+//import org.valkyrienskies.mod.common.assembly.ShipAssemblyKt;
 
 import java.util.Collection;
 
@@ -16,9 +16,9 @@ public class ShipUtil {
         int zAvg = positions.stream().mapToInt(BlockPos::getZ).sum() / positions.size();
         BlockPos centerPos = new BlockPos(xAvg, yAvg, zAvg);
 
-        DenseBlockPosSet denseSet = new DenseBlockPosSet();
-        positions.forEach(pos -> denseSet.add(new Vector3i(pos.getX(), pos.getY(), pos.getZ())));
-
-        ShipAssemblyKt.createNewShipWithBlocks(centerPos, denseSet, world);
+//        DenseBlockPosSet denseSet = new DenseBlockPosSet();
+//        positions.forEach(pos -> denseSet.add(new Vector3i(pos.getX(), pos.getY(), pos.getZ())));
+//
+//        ShipAssemblyKt.createNewShipWithBlocks(centerPos, denseSet, world);
     }
 }

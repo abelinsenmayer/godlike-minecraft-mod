@@ -34,7 +34,7 @@ fun LocalPlayer.toggleSelectionMode() {
 
 /**
  * Called every tick on the client side when the player is in selection mode.
- * It displays a preview of the selection the player is making.
+ * Updates the player's selection based on where they're looking and what they have already selected.
  */
 fun showSelectionPreview(client: Minecraft) {
     val player = client.player!!
@@ -89,5 +89,15 @@ fun showSelectionPreview(client: Minecraft) {
             ModComponents.CURSOR_PREVIEWS.get(player).addAllPositions(volume)
         }
     }
+}
+
+/**
+ * Displays VFX for the player's selection.
+ */
+fun displaySelection(player : LocalPlayer) {
+    // Render cursors
+    val cursors = ModComponents.CURSORS.get(player).getPositions()
+
+
 }
 
