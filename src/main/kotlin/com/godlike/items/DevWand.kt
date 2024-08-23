@@ -1,5 +1,6 @@
 package com.godlike.items
 
+import com.godlike.Godlike.logger
 import com.godlike.components.ModComponents
 import com.godlike.vs2.ShipUtil
 import net.minecraft.server.level.ServerLevel

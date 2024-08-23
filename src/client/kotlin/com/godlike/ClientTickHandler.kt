@@ -1,6 +1,7 @@
 package com.godlike
 
 import com.godlike.components.ModComponents
+import com.godlike.util.displaySelection
 import com.godlike.util.showSelectionPreview
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
@@ -22,6 +23,7 @@ object ClientTickHandler {
                 if (inSelectionMode) {
                     showSelectionPreview(client)
                 }
+                displaySelection(it)
             }
         })
     }
