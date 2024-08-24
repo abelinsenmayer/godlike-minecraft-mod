@@ -4,29 +4,12 @@ import com.godlike.Godlike.logger
 import com.godlike.components.ModComponents
 import com.godlike.keybind.ModKeybinds.SELECTION_MODE_KEYBINDS
 import com.godlike.mixin.client.KeyBindingMixin
-import com.godlike.render.renderCubeAt
-import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Vec3i
 import net.minecraft.network.chat.Component
-import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.level.block.state.BlockState
-import org.joml.Vector3f
-import team.lodestar.lodestone.handlers.GhostBlockHandler
-import team.lodestar.lodestone.registry.client.LodestoneRenderTypeRegistry
-import team.lodestar.lodestone.registry.common.particle.LodestoneParticleRegistry
-import team.lodestar.lodestone.systems.easing.Easing
-import team.lodestar.lodestone.systems.particle.builder.WorldParticleBuilder
-import team.lodestar.lodestone.systems.particle.data.GenericParticleData
-import team.lodestar.lodestone.systems.particle.data.color.ColorParticleData
-import team.lodestar.lodestone.systems.particle.data.spin.SpinParticleData
-import team.lodestar.lodestone.systems.rendering.VFXBuilders
-import team.lodestar.lodestone.systems.rendering.ghost.GhostBlockOptions
-import team.lodestar.lodestone.systems.rendering.ghost.GhostBlockRenderer
-import java.awt.Color
 
 fun LocalPlayer.toggleSelectionMode() {
     // set the player to selection mode
@@ -59,7 +42,6 @@ fun showSelectionPreview(client: Minecraft) {
     val anchors = ModComponents.CURSOR_ANCHORS.get(player).getPositions()
 
     val targetPos = blockRaycastFromPlayer()
-    logger.info("Raycast found position: $targetPos")
     ModComponents.TARGET_POSITION.get(player).setPos(targetPos)
 
 //    when (anchors.size) {
@@ -111,30 +93,5 @@ fun showSelectionPreview(client: Minecraft) {
 //            ModComponents.CURSOR_PREVIEWS.get(player).addAllPositions(volume)
 //        }
 //    }
-}
-
-/**
- * Displays VFX for the player's selection.
- */
-fun displaySelection(player : LocalPlayer) {
-    val previews = ModComponents.CURSOR_PREVIEWS.get(player).getPositions()
-    val targetPos = ModComponents.TARGET_POSITION.get(player).getPos()
-    val cursors = ModComponents.CURSORS.get(player).getPositions()
-
-//    renderCubeAt(targetPos)
-
-//    val startingColor = Color(100, 0, 100)
-//    val endingColor = Color(0, 100, 200)
-//    WorldParticleBuilder.create(LodestoneParticleRegistry.WISP_PARTICLE)
-//        .setScaleData(GenericParticleData.create(2.0f, 0f).build())
-//        .setTransparencyData(GenericParticleData.create(0.75f, 0.25f).build())
-//        .setColorData(ColorParticleData.create(startingColor, endingColor).setCoefficient(1.4f).setEasing(Easing.BOUNCE_IN_OUT).build())
-//        .setSpinData(SpinParticleData.create(0.2f, 0.4f).setSpinOffset((player.level().gameTime * 0.2f) % 6.28f).setEasing(
-//            Easing.QUARTIC_IN).build())
-//        .setLifetime(40)
-//        .addMotion(0.0, 0.01, 0.0)
-//        .enableNoClip()
-//        .spawn(player.level(), targetPos.x.toDouble(), targetPos.y + 2.0, targetPos.z.toDouble())
-
 }
 

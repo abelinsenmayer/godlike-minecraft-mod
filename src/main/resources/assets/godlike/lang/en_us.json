@@ -2,5 +2,6 @@
   "item.godlike.dev_wand": "Dev Wand",
   "category.godlike": "Godlike",
   "key.godlike.selection_mode": "Toggle Selection Mode",
-  "key.godlike.do_select": "Confirm Selection"
+  "key.godlike.do_select": "Confirm Selection",
+  "key.godlike.tk_selection": "Telekinesis Selection"
 }

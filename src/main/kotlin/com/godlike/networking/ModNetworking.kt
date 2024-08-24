@@ -3,6 +3,7 @@ package com.godlike.networking
 import com.godlike.Godlike.logger
 import com.godlike.MOD_ID
 import com.godlike.components.ModComponents
+import com.godlike.util.physicsObjectFromSelection
 import io.wispforest.owo.network.OwoNetChannel
 import net.minecraft.resources.ResourceLocation
 
@@ -18,7 +19,14 @@ object ModNetworking {
 
         CHANNEL.registerServerbound(DoSelectionPacket::class.java) { packet, ctx ->
             ModComponents.CURSORS.get(ctx.player).addAllPositions(packet.cursorPreviews)
+            ModComponents.CURSORS.get(ctx.player).addPosition(packet.targetPosition)
             ModComponents.CURSOR_ANCHORS.get(ctx.player).addPosition(packet.targetPosition)
+        }
+
+        CHANNEL.registerServerbound(TkSelectionPackage::class.java) { packet, ctx ->
+            physicsObjectFromSelection(ctx.player)
+            ModComponents.CURSORS.get(ctx.player).clearPositions()
+            ModComponents.CURSOR_ANCHORS.get(ctx.player).clearPositions()
         }
     }
 }

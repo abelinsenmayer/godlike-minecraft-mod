@@ -45,7 +45,16 @@ object ModKeybinds {
         )
     )
 
-    val SELECTION_MODE_KEYBINDS = listOf(TOGGLE_SELECT_VERTICAL, DO_SELECT, TOGGLE_SELECT_FAR)
+    val TK_SELECTION: KeyMapping = KeyBindingHelper.registerKeyBinding(
+        KeyMapping(
+            "key.godlike.tk_selection",
+            InputConstants.Type.MOUSE,
+            GLFW.GLFW_MOUSE_BUTTON_LEFT,
+            "category.godlike"
+        )
+    )
+
+    val SELECTION_MODE_KEYBINDS = listOf(TOGGLE_SELECT_VERTICAL, DO_SELECT, TOGGLE_SELECT_FAR, TK_SELECTION)
 
     fun registerKeybinds() {
         logger.info("Registering keybinds")

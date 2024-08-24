@@ -2,11 +2,13 @@ package com.godlike.keybind
 
 import com.godlike.components.ModComponents
 import com.godlike.keybind.ModKeybinds.DO_SELECT
+import com.godlike.keybind.ModKeybinds.TK_SELECTION
 import com.godlike.keybind.ModKeybinds.TOGGLE_SELECTION_MODE
 import com.godlike.keybind.ModKeybinds.TOGGLE_SELECT_FAR
 import com.godlike.keybind.ModKeybinds.TOGGLE_SELECT_VERTICAL
 import com.godlike.networking.DoSelectionPacket
 import com.godlike.networking.ModNetworking
+import com.godlike.networking.TkSelectionPackage
 import com.godlike.util.toggleSelectionMode
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
@@ -58,6 +60,17 @@ fun handleModInputEvents() {
                     ModComponents.TARGET_POSITION.get(client.player!!).getPos()
                 )
             )
+        }
+    }
+
+    while (TK_SELECTION.consumeClick()) {
+        // send a packet to the server to create a physics object from the cursor selection
+        val inSelectionMode = ModComponents.SELECTION_MODE.get(client.player!!).getValue()
+        if (inSelectionMode) {
+            ModNetworking.CHANNEL.clientHandle().send(
+                TkSelectionPackage()
+            )
+            client.player!!.toggleSelectionMode()
         }
     }
 }
