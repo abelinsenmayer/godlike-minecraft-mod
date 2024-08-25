@@ -3,7 +3,8 @@ package com.godlike.networking
 import com.godlike.Godlike.logger
 import com.godlike.MOD_ID
 import com.godlike.components.ModComponents
-import com.godlike.util.physicsObjectFromSelection
+import com.godlike.telekinesis.handleTelekinesisControls
+import com.godlike.telekinesis.physicsObjectFromSelection
 import io.wispforest.owo.network.OwoNetChannel
 import net.minecraft.resources.ResourceLocation
 
@@ -27,6 +28,10 @@ object ModNetworking {
             physicsObjectFromSelection(ctx.player)
             ModComponents.CURSORS.get(ctx.player).clearPositions()
             ModComponents.CURSOR_ANCHORS.get(ctx.player).clearPositions()
+        }
+
+        CHANNEL.registerServerbound(TelekinesisControlsPacket::class.java) { packet, ctx ->
+            handleTelekinesisControls(packet, ctx.player)
         }
     }
 }

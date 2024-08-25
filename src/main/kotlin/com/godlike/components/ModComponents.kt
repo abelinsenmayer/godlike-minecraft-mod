@@ -6,6 +6,7 @@ import dev.onyxstudios.cca.api.v3.component.ComponentRegistry
 import dev.onyxstudios.cca.api.v3.entity.EntityComponentFactoryRegistry
 import dev.onyxstudios.cca.api.v3.entity.EntityComponentInitializer
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.player.Player
 import org.slf4j.LoggerFactory
 
@@ -28,6 +29,9 @@ class ModComponents : EntityComponentInitializer {
         @JvmField
         val SELECTING_FAR: ComponentKey<BooleanComponent> = ComponentRegistry.getOrCreate(ResourceLocation.tryBuild(MOD_ID, "selecting_far")!!, BooleanComponent::class.java)
 
+        @JvmField
+        val TELEKINESIS_DATA: ComponentKey<TelekinesisComponent> = ComponentRegistry.getOrCreate(ResourceLocation.tryBuild(MOD_ID, "telekinesis_data")!!, TelekinesisComponent::class.java)
+
         val CURSOR_COMPONENT_TYPES = listOf(CURSORS, CURSOR_PREVIEWS, CURSOR_ANCHORS)
     }
 
@@ -41,5 +45,7 @@ class ModComponents : EntityComponentInitializer {
         registry.registerFor(Player::class.java, CURSOR_PREVIEWS) { e: Player -> BlockPosListComponent(e) }
         registry.registerFor(Player::class.java, SELECTING_VERTICAL) { e: Player -> BooleanComponent(e) }
         registry.registerFor(Player::class.java, SELECTING_FAR) { e: Player -> BooleanComponent(e) }
+
+        registry.registerFor(ServerPlayer::class.java, TELEKINESIS_DATA) { e: ServerPlayer -> TelekinesisComponent(e) }
     }
 }

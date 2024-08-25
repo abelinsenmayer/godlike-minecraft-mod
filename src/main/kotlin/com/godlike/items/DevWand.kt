@@ -1,7 +1,7 @@
 package com.godlike.items
 
 import com.godlike.components.ModComponents
-import com.godlike.vs2.Vs2PhysicsUtil
+import com.godlike.vs2.Vs2Util
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResultHolder
@@ -16,7 +16,7 @@ class DevWand : Item(Properties()) {
             val cursors = ModComponents.CURSORS.get(user).getPositions()
 
             if (!world.isClientSide) {
-                Vs2PhysicsUtil.makePhysicsObjectFromBlocks(cursors, world as ServerLevel)
+                Vs2Util.makePhysicsObjectFromBlocks(cursors, world as ServerLevel)
             }
 
             ModComponents.CURSORS.get(user).clearPositions()

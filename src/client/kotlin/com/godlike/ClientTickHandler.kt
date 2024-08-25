@@ -1,6 +1,9 @@
 package com.godlike
 
 import com.godlike.components.ModComponents
+import com.godlike.networking.DoSelectionPacket
+import com.godlike.networking.ModNetworking
+import com.godlike.networking.TelekinesisControlsPacket
 import com.godlike.util.showSelectionPreview
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
@@ -15,13 +18,19 @@ object ClientTickHandler {
     fun start() {
         // This code will run every tick on the client side
         ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick {
-            // if the player is in selection mode, display a preview of their selection
+
             val client = Minecraft.getInstance()
-            client.player?.let {
-                val inSelectionMode = ModComponents.SELECTION_MODE.get(client.player!!).getValue()
+            client.player?.let { player ->
+                // if the player is in selection mode, display a preview of their selection
+                val inSelectionMode = ModComponents.SELECTION_MODE.get(player).getValue()
                 if (inSelectionMode) {
                     showSelectionPreview(client)
                 }
+
+                // move the player's telekinesis targets if they're in telekinesis mode
+                ModNetworking.CHANNEL.clientHandle().send(
+                    TelekinesisControlsPacket()
+                )
             }
         })
     }
