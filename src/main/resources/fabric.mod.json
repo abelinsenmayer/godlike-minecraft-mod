@@ -17,24 +17,24 @@
 	"entrypoints": {
 		"main": [
 			{
-				"value": "com.godlike.Godlike",
+				"value": "com.godlike.common.Godlike",
 				"adapter": "kotlin"
 			}
 		],
 		"client": [
 			{
-				"value": "com.godlike.GodlikeClient",
+				"value": "com.godlike.client.GodlikeClient",
 				"adapter": "kotlin"
 			}
 		],
 		"fabric-datagen": [
 			{
-				"value": "com.godlike.GodlikeDataGenerator",
+				"value": "com.godlike.common.GodlikeDataGenerator",
 				"adapter": "kotlin"
 			}
 		],
 		"cardinal-components": [
-			"com.godlike.components.ModComponents"
+          "com.godlike.common.components.ModComponents"
 		]
 	},
 	"mixins": [

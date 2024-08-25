@@ -1,6 +1,6 @@
 {
 	"required": true,
-	"package": "com.godlike.mixin",
+	"package": "com.godlike.common.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 
