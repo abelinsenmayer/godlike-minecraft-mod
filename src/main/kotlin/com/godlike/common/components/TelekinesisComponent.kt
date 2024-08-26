@@ -19,7 +19,9 @@ class TelekinesisComponent(private val player: ServerPlayer) : Component {
     override fun readFromNbt(tag: CompoundTag) {
         val shipWorld = Vs2Util.getServerShipWorld(player.serverLevel())
         tkTargets.clear()
-        tag.getLongArray(TK_TARGETS_KEY).map { shipWorld.loadedShips.getById(it) as ServerShip}.let {
+        tag.getLongArray(TK_TARGETS_KEY)
+            .map { shipWorld.loadedShips.getById(it) }
+            .filterNotNull().let {
             tkTargets.addAll(it)
         }
     }

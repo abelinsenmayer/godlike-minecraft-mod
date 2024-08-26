@@ -13,7 +13,7 @@ import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import java.util.Collection;
 
 public class Vs2Util {
-    public static ServerShip makePhysicsObjectFromBlocks(Collection<BlockPos> positions, ServerLevel world) {
+    public static ServerShip createShip(Collection<BlockPos> positions, ServerLevel world) {
         if (positions.isEmpty()) {
             return null;
         }

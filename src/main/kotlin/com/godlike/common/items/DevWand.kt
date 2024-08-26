@@ -16,7 +16,7 @@ class DevWand : Item(Properties()) {
             val cursors = ModComponents.CURSORS.get(user).getPositions()
 
             if (!world.isClientSide) {
-                Vs2Util.makePhysicsObjectFromBlocks(cursors, world as ServerLevel)
+                Vs2Util.createShip(cursors, world as ServerLevel)
             }
 
             ModComponents.CURSORS.get(user).clearPositions()
