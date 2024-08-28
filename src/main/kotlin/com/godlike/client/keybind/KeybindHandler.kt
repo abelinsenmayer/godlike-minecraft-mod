@@ -10,8 +10,22 @@ import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECTION_MODE
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_FAR
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_VERTICAL
 import com.godlike.client.util.toggleSelectionMode
+import com.godlike.common.networking.TelekinesisControlsPacket
 import net.minecraft.client.Minecraft
+import net.minecraft.client.player.LocalPlayer
 import net.minecraft.network.chat.Component
+
+/**
+ * Called every client tick to handle keybinds related to telekinesis.
+ * Constructs a [TelekinesisControlsPacket] based on key inputs and send it to the server.
+ */
+fun doTelekinesisKeybindControls() {
+    val playerLookDirection = Minecraft.getInstance().cameraEntity!!.lookAngle
+
+    ModNetworking.CHANNEL.clientHandle().send(
+        TelekinesisControlsPacket(playerLookDirection)
+    )
+}
 
 /**
  * Called at the top of the client tick to handle input events. This means that it is called before any other

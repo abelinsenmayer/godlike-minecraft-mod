@@ -1,8 +1,7 @@
 package com.godlike.client
 
+import com.godlike.client.keybind.doTelekinesisKeybindControls
 import com.godlike.common.components.ModComponents
-import com.godlike.common.networking.ModNetworking
-import com.godlike.common.networking.TelekinesisControlsPacket
 import com.godlike.client.util.showSelectionPreview
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
@@ -26,10 +25,7 @@ object ClientTickHandler {
                     showSelectionPreview(client)
                 }
 
-                // move the player's telekinesis targets if they're in telekinesis mode
-                ModNetworking.CHANNEL.clientHandle().send(
-                    TelekinesisControlsPacket()
-                )
+                doTelekinesisKeybindControls()
             }
         })
     }

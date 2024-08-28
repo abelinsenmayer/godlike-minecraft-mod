@@ -4,7 +4,7 @@ import com.godlike.common.Godlike.logger
 import com.godlike.common.MOD_ID
 import com.godlike.common.components.ModComponents
 import com.godlike.common.telekinesis.handleTelekinesisControls
-import com.godlike.common.telekinesis.physicsObjectFromSelection
+import com.godlike.common.telekinesis.createShipFromSelection
 import io.wispforest.owo.network.OwoNetChannel
 import net.minecraft.resources.ResourceLocation
 
@@ -14,6 +14,8 @@ object ModNetworking {
 
     fun register() {
         logger.info("Registering network channel")
+
+        // Server-bound packets
         CHANNEL.registerServerbound(ServerBoundPacket::class.java) { packet, ctx ->
             logger.info("Received message on server: ${packet.message}")
         }
@@ -25,7 +27,7 @@ object ModNetworking {
         }
 
         CHANNEL.registerServerbound(TkSelectionPackage::class.java) { packet, ctx ->
-            physicsObjectFromSelection(ctx.player)
+            createShipFromSelection(ctx.player)
             ModComponents.CURSORS.get(ctx.player).clearPositions()
             ModComponents.CURSOR_ANCHORS.get(ctx.player).clearPositions()
         }
@@ -33,5 +35,8 @@ object ModNetworking {
         CHANNEL.registerServerbound(TelekinesisControlsPacket::class.java) { packet, ctx ->
             handleTelekinesisControls(packet, ctx.player)
         }
+
+        // Client-bound packets, deferred registration
+        CHANNEL.registerClientboundDeferred(TracerParticlePacket::class.java)
     }
 }

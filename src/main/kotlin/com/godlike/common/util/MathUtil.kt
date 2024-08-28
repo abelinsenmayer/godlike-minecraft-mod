@@ -2,10 +2,46 @@ package com.godlike.common.util
 
 import net.minecraft.core.Vec3i
 import net.minecraft.world.phys.Vec3
+import org.joml.Vector3d
+import org.joml.Vector3dc
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 const val MAX_RAYCAST_DISTANCE = 40.0
+
+fun Vec3.toVector3d(): Vector3d {
+    return Vector3d(x, y, z)
+}
+
+fun Vector3dc.toVec3(): Vec3 {
+    return Vec3(x(), y(), z())
+}
+
+fun Vec3.negate(): Vec3 {
+    return Vec3(-x, -y, -z)
+}
+
+/**
+ * Given a point p and a vector v, finds where v intersects the plane perpendicular to v and passing
+ * through the point t.
+ */
+fun vecIntersectsPerpendicularPlaneFromPoint(p: Vec3, v: Vec3, t: Vec3) : Vec3 {
+    val tp = p.subtract(t)
+    val lambda = tp.negate().dot(v) / v.dot(v)
+    return p.add(v.scale(lambda))
+}
+
+/**
+ * Given a sphere with the given center and radius, find a point on the sphere where the angle vector is pointing.
+ */
+fun findPointOnSphereAtRadius(center: Vec3, radius: Double, angle: Vec3) : Vec3 {
+    val normAngle = angle.normalize()
+    return normAngle.scale(radius).add(center)
+//    val x = center.x + radius * normAngle.x
+//    val y = center.y + radius * normAngle.y
+//    val z = center.z + radius * normAngle.z
+//    return Vec3(x, y, z)
+}
 
 /**
  * Given a direction vector, finds where that vector intersects the given y coordinate when extended from the origin.
