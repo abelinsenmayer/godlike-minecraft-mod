@@ -4,7 +4,6 @@ import com.godlike.common.vs2.Vs2Util
 import dev.onyxstudios.cca.api.v3.component.Component
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerPlayer
-import org.valkyrienskies.core.api.ships.ServerShip
 
 const val TK_TARGETS_KEY = "telekinesis-targets"
 
@@ -14,20 +13,17 @@ const val TK_TARGETS_KEY = "telekinesis-targets"
  * server should send a packet.
  */
 class TelekinesisComponent(private val player: ServerPlayer) : Component {
-    val tkTargets : MutableList<ServerShip> = mutableListOf()
+    val tkShipIds : MutableList<Long> = mutableListOf()
 
     override fun readFromNbt(tag: CompoundTag) {
-        val shipWorld = Vs2Util.getServerShipWorld(player.serverLevel())
-        tkTargets.clear()
-        tag.getLongArray(TK_TARGETS_KEY)
-            .map { shipWorld.loadedShips.getById(it) }
-            .filterNotNull().let {
-            tkTargets.addAll(it)
+        tkShipIds.clear()
+        tag.getLongArray(TK_TARGETS_KEY).forEach {
+            tkShipIds.add(it)
         }
     }
 
     override fun writeToNbt(tag: CompoundTag) {
-        tkTargets.map { it.id }.toLongArray().let {
+        tkShipIds.toLongArray().let {
             tag.putLongArray(TK_TARGETS_KEY, it)
         }
     }
