@@ -58,13 +58,13 @@
 	"custom": {
 		"cardinal-components": [
 			"godlike:cursors",
-			"godlike:selection_mode",
 			"godlike:cursor_previews",
 			"godlike:cursor_anchors",
 			"godlike:target_pos",
 			"godlike:selecting_vertical",
 			"godlike:selecting_far",
-			"godlike:telekinesis_data"
+			"godlike:telekinesis_data",
+			"godlike:mode"
 		]
 	}
 }

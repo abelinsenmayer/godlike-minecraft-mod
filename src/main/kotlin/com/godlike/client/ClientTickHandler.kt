@@ -3,6 +3,8 @@ package com.godlike.client
 import com.godlike.client.keybind.doTelekinesisKeybindControls
 import com.godlike.common.components.ModComponents
 import com.godlike.client.util.showSelectionPreview
+import com.godlike.common.components.Mode
+import com.godlike.common.components.getMode
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
 import org.slf4j.LoggerFactory
@@ -20,8 +22,7 @@ object ClientTickHandler {
             val client = Minecraft.getInstance()
             client.player?.let { player ->
                 // if the player is in selection mode, display a preview of their selection
-                val inSelectionMode = ModComponents.SELECTION_MODE.get(player).getValue()
-                if (inSelectionMode) {
+                if (player.getMode() == Mode.SELECTING) {
                     showSelectionPreview(client)
                 }
 

@@ -25,7 +25,6 @@ class BooleanComponent(private val provider : Any) : AutoSyncedComponent {
 
     fun setValue(value: Boolean) {
         this.value.set(value)
-        ModComponents.SELECTION_MODE.sync(provider)
     }
 
     fun getValue(): Boolean {

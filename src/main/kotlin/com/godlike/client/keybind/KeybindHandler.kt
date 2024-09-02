@@ -1,6 +1,5 @@
 package com.godlike.client.keybind
 
-import com.godlike.common.components.ModComponents
 import com.godlike.common.networking.DoSelectionPacket
 import com.godlike.common.networking.ModNetworking
 import com.godlike.common.networking.TkSelectionPackage
@@ -9,11 +8,12 @@ import com.godlike.client.keybind.ModKeybinds.TK_SELECTION
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECTION_MODE
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_FAR
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_VERTICAL
-import com.godlike.client.util.toggleSelectionMode
+import com.godlike.common.components.*
 import com.godlike.common.networking.TelekinesisControlsPacket
 import net.minecraft.client.Minecraft
-import net.minecraft.client.player.LocalPlayer
 import net.minecraft.network.chat.Component
+
+const val POINTER_DELTA_INCREMENT = 0.2
 
 /**
  * Called every client tick to handle keybinds related to telekinesis.
@@ -22,8 +22,16 @@ import net.minecraft.network.chat.Component
 fun doTelekinesisKeybindControls() {
     val playerLookDirection = Minecraft.getInstance().cameraEntity!!.lookAngle
 
+    var pointerDistanceDelta = 0.0
+    while (ModKeybinds.POINTER_PULL.consumeClick()) {
+        pointerDistanceDelta -= POINTER_DELTA_INCREMENT
+    }
+    while (ModKeybinds.POINTER_PUSH.consumeClick()) {
+        pointerDistanceDelta += POINTER_DELTA_INCREMENT
+    }
+
     ModNetworking.CHANNEL.clientHandle().send(
-        TelekinesisControlsPacket(playerLookDirection)
+        TelekinesisControlsPacket(playerLookDirection, pointerDistanceDelta)
     )
 }
 
@@ -33,14 +41,19 @@ fun doTelekinesisKeybindControls() {
  */
 fun handleModInputEvents() {
     val client = Minecraft.getInstance()
+    val player = client.player!!
 
     while (TOGGLE_SELECTION_MODE.consumeClick()) {
-        client.player!!.toggleSelectionMode()
+        val currentMode = player.getMode()
+        if (currentMode == Mode.SELECTING) {
+            player.setMode(Mode.NONE)
+        } else {
+            player.setMode(Mode.SELECTING)
+        }
     }
 
     while (TOGGLE_SELECT_VERTICAL.consumeClick()) {
-        val inSelectionMode = ModComponents.SELECTION_MODE.get(client.player!!).getValue()
-        if (inSelectionMode) {
+        if (player.getMode() == Mode.SELECTING) {
             ModComponents.SELECTING_VERTICAL.get(client.player!!).toggle()
             client.player!!.sendSystemMessage(
                 Component.literal(
@@ -52,8 +65,7 @@ fun handleModInputEvents() {
     }
 
     while (TOGGLE_SELECT_FAR.consumeClick()) {
-        val inSelectionMode = ModComponents.SELECTION_MODE.get(client.player!!).getValue()
-        if (inSelectionMode) {
+        if (player.getMode() == Mode.SELECTING) {
             ModComponents.SELECTING_FAR.get(client.player!!).toggle()
             client.player!!.sendSystemMessage(
                 Component.literal(
@@ -66,8 +78,7 @@ fun handleModInputEvents() {
 
     while (DO_SELECT.consumeClick()) {
         // send a packet to the server to add the preview to their cursor selection
-        val inSelectionMode = ModComponents.SELECTION_MODE.get(client.player!!).getValue()
-        if (inSelectionMode) {
+        if (player.getMode() == Mode.SELECTING) {
             ModNetworking.CHANNEL.clientHandle().send(
                 DoSelectionPacket(
                     ModComponents.CURSOR_PREVIEWS.get(client.player!!).getPositions(),
@@ -79,12 +90,11 @@ fun handleModInputEvents() {
 
     while (TK_SELECTION.consumeClick()) {
         // send a packet to the server to create a physics object from the cursor selection
-        val inSelectionMode = ModComponents.SELECTION_MODE.get(client.player!!).getValue()
-        if (inSelectionMode) {
+        if (player.getMode() == Mode.SELECTING) {
             ModNetworking.CHANNEL.clientHandle().send(
                 TkSelectionPackage()
             )
-            client.player!!.toggleSelectionMode()
+            client.player!!.setMode(Mode.TELEKINESIS)
         }
     }
 }

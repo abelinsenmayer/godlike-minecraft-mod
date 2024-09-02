@@ -1,35 +1,7 @@
 package com.godlike.client.util
 
-import com.godlike.client.keybind.ModKeybinds.SELECTION_MODE_KEYBINDS
-import com.godlike.client.mixin.KeyBindingMixin
 import com.godlike.common.components.ModComponents
-import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
-import net.minecraft.client.player.LocalPlayer
-import net.minecraft.core.BlockPos
-import net.minecraft.network.chat.Component
-
-fun LocalPlayer.toggleSelectionMode() {
-    // set the player to selection mode
-    var mode = ModComponents.SELECTION_MODE.get(this).getValue()
-    mode = !mode
-    ModComponents.SELECTION_MODE.get(this).setValue(mode)
-    val message = if (mode) "Selection mode enabled" else "Selection mode disabled"
-    this.sendSystemMessage(Component.literal(message))
-
-    if (mode) {
-        // promote selection keybinds to the top of the keybind map
-        val bindingMap = KeyBindingMixin.getKeyToBindings()
-        SELECTION_MODE_KEYBINDS.forEach { keybind ->
-            bindingMap[(keybind as KeyBindingMixin).boundKey] = keybind
-        }
-    } else {
-        // restore the keybinds to their original positions
-        KeyMapping.resetMapping()
-        ModComponents.CURSOR_PREVIEWS.get(this).clearPositions()
-        ModComponents.TARGET_POSITION.get(this).setPos(BlockPos(0, -3000, 0))
-    }
-}
 
 /**
  * Called every tick on the client side when the player is in selection mode.

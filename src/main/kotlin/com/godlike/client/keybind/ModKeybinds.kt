@@ -54,7 +54,23 @@ object ModKeybinds {
         )
     )
 
-    val SELECTION_MODE_KEYBINDS = listOf(TOGGLE_SELECT_VERTICAL, DO_SELECT, TOGGLE_SELECT_FAR, TK_SELECTION)
+    val POINTER_PUSH: KeyMapping = KeyBindingHelper.registerKeyBinding(
+        KeyMapping(
+            "key.godlike.pointer_away",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_E,
+            "category.godlike"
+        )
+    )
+
+    val POINTER_PULL: KeyMapping = KeyBindingHelper.registerKeyBinding(
+        KeyMapping(
+            "key.godlike.pointer_towards",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_Q,
+            "category.godlike"
+        )
+    )
 
     fun registerKeybinds() {
         logger.info("Registering keybinds")
