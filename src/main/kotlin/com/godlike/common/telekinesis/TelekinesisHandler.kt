@@ -1,5 +1,6 @@
 package com.godlike.common.telekinesis
 
+import com.godlike.common.Godlike.logger
 import com.godlike.common.components.ModComponents
 import com.godlike.common.components.telekinesis
 import com.godlike.common.networking.ModNetworking
@@ -11,8 +12,9 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.phys.Vec3
 import org.valkyrienskies.mod.common.util.GameTickForceApplier
 import kotlin.math.log
+import kotlin.math.max
 
-const val TK_SCALAR = 25.0
+const val TK_SCALAR = 40.0
 const val BRAKE_SCALAR = 5.0
 
 fun createShipFromSelection(player: ServerPlayer) {
@@ -45,7 +47,7 @@ fun handleTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, pl
             .subtract(shipPos.subtract(eyePosition).normalize().scale(0.03))
 
         // Apply a force to the ship to move it towards the pointer
-        val forceDirection = shipPos.subtract(pointer).normalize().negate()
+        val force = shipPos.subtract(pointer).normalize().negate().scale(ship.inertiaData.mass * TK_SCALAR)
 
         ModNetworking.CHANNEL.serverHandle(player).send(
             TracerParticlePacket(pointer)
@@ -56,15 +58,17 @@ fun handleTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, pl
         val liftForce = Vec3(0.0, gravityNewtons, 0.0)
 
         // "Brake" to slow down the ship based on how aligned its velocity vector is to the direction of the pointer
-        val angle = Math.toDegrees(ship.velocity.angle(forceDirection.toVector3d()))
-        val angleScalar = angle / 180 * BRAKE_SCALAR
-        val brakeForce = ship.velocity.toVec3().negate().normalize().scale(ship.inertiaData.mass * TK_SCALAR * angleScalar)
+        val angle = Math.toDegrees(ship.velocity.angle(force.toVector3d()))
+        val brakeAngleScalar = angle / 180 * BRAKE_SCALAR
+        val brakeVelocityScalar = max(log(ship.velocity.length() + 1, 10.0), 0.0)
+        val brakeForce = ship.velocity.toVec3().negate().normalize().scale(ship.inertiaData.mass * TK_SCALAR * brakeAngleScalar * brakeVelocityScalar)
+        logger.info("brake force length: ${brakeForce.length()}")
 
         // Reduce the force when we're very near the pointer to stop the ship from oscillating
         val distance = shipPos.distanceTo(pointer)
-        val distanceScalar = log(distance + 1, 10.0)
+        val distanceScalar = max(log(distance + 0.8, 10.0), 0.0)
 
         // Apply the force
-        forceApplier.applyInvariantTorque(forceDirection.scale(ship.inertiaData.mass * TK_SCALAR * distanceScalar).add(brakeForce).add(liftForce).toVector3d())
+        forceApplier.applyInvariantTorque(force.scale(distanceScalar).add(brakeForce).add(liftForce).toVector3d())
     }
 }
