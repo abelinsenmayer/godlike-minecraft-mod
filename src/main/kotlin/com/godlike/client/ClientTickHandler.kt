@@ -26,7 +26,9 @@ object ClientTickHandler {
                     showSelectionPreview(client)
                 }
 
-                doTelekinesisKeybindControls()
+                if (!client.isPaused) {
+                    doTelekinesisKeybindControls()
+                }
             }
         })
     }

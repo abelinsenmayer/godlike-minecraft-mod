@@ -10,8 +10,10 @@ import com.godlike.common.vs2.Vs2Util
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.phys.Vec3
 import org.valkyrienskies.mod.common.util.GameTickForceApplier
+import kotlin.math.log
 
-const val TK_SCALAR = 10.0
+const val TK_SCALAR = 25.0
+const val BRAKE_SCALAR = 5.0
 
 fun createShipFromSelection(player: ServerPlayer) {
     val cursors = ModComponents.CURSORS.get(player).getPositions()
@@ -50,10 +52,19 @@ fun handleTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, pl
         )
 
         // Add enough force to counteract gravity on the ship
-        val gravityNewtons = ship.inertiaData.mass * 9.81
-        val liftForce = Vec3(0.0, gravityNewtons, 0.0).scale(2.5)
+        val gravityNewtons = ship.inertiaData.mass * 30
+        val liftForce = Vec3(0.0, gravityNewtons, 0.0)
+
+        // "Brake" to slow down the ship based on how aligned its velocity vector is to the direction of the pointer
+        val angle = Math.toDegrees(ship.velocity.angle(forceDirection.toVector3d()))
+        val angleScalar = angle / 180 * BRAKE_SCALAR
+        val brakeForce = ship.velocity.toVec3().negate().normalize().scale(ship.inertiaData.mass * TK_SCALAR * angleScalar)
+
+        // Reduce the force when we're very near the pointer to stop the ship from oscillating
+        val distance = shipPos.distanceTo(pointer)
+        val distanceScalar = log(distance + 1, 10.0)
 
         // Apply the force
-        forceApplier.applyInvariantTorque(forceDirection.scale(ship.inertiaData.mass * TK_SCALAR).add(liftForce).toVector3d())
+        forceApplier.applyInvariantTorque(forceDirection.scale(ship.inertiaData.mass * TK_SCALAR * distanceScalar).add(brakeForce).add(liftForce).toVector3d())
     }
 }
