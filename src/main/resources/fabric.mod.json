@@ -17,24 +17,24 @@
 	"entrypoints": {
 		"main": [
 			{
-				"value": "com.godlike.Godlike",
+				"value": "com.godlike.common.Godlike",
 				"adapter": "kotlin"
 			}
 		],
 		"client": [
 			{
-				"value": "com.godlike.GodlikeClient",
+				"value": "com.godlike.client.GodlikeClient",
 				"adapter": "kotlin"
 			}
 		],
 		"fabric-datagen": [
 			{
-				"value": "com.godlike.GodlikeDataGenerator",
+				"value": "com.godlike.common.GodlikeDataGenerator",
 				"adapter": "kotlin"
 			}
 		],
 		"cardinal-components": [
-			"com.godlike.components.ModComponents"
+          "com.godlike.common.components.ModComponents"
 		]
 	},
 	"mixins": [
@@ -46,7 +46,7 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.15.11",
-		"minecraft": "~1.21",
+		"minecraft": "~1.20.1",
 		"java": ">=21",
 		"fabric-api": "*",
 		"fabric-language-kotlin": "*",
@@ -58,12 +58,13 @@
 	"custom": {
 		"cardinal-components": [
 			"godlike:cursors",
-			"godlike:selection_mode",
 			"godlike:cursor_previews",
 			"godlike:cursor_anchors",
 			"godlike:target_pos",
 			"godlike:selecting_vertical",
-			"godlike:selecting_far"
+			"godlike:selecting_far",
+			"godlike:telekinesis_data",
+			"godlike:mode"
 		]
 	}
 }

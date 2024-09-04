@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "com.godlike.client.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ExampleClientMixin",
+    "KeyBindingMixin",
+    "MinecraftClientMixin",
+    "WorldRendererAccessor",
+    "WorldRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+	}
+}
