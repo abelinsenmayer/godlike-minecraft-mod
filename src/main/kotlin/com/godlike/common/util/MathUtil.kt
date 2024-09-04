@@ -21,6 +21,14 @@ fun Vec3.negate(): Vec3 {
     return Vec3(-x, -y, -z)
 }
 
+fun Vec3i.toVec3(): Vec3 {
+    return Vec3(x.toDouble(), y.toDouble(), z.toDouble())
+}
+
+fun Vec3.toVec3i(): Vec3i {
+    return Vec3i(x.toInt(), y.toInt(), z.toInt())
+}
+
 /**
  * Given a point p and a vector v, finds where v intersects the plane perpendicular to v and passing
  * through the point t.
@@ -37,10 +45,6 @@ fun vecIntersectsPerpendicularPlaneFromPoint(p: Vec3, v: Vec3, t: Vec3) : Vec3 {
 fun findPointOnSphereAtRadius(center: Vec3, radius: Double, angle: Vec3) : Vec3 {
     val normAngle = angle.normalize()
     return normAngle.scale(radius).add(center)
-//    val x = center.x + radius * normAngle.x
-//    val y = center.y + radius * normAngle.y
-//    val z = center.z + radius * normAngle.z
-//    return Vec3(x, y, z)
 }
 
 /**
@@ -70,32 +74,32 @@ fun vecIntersectWithY(origin: Vec3, direction: Vec3, y: Int): Vec3i {
  * either plane, returns the passed in intersection point.
  * If useMax is true, the intersection point further from the origin is used. Otherwise, uses the closer intersection.
  */
-fun vecIntersectWithXOrZ(origin: Vec3, direction: Vec3, intersection: Vec3i, useMax: Boolean): Vec3i {
+fun vecIntersectWithXOrZ(origin: Vec3, direction: Vec3, intersection: Vec3, useMax: Boolean): Vec3 {
     // find where the direction vector intersects the Z plane
     val zFactor = (intersection.z - origin.z) / direction.z
-    var newY = (origin.y + direction.y * zFactor).toInt()
-    var newX = (origin.x + direction.x * zFactor).toInt()
+    var newY = (origin.y + direction.y * zFactor)
+    var newX = (origin.x + direction.x * zFactor)
     val distance = sqrt((newX - origin.x).pow(2.0) + (newY - origin.y).pow(2.0))
 
     if (distance > MAX_RAYCAST_DISTANCE) {
         val ratio = MAX_RAYCAST_DISTANCE / distance
-        newX = (origin.x + (newX - origin.x) * ratio).toInt()
-        newY = (origin.y + (newY - origin.y) * ratio).toInt()
+        newX = (origin.x + (newX - origin.x) * ratio)
+        newY = (origin.y + (newY - origin.y) * ratio)
     }
-    val zPlaneIntersect = Vec3i(newX, newY-1, intersection.z)
+    val zPlaneIntersect = Vec3(newX, newY+1, intersection.z)
 
     // find where the direction vector intersects the X plane
     val xFactor = (intersection.x - origin.x) / direction.x
-    var newZ = (origin.z + direction.z * xFactor).toInt()
-    var newY2 = (origin.y + direction.y * xFactor).toInt()
+    var newZ = (origin.z + direction.z * xFactor)
+    var newY2 = (origin.y + direction.y * xFactor)
     val distance2 = sqrt((newZ - origin.z).pow(2.0) + (newY2 - origin.y).pow(2.0))
 
     if (distance2 > MAX_RAYCAST_DISTANCE) {
         val ratio = MAX_RAYCAST_DISTANCE / distance2
-        newZ = (origin.z + (newZ - origin.z) * ratio).toInt()
-        newY2 = (origin.y + (newY2 - origin.y) * ratio).toInt()
+        newZ = (origin.z + (newZ - origin.z) * ratio)
+        newY2 = (origin.y + (newY2 - origin.y) * ratio)
     }
-    val xPlaneIntersect = Vec3i((intersection.x), newY2-1, newZ)
+    val xPlaneIntersect = Vec3((intersection.x), newY2+1, newZ)
 
     return if (useMax) {
         if (distance > distance2) zPlaneIntersect else xPlaneIntersect

@@ -62,7 +62,6 @@ fun handleTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, pl
         val brakeAngleScalar = angle / 180 * BRAKE_SCALAR
         val brakeVelocityScalar = max(log(ship.velocity.length() + 1, 10.0), 0.0)
         val brakeForce = ship.velocity.toVec3().negate().normalize().scale(ship.inertiaData.mass * TK_SCALAR * brakeAngleScalar * brakeVelocityScalar)
-        logger.info("brake force length: ${brakeForce.length()}")
 
         // Reduce the force when we're very near the pointer to stop the ship from oscillating
         val distance = shipPos.distanceTo(pointer)

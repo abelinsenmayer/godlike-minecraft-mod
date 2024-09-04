@@ -27,7 +27,7 @@ class ModeComponent(private val player : Any) : AutoSyncedComponent {
                 player.sendSystemMessage(Component.literal("Mode set to $value"))
                 this.mode.promoteKeybindsForMode()
             }
-            if (value == Mode.SELECTING) {
+            if (value != Mode.SELECTING) {
                 ModComponents.CURSOR_PREVIEWS.get(player).clearPositions()
                 ModComponents.TARGET_POSITION.get(player).setPos(BlockPos(0, -3000, 0))
             }
