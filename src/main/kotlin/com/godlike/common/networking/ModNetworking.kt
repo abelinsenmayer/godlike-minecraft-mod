@@ -3,6 +3,8 @@ package com.godlike.common.networking
 import com.godlike.common.Godlike.logger
 import com.godlike.common.MOD_ID
 import com.godlike.common.components.ModComponents
+import com.godlike.common.components.Mode
+import com.godlike.common.components.setMode
 import com.godlike.common.telekinesis.handleTelekinesisControls
 import com.godlike.common.telekinesis.createShipFromSelection
 import io.wispforest.owo.network.OwoNetChannel
@@ -34,6 +36,10 @@ object ModNetworking {
 
         CHANNEL.registerServerbound(TelekinesisControlsPacket::class.java) { packet, ctx ->
             handleTelekinesisControls(packet, ctx.player)
+        }
+
+        CHANNEL.registerServerbound(SetModePacket::class.java) { packet, ctx ->
+            ctx.player.setMode(Mode.valueOf(packet.modeName))
         }
 
         // Client-bound packets, deferred registration

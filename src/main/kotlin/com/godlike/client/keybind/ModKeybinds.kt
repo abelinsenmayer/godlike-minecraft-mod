@@ -9,11 +9,20 @@ import org.slf4j.LoggerFactory
 object ModKeybinds {
     private val logger = LoggerFactory.getLogger("godlike")
 
+    val TOGGLE_TK_MODE: KeyMapping = KeyBindingHelper.registerKeyBinding(
+        KeyMapping(
+            "key.godlike.tk_mode",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_C,
+            "category.godlike"
+        )
+    )
+
     val TOGGLE_SELECTION_MODE: KeyMapping = KeyBindingHelper.registerKeyBinding(
         KeyMapping(
             "key.godlike.selection_mode",
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_C,
+            GLFW.GLFW_KEY_S,
             "category.godlike"
         )
     )

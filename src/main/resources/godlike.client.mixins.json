@@ -7,9 +7,13 @@
     "KeyBindingMixin",
     "MinecraftClientMixin",
     "WorldRendererAccessor",
-    "WorldRendererMixin"
+    "WorldRendererMixin",
+    "EntityInvoker"
   ],
   "injectors": {
     "defaultRequire": 1
-	}
+  },
+  "mixins": [
+
+  ]
 }

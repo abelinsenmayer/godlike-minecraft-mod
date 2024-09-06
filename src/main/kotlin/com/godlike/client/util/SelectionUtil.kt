@@ -1,11 +1,37 @@
 package com.godlike.client.util
 
-import com.godlike.common.Godlike.logger
 import com.godlike.common.components.ModComponents
+import com.godlike.common.components.selection
 import com.godlike.common.util.*
 import net.minecraft.client.Minecraft
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Vec3i
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.projectile.ProjectileUtil
+import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.phys.EntityHitResult
+import net.minecraft.world.phys.HitResult
+
+fun selectRaycastTarget() {
+    val client = Minecraft.getInstance()
+    val player = client.player!!
+    val camera = Minecraft.getInstance().cameraEntity!!
+
+    val selection = player.selection()
+
+    val hit = ProjectileUtil.getHitResultOnViewVector(camera, { _: Entity -> true }, MAX_RAYCAST_DISTANCE)
+    when (hit.type) {
+        HitResult.Type.BLOCK -> {
+            selection.setSingleTarget((hit as BlockHitResult).blockPos)
+        }
+        HitResult.Type.ENTITY -> {
+            selection.setSingleTarget((hit as EntityHitResult).entity)
+        }
+        else -> {
+            // NOOP
+        }
+    }
+}
 
 /**
  * Called every tick on the client side when the player is in selection mode.

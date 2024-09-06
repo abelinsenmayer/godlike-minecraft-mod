@@ -16,7 +16,7 @@ const val MODE_KEY = "mode"
 /**
  * Stores the player's current "mode". Used for promoting keybinds and applying other logic conditionally.
  */
-class ModeComponent(private val player : Any) : AutoSyncedComponent {
+class ModeComponent(private val player : Player) : AutoSyncedComponent {
     private var _mode : Mode = Mode.NONE
     var mode : Mode
         get() = _mode
@@ -30,6 +30,12 @@ class ModeComponent(private val player : Any) : AutoSyncedComponent {
             if (value != Mode.SELECTING) {
                 ModComponents.CURSOR_PREVIEWS.get(player).clearPositions()
                 ModComponents.TARGET_POSITION.get(player).setPos(BlockPos(0, -3000, 0))
+            }
+            if (value != Mode.TELEKINESIS) {
+                player.telekinesis().tkShipIds.clear()
+                if (player is LocalPlayer) {
+                    player.selection().clear()
+                }
             }
         }
 

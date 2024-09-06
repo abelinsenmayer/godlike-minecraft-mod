@@ -5,6 +5,7 @@ import dev.onyxstudios.cca.api.v3.component.ComponentKey
 import dev.onyxstudios.cca.api.v3.component.ComponentRegistry
 import dev.onyxstudios.cca.api.v3.entity.EntityComponentFactoryRegistry
 import dev.onyxstudios.cca.api.v3.entity.EntityComponentInitializer
+import net.minecraft.client.player.LocalPlayer
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.player.Player
@@ -40,6 +41,9 @@ class ModComponents : EntityComponentInitializer {
         @JvmField
         val MODE: ComponentKey<ModeComponent> = ComponentRegistry.getOrCreate(ResourceLocation.tryBuild(
             MOD_ID, "mode")!!, ModeComponent::class.java)
+        @JvmField
+        val SELECTION_DATA: ComponentKey<SelectionComponent> = ComponentRegistry.getOrCreate(ResourceLocation.tryBuild(
+            MOD_ID, "selection_data")!!, SelectionComponent::class.java)
 
         val CURSOR_COMPONENT_TYPES = listOf(CURSORS, CURSOR_PREVIEWS, CURSOR_ANCHORS)
     }
@@ -47,6 +51,7 @@ class ModComponents : EntityComponentInitializer {
     override fun registerEntityComponentFactories(registry: EntityComponentFactoryRegistry) {
         logger.info("Registering entity component factories")
 
+        // Common components
         registry.registerFor(Player::class.java, CURSORS) { e: Player -> BlockPosListComponent(e) }
         registry.registerFor(Player::class.java, CURSOR_ANCHORS) { e: Player -> BlockPosListComponent(e) }
         registry.registerFor(Player::class.java, TARGET_POSITION) { e: Player -> BlockPosComponent(e) }
@@ -54,7 +59,9 @@ class ModComponents : EntityComponentInitializer {
         registry.registerFor(Player::class.java, SELECTING_VERTICAL) { e: Player -> BooleanComponent(e) }
         registry.registerFor(Player::class.java, SELECTING_FAR) { e: Player -> BooleanComponent(e) }
         registry.registerFor(Player::class.java, MODE) { e: Player -> ModeComponent(e) }
+        registry.registerFor(Player::class.java, TELEKINESIS_DATA) { e: Player -> TelekinesisComponent(e) }
 
-        registry.registerFor(ServerPlayer::class.java, TELEKINESIS_DATA) { e: ServerPlayer -> TelekinesisComponent(e) }
+        // Client-only components
+        registry.registerFor(LocalPlayer::class.java, SELECTION_DATA) { e: LocalPlayer -> SelectionComponent(e) }
     }
 }

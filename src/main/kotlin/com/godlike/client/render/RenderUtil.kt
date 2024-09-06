@@ -1,16 +1,28 @@
 package com.godlike.client.render
 
 import com.godlike.client.mixin.WorldRendererAccessor
+import com.godlike.common.components.selection
+import com.godlike.client.mixin.EntityInvoker
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.Camera
 import net.minecraft.client.Minecraft
+import net.minecraft.client.renderer.OutlineBufferSource
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.core.BlockPos
+import net.minecraft.world.entity.Entity
 import net.minecraft.world.phys.shapes.Shapes
 
-/**
- * Highlights the given position by rendering a cube outline around it.
- */
+fun setEntityGlowing(entity: Entity, glowing: Boolean) {
+    (entity as EntityInvoker).invokeSetSharedFlag(6, glowing)
+}
+
+fun highlightSelectionTarget(poseStack: PoseStack, camera: Camera, outlineBufferSource: OutlineBufferSource) {
+    val selection = Minecraft.getInstance().player!!.selection()
+    selection.cursorTargetBlock?.let {
+        outlineBlockPos(it, poseStack, camera, 100f, 100f, 100f, 1.0f)
+    }
+}
+
 fun outlineBlockPos(
     targetPos: BlockPos, poseStack: PoseStack, camera: Camera, red: Float, green: Float, blue: Float, alpha: Float
 ) {

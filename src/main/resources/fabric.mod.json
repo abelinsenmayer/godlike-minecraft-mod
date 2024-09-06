@@ -64,7 +64,8 @@
 			"godlike:selecting_vertical",
 			"godlike:selecting_far",
 			"godlike:telekinesis_data",
-			"godlike:mode"
+			"godlike:mode",
+			"godlike:selection_data"
 		]
 	}
 }

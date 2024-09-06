@@ -8,7 +8,10 @@ import com.godlike.client.keybind.ModKeybinds.TK_SELECTION
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECTION_MODE
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_FAR
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_VERTICAL
+import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
 import com.godlike.common.components.*
+import com.godlike.common.networking.ModNetworking.CHANNEL
+import com.godlike.common.networking.SetModePacket
 import com.godlike.common.networking.TelekinesisControlsPacket
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
@@ -43,14 +46,27 @@ fun handleModInputEvents() {
     val client = Minecraft.getInstance()
     val player = client.player!!
 
-    while (TOGGLE_SELECTION_MODE.consumeClick()) {
+    while (TOGGLE_TK_MODE.consumeClick()) {
         val currentMode = player.getMode()
-        if (currentMode == Mode.SELECTING) {
-            player.setMode(Mode.NONE)
+        if (currentMode == Mode.TELEKINESIS) {
+            CHANNEL.clientHandle().send(
+                SetModePacket(Mode.NONE.name)
+            )
         } else {
-            player.setMode(Mode.SELECTING)
+            CHANNEL.clientHandle().send(
+                SetModePacket(Mode.TELEKINESIS.name)
+            )
         }
     }
+
+//    while (TOGGLE_SELECTION_MODE.consumeClick()) {
+//        val currentMode = player.getMode()
+//        if (currentMode == Mode.SELECTING) {
+//            player.setMode(Mode.NONE)
+//        } else {
+//            player.setMode(Mode.SELECTING)
+//        }
+//    }
 
     while (TOGGLE_SELECT_VERTICAL.consumeClick()) {
         if (player.getMode() == Mode.SELECTING) {
