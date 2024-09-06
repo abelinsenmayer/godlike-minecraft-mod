@@ -26,13 +26,14 @@ class ModeComponent(private val player : Player) : AutoSyncedComponent {
             if (player is LocalPlayer) {
                 player.sendSystemMessage(Component.literal("Mode set to $value"))
                 this.mode.promoteKeybindsForMode()
+                player.selection().isSelecting = value == Mode.TELEKINESIS
             }
             if (value != Mode.SELECTING) {
                 ModComponents.CURSOR_PREVIEWS.get(player).clearPositions()
                 ModComponents.TARGET_POSITION.get(player).setPos(BlockPos(0, -3000, 0))
             }
             if (value != Mode.TELEKINESIS) {
-                player.telekinesis().tkShipIds.clear()
+                player.telekinesis().clearShipIds()
                 if (player is LocalPlayer) {
                     player.selection().clear()
                 }
@@ -73,6 +74,7 @@ enum class Mode(val keybinds: List<KeyMapping>) {
     TELEKINESIS(listOf(
         ModKeybinds.POINTER_PULL,
         ModKeybinds.POINTER_PUSH,
+        ModKeybinds.PICK_TO_TK
     ));
 
     /**

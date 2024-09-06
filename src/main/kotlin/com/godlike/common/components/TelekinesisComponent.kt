@@ -16,7 +16,7 @@ const val POINTER_DISTANCE_KEY = "pointer-distance"
  * server should send a packet.
  */
 class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
-    val tkShipIds : MutableList<Long> = mutableListOf()  // TODO we may need to sync this on set
+    private val tkShipIds : MutableList<Long> = mutableListOf()
     var pointerDistance : Double = 0.0
 
     override fun shouldSyncWith(player: ServerPlayer?): Boolean {
@@ -38,6 +38,42 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
             tag.putLongArray(TK_TARGETS_KEY, it)
         }
         tag.putDouble(POINTER_DISTANCE_KEY, pointerDistance)
+    }
+
+    private fun sync() {
+        if (player is ServerPlayer) {
+            ModComponents.TELEKINESIS_DATA.sync(player)
+        }
+    }
+
+    fun getShipIds(): List<Long> {
+        return tkShipIds.toList()
+    }
+
+    fun setShipIds(ids: List<Long>) {
+        tkShipIds.clear()
+        tkShipIds.addAll(ids)
+        sync()
+    }
+
+    fun clearShipIds() {
+        tkShipIds.clear()
+        sync()
+    }
+
+    fun addShipId(id: Long) {
+        tkShipIds.add(id)
+        sync()
+    }
+
+    fun addAllShipIds(ids: List<Long>) {
+        tkShipIds.addAll(ids)
+        sync()
+    }
+
+    fun removeShipId(id: Long) {
+        tkShipIds.remove(id)
+        sync()
     }
 }
 

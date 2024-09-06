@@ -25,6 +25,7 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
             // Set the entity as glowing to highlight it
             field?.let { new -> setEntityGlowing(new, true) }
         }
+    var isSelecting = false
 
 //    val selectedPositions : MutableList<BlockPos> = mutableListOf()
 //    val selectedPositionAnchors : MutableList<BlockPos> = mutableListOf()

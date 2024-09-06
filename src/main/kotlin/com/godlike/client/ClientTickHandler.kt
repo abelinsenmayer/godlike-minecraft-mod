@@ -1,11 +1,9 @@
 package com.godlike.client
 
-import com.godlike.client.keybind.doTelekinesisKeybindControls
-import com.godlike.client.util.showSelectionPreview
+import com.godlike.client.keybind.handleModInputEvents
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.minecraft.client.Minecraft
 import org.slf4j.LoggerFactory
 
 /**
@@ -16,12 +14,13 @@ object ClientTickHandler {
 
     fun start() {
         // This code will run every tick on the client side
-        ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick {
-            val client = Minecraft.getInstance()
+        ClientTickEvents.START_CLIENT_TICK.register(ClientTickEvents.StartTick { client ->
             client.player?.let { player ->
                 if (!client.isPaused && player.getMode() == Mode.TELEKINESIS) {
                     clientTelekinesisTick(player)
                 }
+
+                handleModInputEvents()
             }
         })
     }

@@ -4,6 +4,7 @@ import com.godlike.common.networking.DoSelectionPacket
 import com.godlike.common.networking.ModNetworking
 import com.godlike.common.networking.TkSelectionPackage
 import com.godlike.client.keybind.ModKeybinds.DO_SELECT
+import com.godlike.client.keybind.ModKeybinds.PICK_TO_TK
 import com.godlike.client.keybind.ModKeybinds.TK_SELECTION
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECTION_MODE
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_FAR
@@ -11,9 +12,12 @@ import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_VERTICAL
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
 import com.godlike.common.components.*
 import com.godlike.common.networking.ModNetworking.CHANNEL
+import com.godlike.common.networking.PickBlockToTkPacket
+import com.godlike.common.networking.PickEntityToTkPacket
 import com.godlike.common.networking.SetModePacket
 import com.godlike.common.networking.TelekinesisControlsPacket
 import net.minecraft.client.Minecraft
+import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
 
 const val POINTER_DELTA_INCREMENT = 0.2
@@ -33,7 +37,7 @@ fun doTelekinesisKeybindControls() {
         pointerDistanceDelta += POINTER_DELTA_INCREMENT
     }
 
-    ModNetworking.CHANNEL.clientHandle().send(
+    CHANNEL.clientHandle().send(
         TelekinesisControlsPacket(playerLookDirection, pointerDistanceDelta)
     )
 }
@@ -56,6 +60,22 @@ fun handleModInputEvents() {
             CHANNEL.clientHandle().send(
                 SetModePacket(Mode.TELEKINESIS.name)
             )
+        }
+    }
+
+    while (PICK_TO_TK.consumeClick()) {
+        if (player.getMode() == Mode.TELEKINESIS) {
+            val selection = player.selection()
+            selection.cursorTargetBlock?.let {
+                CHANNEL.clientHandle().send(PickBlockToTkPacket(it))
+            }
+            selection.cursorTargetEntity?.let {
+                val entityData = CompoundTag()
+                it.save(entityData)
+                CHANNEL.clientHandle().send(PickEntityToTkPacket(entityData))
+            }
+            player.selection().clear()
+            player.selection().isSelecting = false
         }
     }
 

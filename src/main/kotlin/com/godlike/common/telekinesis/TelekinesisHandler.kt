@@ -8,7 +8,9 @@ import com.godlike.common.networking.TelekinesisControlsPacket
 import com.godlike.common.networking.TracerParticlePacket
 import com.godlike.common.util.*
 import com.godlike.common.vs2.Vs2Util
+import net.minecraft.core.BlockPos
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.entity.Entity
 import net.minecraft.world.phys.Vec3
 import org.valkyrienskies.mod.common.util.GameTickForceApplier
 import kotlin.math.log
@@ -23,19 +25,30 @@ fun createShipFromSelection(player: ServerPlayer) {
         return
     }
     val ship = Vs2Util.createShip(cursors, player.serverLevel())
-    ModComponents.TELEKINESIS_DATA.get(player).tkShipIds.clear()
-    ModComponents.TELEKINESIS_DATA.get(player).tkShipIds.add(ship.id)
+    ModComponents.TELEKINESIS_DATA.get(player).clearShipIds()
+    ModComponents.TELEKINESIS_DATA.get(player).addShipId(ship.id)
 
     // Set the pointer distance to the distance from the ship to the player's eyes
     ModComponents.TELEKINESIS_DATA.get(player).pointerDistance = ship.transform.positionInWorld.toVec3()
         .distanceTo(player.position().add(0.0, 1.5, 0.0))
 }
 
+fun pickBlockToTk(pos: BlockPos, player: ServerPlayer) {
+    val ship = Vs2Util.createShip(listOf(pos), player.serverLevel())
+    player.telekinesis().addShipId(ship.id)
+    player.telekinesis().pointerDistance = ship.transform.positionInWorld.toVec3()
+        .distanceTo(player.position().add(0.0, 1.5, 0.0))
+}
+
+fun pickEntityToTk(entity: Entity, player: ServerPlayer) {
+    TODO("Not yet implemented")
+}
+
 fun handleTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, player: ServerPlayer) {
     player.telekinesis().pointerDistance += telekinesisControls.pointerDistanceDelta
 
     // Move ships towards the pointer
-    player.telekinesis().tkShipIds.forEach { shipId ->
+    player.telekinesis().getShipIds().forEach { shipId ->
         val ship = Vs2Util.getServerShipWorld(player.serverLevel()).loadedShips.getById(shipId) ?: return
         val forceApplier = ship.getAttachment(GameTickForceApplier::class.java)!!
 

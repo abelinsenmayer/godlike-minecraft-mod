@@ -7,8 +7,11 @@ import com.godlike.common.components.Mode
 import com.godlike.common.components.setMode
 import com.godlike.common.telekinesis.handleTelekinesisControls
 import com.godlike.common.telekinesis.createShipFromSelection
+import com.godlike.common.telekinesis.pickBlockToTk
+import com.godlike.common.telekinesis.pickEntityToTk
 import io.wispforest.owo.network.OwoNetChannel
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.entity.EntityType
 
 object ModNetworking {
     @JvmField
@@ -40,6 +43,15 @@ object ModNetworking {
 
         CHANNEL.registerServerbound(SetModePacket::class.java) { packet, ctx ->
             ctx.player.setMode(Mode.valueOf(packet.modeName))
+        }
+
+        CHANNEL.registerServerbound(PickBlockToTkPacket::class.java) { packet, ctx ->
+            pickBlockToTk(packet.pos, ctx.player)
+        }
+
+        CHANNEL.registerServerbound(PickEntityToTkPacket::class.java) { packet, ctx ->
+            val entity = EntityType.create(packet.entityData, ctx.player.level()).orElse(null)
+            pickEntityToTk(entity, ctx.player)
         }
 
         // Client-bound packets, deferred registration
