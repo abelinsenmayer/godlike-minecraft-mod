@@ -14,6 +14,7 @@ import com.godlike.common.components.*
 import com.godlike.common.networking.ModNetworking.CHANNEL
 import com.godlike.common.networking.PickBlockToTkPacket
 import com.godlike.common.networking.PickEntityToTkPacket
+import com.godlike.common.networking.PickShipToTkPacket
 import com.godlike.common.networking.SetModePacket
 import com.godlike.common.networking.TelekinesisControlsPacket
 import net.minecraft.client.Minecraft
@@ -73,6 +74,9 @@ fun handleModInputEvents() {
                 val entityData = CompoundTag()
                 it.save(entityData)
                 CHANNEL.clientHandle().send(PickEntityToTkPacket(entityData))
+            }
+            selection.cursorTargetShip?.let {
+                CHANNEL.clientHandle().send(PickShipToTkPacket(it.id))
             }
             player.selection().clear()
             player.selection().isSelecting = false

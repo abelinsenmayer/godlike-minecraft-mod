@@ -1,8 +1,10 @@
 package com.godlike.client.util
 
+import com.godlike.common.Godlike.logger
 import com.godlike.common.components.ModComponents
 import com.godlike.common.components.selection
 import com.godlike.common.util.*
+import com.godlike.common.vs2.Vs2Util
 import net.minecraft.client.Minecraft
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Vec3i
@@ -22,13 +24,19 @@ fun selectRaycastTarget() {
     val hit = ProjectileUtil.getHitResultOnViewVector(camera, { _: Entity -> true }, MAX_RAYCAST_DISTANCE)
     when (hit.type) {
         HitResult.Type.BLOCK -> {
-            selection.setSingleTarget((hit as BlockHitResult).blockPos)
+            // If this block is in a ship, we want to select the ship instead
+            val ship = Vs2Util.getClientShipManagingPos(player.clientLevel, (hit as BlockHitResult).blockPos)
+            if (ship != null) {
+                selection.setSingleTarget(ship)
+            } else {
+                selection.setSingleTarget(hit.blockPos)
+            }
         }
         HitResult.Type.ENTITY -> {
             selection.setSingleTarget((hit as EntityHitResult).entity)
         }
         else -> {
-            // NOOP
+            selection.clear()
         }
     }
 }

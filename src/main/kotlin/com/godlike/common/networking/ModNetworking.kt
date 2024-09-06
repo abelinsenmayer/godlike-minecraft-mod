@@ -5,13 +5,12 @@ import com.godlike.common.MOD_ID
 import com.godlike.common.components.ModComponents
 import com.godlike.common.components.Mode
 import com.godlike.common.components.setMode
-import com.godlike.common.telekinesis.handleTelekinesisControls
-import com.godlike.common.telekinesis.createShipFromSelection
-import com.godlike.common.telekinesis.pickBlockToTk
-import com.godlike.common.telekinesis.pickEntityToTk
+import com.godlike.common.telekinesis.*
+import com.godlike.common.vs2.Vs2Util
 import io.wispforest.owo.network.OwoNetChannel
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.EntityType
+import org.valkyrienskies.core.api.ships.ServerShip
 
 object ModNetworking {
     @JvmField
@@ -52,6 +51,11 @@ object ModNetworking {
         CHANNEL.registerServerbound(PickEntityToTkPacket::class.java) { packet, ctx ->
             val entity = EntityType.create(packet.entityData, ctx.player.level()).orElse(null)
             pickEntityToTk(entity, ctx.player)
+        }
+
+        CHANNEL.registerServerbound(PickShipToTkPacket::class.java) { packet, ctx ->
+            val ship = Vs2Util.getServerShipWorld(ctx.player.serverLevel()).loadedShips.getById(packet.shipId)
+            ship?.let { pickShipToTk(it as ServerShip, ctx.player) }
         }
 
         // Client-bound packets, deferred registration

@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
+import org.valkyrienskies.core.api.ships.ClientShip
 
 const val CURSOR_TARGET_BLOCK = "cursor_target_block"
 const val CURSOR_TARGET_ENTITY = "cursor_target_entity"
@@ -25,6 +26,7 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
             // Set the entity as glowing to highlight it
             field?.let { new -> setEntityGlowing(new, true) }
         }
+    var cursorTargetShip : ClientShip? = null
     var isSelecting = false
 
 //    val selectedPositions : MutableList<BlockPos> = mutableListOf()
@@ -49,17 +51,20 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
     fun clear() {
         cursorTargetBlock = null
         cursorTargetEntity = null
+        cursorTargetShip = null
     }
 
     fun setSingleTarget(target: Any) {
+        clear()
         when (target) {
             is BlockPos -> {
-                cursorTargetEntity = null
                 cursorTargetBlock = target
             }
             is Entity -> {
-                cursorTargetBlock = null
                 cursorTargetEntity = target
+            }
+            is ClientShip -> {
+                cursorTargetShip = target
             }
             else -> throw IllegalArgumentException("Invalid target type: $target")
         }
