@@ -6,7 +6,7 @@
     "ExampleClientMixin",
     "KeyBindingMixin",
     "WorldRendererAccessor",
-    "WorldRendererMixin",
+    "LevelRendererMixin",
     "EntityInvoker"
   ],
   "injectors": {

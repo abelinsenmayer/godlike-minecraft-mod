@@ -1,6 +1,5 @@
 package com.godlike.client.mixin;
 
-import com.godlike.common.components.ModComponents;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -9,7 +8,6 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderBuffers;
-import net.minecraft.core.BlockPos;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,13 +16,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.List;
-
 import static com.godlike.client.render.RenderUtilKt.highlightSelectionTarget;
-import static com.godlike.client.render.RenderUtilKt.outlineBlockPos;
 
 @Mixin(LevelRenderer.class)
-public abstract class WorldRendererMixin {
+public abstract class LevelRendererMixin {
     @Shadow @Final private RenderBuffers renderBuffers;
 
     @Inject(at = @At("HEAD"), method = "renderLevel")

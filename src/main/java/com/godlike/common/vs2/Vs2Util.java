@@ -4,13 +4,16 @@ package com.godlike.common.vs2;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.phys.AABB;
 import org.joml.Vector3i;
+import org.joml.primitives.AABBdc;
 import org.valkyrienskies.core.api.ships.ClientShip;
 import org.valkyrienskies.core.api.ships.ServerShip;
 import org.valkyrienskies.core.apigame.world.ServerShipWorldCore;
 import org.valkyrienskies.core.impl.datastructures.DenseBlockPosSet;
 import org.valkyrienskies.mod.common.assembly.ShipAssemblyKt;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
+import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 
 import java.util.Collection;
 
@@ -37,5 +40,9 @@ public class Vs2Util {
 
     public static ClientShip getClientShipManagingPos(ClientLevel level, BlockPos pos) {
         return VSGameUtilsKt.getShipObjectManagingPos(level, pos);
+    }
+
+    public static AABB toMinecraftAABB(AABBdc aabb) {
+        return VectorConversionsMCKt.toMinecraft(aabb);
     }
 }
