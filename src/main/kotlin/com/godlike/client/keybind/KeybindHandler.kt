@@ -11,6 +11,7 @@ import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_FAR
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_VERTICAL
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
 import com.godlike.common.components.*
+import com.godlike.common.networking.DropTkPacket
 import com.godlike.common.networking.ModNetworking.CHANNEL
 import com.godlike.common.networking.PickBlockToTkPacket
 import com.godlike.common.networking.PickEntityToTkPacket
@@ -66,20 +67,26 @@ fun handleModInputEvents() {
 
     while (PICK_TO_TK.consumeClick()) {
         if (player.getMode() == Mode.TELEKINESIS) {
-            val selection = player.selection()
-            selection.cursorTargetBlock?.let {
-                CHANNEL.clientHandle().send(PickBlockToTkPacket(it))
+            // If we are carrying something, drop it. Otherwise, pick up the block/entity/ship.
+            if (player.telekinesis().getShipIds().isEmpty()) {
+                val selection = player.selection()
+                selection.cursorTargetBlock?.let {
+                    CHANNEL.clientHandle().send(PickBlockToTkPacket(it))
+                }
+                selection.cursorTargetEntity?.let {
+                    val entityData = CompoundTag()
+                    it.save(entityData)
+                    CHANNEL.clientHandle().send(PickEntityToTkPacket(entityData))
+                }
+                selection.cursorTargetShip?.let {
+                    CHANNEL.clientHandle().send(PickShipToTkPacket(it.id))
+                }
+                player.selection().clear()
+                player.selection().isSelecting = false
+            } else {
+                CHANNEL.clientHandle().send(DropTkPacket())
+                player.selection().isSelecting = true
             }
-            selection.cursorTargetEntity?.let {
-                val entityData = CompoundTag()
-                it.save(entityData)
-                CHANNEL.clientHandle().send(PickEntityToTkPacket(entityData))
-            }
-            selection.cursorTargetShip?.let {
-                CHANNEL.clientHandle().send(PickShipToTkPacket(it.id))
-            }
-            player.selection().clear()
-            player.selection().isSelecting = false
         }
     }
 

@@ -19,6 +19,9 @@ object ModNetworking {
     fun register() {
         logger.info("Registering network channel")
 
+        // Client-bound packets, deferred registration
+        CHANNEL.registerClientboundDeferred(TracerParticlePacket::class.java)
+
         // Server-bound packets
         CHANNEL.registerServerbound(ServerBoundPacket::class.java) { packet, ctx ->
             logger.info("Received message on server: ${packet.message}")
@@ -58,7 +61,8 @@ object ModNetworking {
             ship?.let { pickShipToTk(it as ServerShip, ctx.player) }
         }
 
-        // Client-bound packets, deferred registration
-        CHANNEL.registerClientboundDeferred(TracerParticlePacket::class.java)
+        CHANNEL.registerServerbound(DropTkPacket::class.java) { packet, ctx ->
+            dropTk(ctx.player)
+        }
     }
 }

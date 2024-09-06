@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.phys.Vec3
+import org.apache.logging.log4j.core.jmx.Server
 import org.valkyrienskies.core.api.ships.ServerShip
 import org.valkyrienskies.mod.common.util.GameTickForceApplier
 import kotlin.math.log
@@ -49,6 +50,10 @@ fun pickShipToTk(ship: ServerShip, player: ServerPlayer) {
     player.telekinesis().addShipId(ship.id)
     player.telekinesis().pointerDistance = ship.transform.positionInWorld.toVec3()
         .distanceTo(player.position().add(0.0, 1.5, 0.0))
+}
+
+fun dropTk(player: ServerPlayer) {
+    player.telekinesis().clearShipIds()
 }
 
 fun handleTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, player: ServerPlayer) {
