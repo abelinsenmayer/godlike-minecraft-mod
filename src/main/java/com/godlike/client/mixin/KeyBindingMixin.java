@@ -16,4 +16,9 @@ public interface KeyBindingMixin {
     public static Map<InputConstants.Key, KeyMapping> getKeyToBindings() {
         throw new AssertionError("This mixin should have been transformed at runtime.");
     }
+
+    @Accessor("ALL")
+    public static Map<String, KeyMapping> getAllBindings() {
+        throw new AssertionError("This mixin should have been transformed at runtime.");
+    }
 }

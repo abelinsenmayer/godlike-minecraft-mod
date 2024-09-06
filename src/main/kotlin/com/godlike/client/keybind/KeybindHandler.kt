@@ -5,6 +5,7 @@ import com.godlike.common.networking.ModNetworking
 import com.godlike.common.networking.TkSelectionPackage
 import com.godlike.client.keybind.ModKeybinds.DO_SELECT
 import com.godlike.client.keybind.ModKeybinds.PICK_TO_TK
+import com.godlike.client.keybind.ModKeybinds.PLACE_TK
 import com.godlike.client.keybind.ModKeybinds.TK_SELECTION
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECTION_MODE
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_FAR
@@ -16,6 +17,7 @@ import com.godlike.common.networking.ModNetworking.CHANNEL
 import com.godlike.common.networking.PickBlockToTkPacket
 import com.godlike.common.networking.PickEntityToTkPacket
 import com.godlike.common.networking.PickShipToTkPacket
+import com.godlike.common.networking.PlaceTkPacket
 import com.godlike.common.networking.SetModePacket
 import com.godlike.common.networking.TelekinesisControlsPacket
 import net.minecraft.client.Minecraft
@@ -90,6 +92,13 @@ fun handleModInputEvents() {
         }
     }
 
+    while (PLACE_TK.consumeClick()) {
+        if (player.getMode() == Mode.TELEKINESIS) {
+            CHANNEL.clientHandle().send(PlaceTkPacket())
+            player.selection().isSelecting = true
+        }
+    }
+
 //    while (TOGGLE_SELECTION_MODE.consumeClick()) {
 //        val currentMode = player.getMode()
 //        if (currentMode == Mode.SELECTING) {
@@ -126,7 +135,7 @@ fun handleModInputEvents() {
     while (DO_SELECT.consumeClick()) {
         // send a packet to the server to add the preview to their cursor selection
         if (player.getMode() == Mode.SELECTING) {
-            ModNetworking.CHANNEL.clientHandle().send(
+            CHANNEL.clientHandle().send(
                 DoSelectionPacket(
                     ModComponents.CURSOR_PREVIEWS.get(client.player!!).getPositions(),
                     ModComponents.TARGET_POSITION.get(client.player!!).getPos()
@@ -138,7 +147,7 @@ fun handleModInputEvents() {
     while (TK_SELECTION.consumeClick()) {
         // send a packet to the server to create a physics object from the cursor selection
         if (player.getMode() == Mode.SELECTING) {
-            ModNetworking.CHANNEL.clientHandle().send(
+            CHANNEL.clientHandle().send(
                 TkSelectionPackage()
             )
             client.player!!.setMode(Mode.TELEKINESIS)

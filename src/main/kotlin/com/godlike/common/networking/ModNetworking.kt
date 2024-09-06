@@ -64,5 +64,9 @@ object ModNetworking {
         CHANNEL.registerServerbound(DropTkPacket::class.java) { packet, ctx ->
             dropTk(ctx.player)
         }
+
+        CHANNEL.registerServerbound(PlaceTkPacket::class.java) { packet, ctx ->
+            placeTk(ctx.player)
+        }
     }
 }

@@ -47,7 +47,8 @@ repositories {
 	maven { url = "https://api.modrinth.com/maven" }
 	maven { url = "https://maven.theillusivec4.top/" }
 	maven { url = "https://maven.jamieswhiteshirt.com/libs-release" }
-	maven { url = "https://maven.terraformersmc.com/" }
+	maven { url = "https://maven.shedaniel.me/" }
+	maven { url = "https://maven.terraformersmc.com/releases/" }
 }
 
 loom {
@@ -86,7 +87,8 @@ dependencies {
 
 	modImplementation "io.wispforest:owo-lib:${project.owo_version}"
 	modImplementation("team.lodestar.lodestone:lodestone:${project.minecraft_version}-${project.lodestone_version}-fabric")
-	modImplementation "org.valkyrienskies:valkyrienskies-1201-fabric:${project.vs2_version}"
+	modApi "org.valkyrienskies:valkyrienskies-1201-fabric:${project.vs2_version}"
+
 	modImplementation("dev.emi:trinkets:${project.trinkets_version}")
 	modImplementation("com.jamieswhiteshirt:reach-entity-attributes:${project.rea_version}")
 }

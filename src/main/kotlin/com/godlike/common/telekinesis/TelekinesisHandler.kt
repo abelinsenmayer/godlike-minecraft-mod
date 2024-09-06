@@ -1,6 +1,5 @@
 package com.godlike.common.telekinesis
 
-import com.godlike.common.Godlike.logger
 import com.godlike.common.components.ModComponents
 import com.godlike.common.components.telekinesis
 import com.godlike.common.networking.ModNetworking
@@ -12,8 +11,8 @@ import net.minecraft.core.BlockPos
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.phys.Vec3
-import org.apache.logging.log4j.core.jmx.Server
 import org.valkyrienskies.core.api.ships.ServerShip
+import org.valkyrienskies.mod.common.VSClientGameUtils
 import org.valkyrienskies.mod.common.util.GameTickForceApplier
 import kotlin.math.log
 import kotlin.math.max
@@ -53,6 +52,14 @@ fun pickShipToTk(ship: ServerShip, player: ServerPlayer) {
 }
 
 fun dropTk(player: ServerPlayer) {
+    player.telekinesis().clearShipIds()
+}
+
+fun placeTk(player: ServerPlayer) {
+    player.telekinesis().getShipIds().forEach { shipId ->
+        val ship = Vs2Util.getServerShipWorld(player.serverLevel()).loadedShips.getById(shipId) ?: return
+        disassemble(ship, player.serverLevel())
+    }
     player.telekinesis().clearShipIds()
 }
 

@@ -25,7 +25,7 @@ class ModeComponent(private val player : Player) : AutoSyncedComponent {
             ModComponents.MODE.sync(player)
             if (player is LocalPlayer) {
                 player.sendSystemMessage(Component.literal("Mode set to $value"))
-                this.mode.promoteKeybindsForMode()
+                this.mode.setKeybindsForMode()
                 player.selection().isSelecting = value == Mode.TELEKINESIS
             }
             if (value != Mode.SELECTING) {
@@ -74,18 +74,30 @@ enum class Mode(val keybinds: List<KeyMapping>) {
     TELEKINESIS(listOf(
         ModKeybinds.POINTER_PULL,
         ModKeybinds.POINTER_PUSH,
-        ModKeybinds.PICK_TO_TK
+        ModKeybinds.PICK_TO_TK,
     ));
 
     /**
-     * Promotes keybinds relevant to this mode to the top of the keybind map.
+     * Promotes keybinds relevant to this mode to the top of the keybind map. Keybinds not relevant to the current mode
+     * are removed from the map.
      */
-    fun promoteKeybindsForMode() {
-        val bindingMap = KeyBindingMixin.getKeyToBindings()
+    fun setKeybindsForMode() {
+        // Remove keybinds from modes other than the active one, so they'll never be set
+        val allBindings = KeyBindingMixin.getAllBindings()
+        entries.forEach { mode ->
+            if (mode != this) {
+                mode.keybinds.forEach { keybind ->
+                    allBindings.remove(keybind.name)
+                }
+            }
+        }
+
+        // Add this mode's keybinds to the active bindings
+        val activeBindings = KeyBindingMixin.getKeyToBindings()
         KeyMapping.resetMapping()
         if (this.keybinds.isNotEmpty()) {
             this.keybinds.forEach { keybind ->
-                bindingMap[(keybind as KeyBindingMixin).boundKey] = keybind
+                activeBindings[(keybind as KeyBindingMixin).boundKey] = keybind
             }
         }
     }
