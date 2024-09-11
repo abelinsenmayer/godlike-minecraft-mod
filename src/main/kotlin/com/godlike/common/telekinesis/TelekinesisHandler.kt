@@ -1,6 +1,5 @@
 package com.godlike.common.telekinesis
 
-import com.godlike.common.Godlike.logger
 import com.godlike.common.components.ModComponents
 import com.godlike.common.components.telekinesis
 import com.godlike.common.networking.ModNetworking
@@ -12,7 +11,6 @@ import net.minecraft.core.BlockPos
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.phys.Vec3
-import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.valkyrienskies.core.api.ships.ServerShip
 import org.valkyrienskies.mod.common.util.GameTickForceApplier
@@ -22,7 +20,7 @@ import kotlin.math.max
 
 const val TK_SCALAR = 40.0
 const val BRAKE_SCALAR = 5.0
-const val ROTATION_POINT_OFFSET_DISTANCE = 2.0
+const val ROTATION_POINT_OFFSET_DISTANCE = 3.0
 
 fun createShipFromSelection(player: ServerPlayer) {
     val cursors = ModComponents.CURSORS.get(player).getPositions()
@@ -86,12 +84,23 @@ fun handleTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, pl
             TracerParticlePacket(pointer)
         )
 
+        ship.addLiftForce()
         if (telekinesisControls.rotating()) {
-            ship.rotateToward(pointer, eyePosition, player)
+            ship.rotateTowardPointer(pointer, eyePosition)
         } else {
             ship.moveToward(pointer)
         }
     }
+}
+
+fun ServerShip.addLiftForce() {
+    val forceApplier = this.getAttachment(GameTickForceApplier::class.java)!!
+
+    // Add enough force to counteract gravity on the ship
+    val gravityNewtons = this.inertiaData.mass * 30
+    val liftForce = Vector3d(0.0, gravityNewtons, 0.0)
+
+    forceApplier.applyInvariantForce(liftForce)
 }
 
 fun ServerShip.moveToward(pos: Vec3) {
@@ -100,10 +109,6 @@ fun ServerShip.moveToward(pos: Vec3) {
 
     // Apply a force to the ship to move it towards the pointer
     val force = shipPos.subtract(pos).normalize().negate().scale(this.inertiaData.mass * TK_SCALAR)
-
-    // Add enough force to counteract gravity on the ship
-    val gravityNewtons = this.inertiaData.mass * 30
-    val liftForce = Vec3(0.0, gravityNewtons, 0.0)
 
     // "Brake" to slow down the ship based on how aligned its velocity vector is to the direction of the pointer
     val angle = Math.toDegrees(this.velocity.angle(force.toVector3d()))
@@ -116,42 +121,17 @@ fun ServerShip.moveToward(pos: Vec3) {
     val distanceScalar = max(log(distance + 0.8, 10.0), 0.0)
 
     // Apply the force
-    forceApplier.applyInvariantTorque(force.scale(distanceScalar).add(brakeForce).add(liftForce).toVector3d())
+    forceApplier.applyInvariantTorque(force.scale(distanceScalar).add(brakeForce).toVector3d())
 }
 
-fun ServerShip.rotateToward(pos: Vec3, relativeTo: Vec3, player: ServerPlayer) {
-    val forceApplier = this.getAttachment(GameTickForceApplier::class.java)!!
+fun ServerShip.rotateTowardPointer(pointer: Vec3, playerEyePos: Vec3) {
+    val torqueForceApplier = this.getTorqueForceApplier()
 
-    // Add enough force to counteract gravity on the ship
-    val gravityNewtons = this.inertiaData.mass * 30
-    val liftForce = Vec3(0.0, gravityNewtons, 0.0)
-    forceApplier.applyInvariantForce(liftForce.toVector3d())
-
-    // Find the opposing points where we need to apply the forces in order to rotate toward the target position
+    // Find the axis around which it should rotate
     val shipPos = this.transform.positionInWorld.toVec3()
-    val shipToPosVec = pos.subtract(shipPos).normalize().scale(ROTATION_POINT_OFFSET_DISTANCE)
-    var point1 = shipPos.add(shipToPosVec)
-    var point2 = shipPos.subtract(shipToPosVec)
+    val shipToPointer = shipPos.subtract(pointer)
+    val playerToShip = playerEyePos.subtract(shipPos)
+    val torque = shipToPointer.cross(playerToShip).normalize().scale(TK_SCALAR)
 
-    val rotateAround = shipToPosVec.toVector3d().rotateAxis(toRadians(90.0), relativeTo.x, relativeTo.y, relativeTo.z)
-    val rel2Ship = relativeTo.subtract(shipPos)
-    val v = rel2Ship.toVector3d().rotateAxis(toRadians(90.0), shipToPosVec.x, shipToPosVec.y, shipToPosVec.z)
-
-    val force = rel2Ship.toVector3d().rotate(this.transform.shipToWorldRotation).normalize().toVec3().scale(TK_SCALAR).toVector3d()
-
-    ModNetworking.CHANNEL.serverHandle(player).send(
-        TracerParticlePacket(point1)
-    )
-    ModNetworking.CHANNEL.serverHandle(player).send(
-        TracerParticlePacket(point2)
-    )
-    ModNetworking.CHANNEL.serverHandle(player).send(
-        TracerParticlePacket(point1.add(force.toVec3().normalize()))
-    )
-    ModNetworking.CHANNEL.serverHandle(player).send(
-        TracerParticlePacket(point2.add(force.toVec3().negate().normalize()))
-    )
-
-    forceApplier.applyInvariantForceToPos(force.toVec3().negate().toVector3d(), point1.toVector3d())
-    forceApplier.applyInvariantForceToPos(force, point2.toVector3d())
+    torqueForceApplier.applyInvariantTorque(torque.toVector3d())
 }

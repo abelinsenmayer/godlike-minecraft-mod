@@ -1,6 +1,7 @@
 package com.godlike.common.vs2;
 
 
+import com.godlike.common.telekinesis.TorqueForceApplier;
 import kotlin.jvm.functions.Function0;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -42,9 +43,10 @@ public class Vs2Util {
         DenseBlockPosSet denseSet = new DenseBlockPosSet();
         positions.forEach(pos -> denseSet.add(new Vector3i(pos.getX(), pos.getY(), pos.getZ())));
 
-        return ShipAssemblyKt.createNewShipWithBlocks(centerPos, denseSet, world);
+        ServerShip ship = ShipAssemblyKt.createNewShipWithBlocks(centerPos, denseSet, world);
+        ship.saveAttachment(TorqueForceApplier.class, new TorqueForceApplier());
+        return ship;
     }
-
     public static ServerShipWorldCore getServerShipWorld(ServerLevel world) {
         return VSGameUtilsKt.getShipObjectWorld(world);
     }
