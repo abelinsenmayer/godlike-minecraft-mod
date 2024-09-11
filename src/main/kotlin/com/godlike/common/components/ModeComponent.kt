@@ -75,6 +75,7 @@ enum class Mode(val keybinds: List<KeyMapping>) {
         ModKeybinds.POINTER_PULL,
         ModKeybinds.POINTER_PUSH,
         ModKeybinds.PICK_TO_TK,
+        ModKeybinds.ROTATE_TK
     ));
 
     /**

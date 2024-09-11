@@ -36,6 +36,15 @@ object ModKeybinds {
         )
     )
 
+    val ROTATE_TK: KeyMapping = KeyBindingHelper.registerKeyBinding(
+        KeyMapping(
+            "key.godlike.rotate_tk",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_R,
+            "category.godlike"
+        )
+    )
+
     val TOGGLE_SELECTION_MODE: KeyMapping = KeyBindingHelper.registerKeyBinding(
         KeyMapping(
             "key.godlike.selection_mode",

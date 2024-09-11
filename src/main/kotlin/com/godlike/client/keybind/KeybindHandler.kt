@@ -40,9 +40,10 @@ fun doTelekinesisKeybindControls() {
     while (ModKeybinds.POINTER_PUSH.consumeClick()) {
         pointerDistanceDelta += POINTER_DELTA_INCREMENT
     }
+    val isRotating = ModKeybinds.ROTATE_TK.isDown
 
     CHANNEL.clientHandle().send(
-        TelekinesisControlsPacket(playerLookDirection, pointerDistanceDelta)
+        TelekinesisControlsPacket(playerLookDirection, pointerDistanceDelta, isRotating)
     )
 }
 
@@ -72,19 +73,25 @@ fun handleModInputEvents() {
             // If we are carrying something, drop it. Otherwise, pick up the block/entity/ship.
             if (player.telekinesis().getShipIds().isEmpty()) {
                 val selection = player.selection()
+                var didPick = false
                 selection.cursorTargetBlock?.let {
                     CHANNEL.clientHandle().send(PickBlockToTkPacket(it))
+                    didPick = true
                 }
                 selection.cursorTargetEntity?.let {
                     val entityData = CompoundTag()
                     it.save(entityData)
                     CHANNEL.clientHandle().send(PickEntityToTkPacket(entityData))
+                    didPick = true
                 }
                 selection.cursorTargetShip?.let {
                     CHANNEL.clientHandle().send(PickShipToTkPacket(it.id))
+                    didPick = true
                 }
-                player.selection().clear()
-                player.selection().isSelecting = false
+                if (didPick) {
+                    player.selection().clear()
+                    player.selection().isSelecting = false
+                }
             } else {
                 CHANNEL.clientHandle().send(DropTkPacket())
                 player.selection().isSelecting = true
