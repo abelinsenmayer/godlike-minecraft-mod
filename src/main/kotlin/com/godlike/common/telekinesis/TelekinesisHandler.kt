@@ -89,6 +89,7 @@ fun handleTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, pl
             ship.rotateTowardPointer(pointer, eyePosition)
         } else {
             ship.moveToward(pointer)
+            ship.addRotationDrag()
         }
     }
 }
@@ -127,11 +128,17 @@ fun ServerShip.moveToward(pos: Vec3) {
 fun ServerShip.rotateTowardPointer(pointer: Vec3, playerEyePos: Vec3) {
     val torqueForceApplier = this.getTorqueForceApplier()
 
-    // Find the axis around which it should rotate
     val shipPos = this.transform.positionInWorld.toVec3()
     val shipToPointer = shipPos.subtract(pointer)
     val playerToShip = playerEyePos.subtract(shipPos)
-    val torque = shipToPointer.cross(playerToShip).normalize().scale(TK_SCALAR)
+    val torque = shipToPointer.cross(playerToShip).normalize().scale(this.inertiaData.mass/10 * TK_SCALAR)
 
     torqueForceApplier.applyInvariantTorque(torque.toVector3d())
+}
+
+fun ServerShip.addRotationDrag() {
+    val torqueForceApplier = this.getTorqueForceApplier()
+//    val brakeVelocityScalar = max(log(this.omega.length() + 1, 10.0), 0.0)
+    val dragForce = this.omega.toVec3().scale(-this.omega.length()).scale(TK_SCALAR * BRAKE_SCALAR)
+    torqueForceApplier.applyInvariantTorque(dragForce.toVector3d())
 }
