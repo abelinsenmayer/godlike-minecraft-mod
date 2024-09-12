@@ -14,13 +14,11 @@ import net.minecraft.world.phys.Vec3
 import org.joml.Vector3d
 import org.valkyrienskies.core.api.ships.ServerShip
 import org.valkyrienskies.mod.common.util.GameTickForceApplier
-import java.lang.Math.toRadians
 import kotlin.math.log
 import kotlin.math.max
 
 const val TK_SCALAR = 40.0
 const val BRAKE_SCALAR = 5.0
-const val ROTATION_POINT_OFFSET_DISTANCE = 3.0
 
 fun createShipFromSelection(player: ServerPlayer) {
     val cursors = ModComponents.CURSORS.get(player).getPositions()
@@ -28,8 +26,8 @@ fun createShipFromSelection(player: ServerPlayer) {
         return
     }
     val ship = Vs2Util.createShip(cursors, player.serverLevel())
-    ModComponents.TELEKINESIS_DATA.get(player).clearShipIds()
-    ModComponents.TELEKINESIS_DATA.get(player).addShipId(ship.id)
+    ModComponents.TELEKINESIS_DATA.get(player).clearShipTargets()
+    ModComponents.TELEKINESIS_DATA.get(player).addShipIdAsTarget(ship.id)
 
     // Set the pointer distance to the distance from the ship to the player's eyes
     ModComponents.TELEKINESIS_DATA.get(player).pointerDistance = ship.transform.positionInWorld.toVec3()
@@ -38,7 +36,7 @@ fun createShipFromSelection(player: ServerPlayer) {
 
 fun pickBlockToTk(pos: BlockPos, player: ServerPlayer) {
     val ship = Vs2Util.createShip(listOf(pos), player.serverLevel())
-    player.telekinesis().addShipId(ship.id)
+    player.telekinesis().addShipIdAsTarget(ship.id)
     player.telekinesis().pointerDistance = ship.transform.positionInWorld.toVec3()
         .distanceTo(player.position().add(0.0, 1.5, 0.0))
 }
@@ -48,21 +46,24 @@ fun pickEntityToTk(entity: Entity, player: ServerPlayer) {
 }
 
 fun pickShipToTk(ship: ServerShip, player: ServerPlayer) {
-    player.telekinesis().addShipId(ship.id)
+    player.telekinesis().addShipIdAsTarget(ship.id)
     player.telekinesis().pointerDistance = ship.transform.positionInWorld.toVec3()
         .distanceTo(player.position().add(0.0, 1.5, 0.0))
 }
 
 fun dropTk(player: ServerPlayer) {
-    player.telekinesis().clearShipIds()
+    player.telekinesis().clearShipTargets()
 }
 
 fun placeTk(player: ServerPlayer) {
-    player.telekinesis().getShipIds().forEach { shipId ->
-        val ship = Vs2Util.getServerShipWorld(player.serverLevel()).loadedShips.getById(shipId) ?: return
-        disassemble(ship, player.serverLevel())
+    player.telekinesis().getShipTargets().forEach { target ->
+        disassemble(target.ship, player.serverLevel())
     }
-    player.telekinesis().clearShipIds()
+    player.telekinesis().clearShipTargets()
+}
+
+fun hoverTk(player: ServerPlayer) {
+
 }
 
 fun handleTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, player: ServerPlayer) {
@@ -70,8 +71,8 @@ fun handleTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, pl
     player.telekinesis().pointerDistance += telekinesisControls.pointerDistanceDelta
 
     // Move ships
-    player.telekinesis().getShipIds().forEach { shipId ->
-        val ship = Vs2Util.getServerShipWorld(player.serverLevel()).loadedShips.getById(shipId) ?: return
+    player.telekinesis().getShipTargets().forEach { target ->
+        val ship = target.ship
 
         // Find where the player is looking at on the sphere defined by the ship's distance from them
         val eyePosition = player.position().add(0.0, 1.5, 0.0)
@@ -138,7 +139,6 @@ fun ServerShip.rotateTowardPointer(pointer: Vec3, playerEyePos: Vec3) {
 
 fun ServerShip.addRotationDrag() {
     val torqueForceApplier = this.getTorqueForceApplier()
-//    val brakeVelocityScalar = max(log(this.omega.length() + 1, 10.0), 0.0)
     val dragForce = this.omega.toVec3().scale(-this.omega.length()).scale(TK_SCALAR * BRAKE_SCALAR)
     torqueForceApplier.applyInvariantTorque(dragForce.toVector3d())
 }

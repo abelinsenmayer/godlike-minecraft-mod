@@ -1,6 +1,8 @@
 package com.godlike.common.util
 
 import net.minecraft.core.Vec3i
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.Tag
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3d
 import org.joml.Vector3dc

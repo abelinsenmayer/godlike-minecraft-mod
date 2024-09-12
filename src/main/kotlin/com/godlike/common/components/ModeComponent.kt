@@ -33,7 +33,7 @@ class ModeComponent(private val player : Player) : AutoSyncedComponent {
                 ModComponents.TARGET_POSITION.get(player).setPos(BlockPos(0, -3000, 0))
             }
             if (value != Mode.TELEKINESIS) {
-                player.telekinesis().clearShipIds()
+                player.telekinesis().clearShipTargets()
                 if (player is LocalPlayer) {
                     player.selection().clear()
                 }
@@ -75,7 +75,8 @@ enum class Mode(val keybinds: List<KeyMapping>) {
         ModKeybinds.POINTER_PULL,
         ModKeybinds.POINTER_PUSH,
         ModKeybinds.PICK_TO_TK,
-        ModKeybinds.ROTATE_TK
+        ModKeybinds.ROTATE_TK,
+        ModKeybinds.SET_TK_HOVERING
     ));
 
     /**

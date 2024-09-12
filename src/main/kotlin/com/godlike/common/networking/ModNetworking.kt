@@ -68,5 +68,9 @@ object ModNetworking {
         CHANNEL.registerServerbound(PlaceTkPacket::class.java) { packet, ctx ->
             placeTk(ctx.player)
         }
+
+        CHANNEL.registerServerbound(HoverTkPacket::class.java) { packet, ctx ->
+            hoverTk(ctx.player)
+        }
     }
 }

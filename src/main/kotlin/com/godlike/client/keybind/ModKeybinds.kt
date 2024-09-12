@@ -90,6 +90,15 @@ object ModKeybinds {
         )
     )
 
+    val SET_TK_HOVERING: KeyMapping = KeyBindingHelper.registerKeyBinding(
+        KeyMapping(
+            "key.godlike.set_tk_hovering",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_H,
+            "category.godlike"
+        )
+    )
+
     val POINTER_PUSH: KeyMapping = KeyBindingHelper.registerKeyBinding(
         KeyMapping(
             "key.godlike.pointer_away",
