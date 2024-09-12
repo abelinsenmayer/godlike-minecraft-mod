@@ -40,7 +40,7 @@ object ModNetworking {
         }
 
         CHANNEL.registerServerbound(TelekinesisControlsPacket::class.java) { packet, ctx ->
-            handleTelekinesisControls(packet, ctx.player)
+            tickTelekinesisControls(packet, ctx.player)
         }
 
         CHANNEL.registerServerbound(SetModePacket::class.java) { packet, ctx ->
@@ -70,7 +70,7 @@ object ModNetworking {
         }
 
         CHANNEL.registerServerbound(HoverTkPacket::class.java) { packet, ctx ->
-            hoverTk(ctx.player)
+            hoverTk(ctx.player, packet.playerLookDirection)
         }
     }
 }

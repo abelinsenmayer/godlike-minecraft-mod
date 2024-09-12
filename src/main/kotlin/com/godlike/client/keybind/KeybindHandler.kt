@@ -10,6 +10,7 @@ import com.godlike.client.keybind.ModKeybinds.TK_SELECTION
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_FAR
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_VERTICAL
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
+import com.godlike.common.Godlike.logger
 import com.godlike.common.components.*
 import com.godlike.common.networking.DropTkPacket
 import com.godlike.common.networking.HoverTkPacket
@@ -71,7 +72,8 @@ fun handleModInputEvents() {
     while (PICK_TO_TK.consumeClick()) {
         if (player.getMode() == Mode.TELEKINESIS) {
             // If we are carrying something, drop it. Otherwise, pick up the block/entity/ship.
-            if (player.telekinesis().getShipTargets().isEmpty()) {
+            logger.info("before pick ${player.telekinesis().getShipTargets().map { it.hoverPos }}" )
+            if (player.telekinesis().getShipTargets().isEmpty() || !player.telekinesis().hasNonHoveringTarget()) {
                 val selection = player.selection()
                 var didPick = false
                 selection.cursorTargetBlock?.let {
@@ -100,8 +102,10 @@ fun handleModInputEvents() {
     }
 
     while (SET_TK_HOVERING.consumeClick()) {
+        logger.info("before hover ${player.telekinesis().getShipTargets().map { it.hoverPos }}")
         if (player.getMode() == Mode.TELEKINESIS) {
-            CHANNEL.clientHandle().send(HoverTkPacket())
+            CHANNEL.clientHandle().send(HoverTkPacket(Minecraft.getInstance().cameraEntity!!.lookAngle))
+            player.selection().isSelecting = true
         }
     }
 

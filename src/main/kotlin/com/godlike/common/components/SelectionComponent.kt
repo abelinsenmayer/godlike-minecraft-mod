@@ -29,9 +29,6 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
     var cursorTargetShip : ClientShip? = null
     var isSelecting = false
 
-//    val selectedPositions : MutableList<BlockPos> = mutableListOf()
-//    val selectedPositionAnchors : MutableList<BlockPos> = mutableListOf()
-
     override fun readFromNbt(tag: CompoundTag) {
         this.cursorTargetEntity = tag.getCompound(CURSOR_TARGET_ENTITY).let {
             EntityType.create(it, player.level()).orElse(null)

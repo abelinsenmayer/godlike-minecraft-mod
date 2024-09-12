@@ -13,7 +13,6 @@ import net.minecraft.client.player.LocalPlayer
 fun clientTelekinesisTick(player : LocalPlayer) {
     if (player.selection().isSelecting) {
         selectRaycastTarget()
-    } else {
-        doTelekinesisKeybindControls()
     }
+    doTelekinesisKeybindControls()
 }

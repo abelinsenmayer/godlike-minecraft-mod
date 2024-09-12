@@ -1,5 +1,6 @@
 package com.godlike.common.components
 
+import com.godlike.common.Godlike.logger
 import com.godlike.common.telekinesis.ShipTkTarget
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
 import net.minecraft.nbt.CompoundTag
@@ -31,6 +32,7 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
         tag.getList(TK_TARGETS_KEY, 10).forEach {
             tkShips.add(ShipTkTarget.fromNbtAndPlayer(it as CompoundTag, player))
         }
+        sync()
     }
 
     override fun writeToNbt(tag: CompoundTag) {
@@ -42,10 +44,14 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
         tag.put(TK_TARGETS_KEY, listTag)
     }
 
-    private fun sync() {
+    fun sync() {
         if (player is ServerPlayer) {
             ModComponents.TELEKINESIS_DATA.sync(player)
         }
+    }
+
+    fun hasNonHoveringTarget(): Boolean {
+        return tkShips.any { it.hoverPos == null }
     }
 
     fun getShipTargets(): List<ShipTkTarget> {
@@ -58,12 +64,20 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
     }
 
     fun addShipIdAsTarget(id: Long) {
+        val target = tkShips.find { it.ship.id == id }
+        if (target != null) {
+            if (target.hoverPos != null) {
+                logger.info("resetting hover pos")
+                target.hoverPos = null
+            }
+            return
+        }
         tkShips.add(ShipTkTarget(id, player))
         sync()
     }
 
     fun removeShipIdAsTarget(id: Long) {
-        tkShips.removeIf { it.ship.id == id }
+        tkShips.removeIf { it.shipId == id }
         sync()
     }
 }

@@ -1,4 +1,6 @@
 package com.godlike.common.networking;
 
-public record HoverTkPacket() {
+import net.minecraft.world.phys.Vec3;
+
+public record HoverTkPacket(Vec3 playerLookDirection) {
 }
