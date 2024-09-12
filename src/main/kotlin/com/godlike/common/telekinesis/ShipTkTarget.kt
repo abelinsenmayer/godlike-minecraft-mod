@@ -1,6 +1,5 @@
 package com.godlike.common.telekinesis
 
-import com.godlike.common.util.toNbt
 import com.godlike.common.vs2.Vs2Util
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.nbt.CompoundTag
