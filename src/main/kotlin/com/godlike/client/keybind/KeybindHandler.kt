@@ -24,7 +24,7 @@ import com.godlike.common.networking.TelekinesisControlsPacket
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
 
-const val POINTER_DELTA_INCREMENT = 0.2
+const val POINTER_DELTA_INCREMENT = 0.5
 
 /**
  * Called every client tick to handle keybinds related to telekinesis.

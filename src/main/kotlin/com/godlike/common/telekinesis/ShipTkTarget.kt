@@ -1,6 +1,5 @@
 package com.godlike.common.telekinesis
 
-import com.godlike.common.Godlike.logger
 import com.godlike.common.util.disassemble
 import com.godlike.common.util.negate
 import com.godlike.common.util.toVec3
@@ -17,6 +16,9 @@ import org.valkyrienskies.core.api.ships.ServerShip
 import org.valkyrienskies.mod.common.util.GameTickForceApplier
 import kotlin.math.log
 import kotlin.math.max
+
+const val SHIP_FORCE_SCALAR = 40.0
+const val SHIP_BRAKE_SCALAR = 5.0
 
 class ShipTkTarget(
     val shipId : Long,
@@ -62,20 +64,20 @@ class ShipTkTarget(
         val shipPos = ship.transform.positionInWorld.toVec3()
 
         // Apply a force to the ship to move it towards the pointer
-        val force = shipPos.subtract(pos).normalize().negate().scale(ship.inertiaData.mass * TK_SCALAR)
+        val force = shipPos.subtract(pos).normalize().negate().scale(ship.inertiaData.mass * SHIP_FORCE_SCALAR)
 
         // "Brake" to slow down the ship based on how aligned its velocity vector is to the direction of the pointer
         val angle = Math.toDegrees(ship.velocity.angle(force.toVector3d()))
-        val brakeAngleScalar = angle / 180 * BRAKE_SCALAR
+        val brakeAngleScalar = angle / 180 * SHIP_BRAKE_SCALAR
         val brakeVelocityScalar = max(log(ship.velocity.length() + 1, 10.0), 0.0)
-        val brakeForce = ship.velocity.toVec3().negate().normalize().scale(ship.inertiaData.mass * TK_SCALAR * brakeAngleScalar * brakeVelocityScalar)
+        val brakeForce = ship.velocity.toVec3().negate().normalize().scale(ship.inertiaData.mass * SHIP_FORCE_SCALAR * brakeAngleScalar * brakeVelocityScalar)
 
         // Reduce the force when we're very near the pointer to stop the ship from oscillating
         val distance = shipPos.distanceTo(pos)
         val distanceScalar = max(log(distance + 0.8, 10.0), 0.0)
 
         // Apply the force
-        forceApplier().applyInvariantTorque(force.scale(distanceScalar).add(brakeForce).toVector3d())
+        forceApplier().applyInvariantForce(force.scale(distanceScalar).add(brakeForce).toVector3d())
     }
 
     override fun addLiftForce() {
@@ -89,13 +91,13 @@ class ShipTkTarget(
         val shipPos = ship.transform.positionInWorld.toVec3()
         val shipToPointer = shipPos.subtract(pointer)
         val playerToShip = playerEyePos.subtract(shipPos)
-        val torque = shipToPointer.cross(playerToShip).normalize().scale(ship.inertiaData.mass/10 * TK_SCALAR)
+        val torque = shipToPointer.cross(playerToShip).normalize().scale(ship.inertiaData.mass/10 * SHIP_FORCE_SCALAR)
 
         torqueApplier().applyInvariantTorque(torque.toVector3d())
     }
 
     override fun addRotationDrag() {
-        val dragForce = ship.omega.toVec3().scale(-ship.omega.length()).scale(TK_SCALAR * BRAKE_SCALAR)
+        val dragForce = ship.omega.toVec3().scale(-ship.omega.length()).scale(SHIP_FORCE_SCALAR * SHIP_BRAKE_SCALAR)
         torqueApplier().applyInvariantTorque(dragForce.toVector3d())
     }
 }

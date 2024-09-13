@@ -3,6 +3,7 @@ package com.godlike.common.telekinesis
 import com.godlike.common.components.ModComponents
 import com.godlike.common.components.telekinesis
 import com.godlike.common.networking.ModNetworking
+import com.godlike.common.networking.StartSelectingPacket
 import com.godlike.common.networking.TelekinesisControlsPacket
 import com.godlike.common.networking.TracerParticlePacket
 import com.godlike.common.util.*
@@ -12,9 +13,6 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.phys.Vec3
 import org.valkyrienskies.core.api.ships.ServerShip
-
-const val TK_SCALAR = 40.0
-const val BRAKE_SCALAR = 5.0
 
 fun createShipFromSelection(player: ServerPlayer) {
     val cursors = ModComponents.CURSORS.get(player).getPositions()
@@ -45,6 +43,8 @@ fun pickBlockToTk(pos: BlockPos, player: ServerPlayer) {
  */
 fun pickEntityToTk(entity: Entity, player: ServerPlayer) {
     player.telekinesis().addEntityAsTkTarget(entity)
+    player.telekinesis().pointerDistance = entity.position().add(0.0, entity.boundingBox.ysize / 2, 0.0)
+        .distanceTo(player.position().add(0.0, 1.5, 0.0))
 }
 
 /**
@@ -106,6 +106,7 @@ fun tickTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, play
                 target.ship
             } catch (e: NullPointerException) {
                 player.telekinesis().removeShipIdAsTarget(target.shipId)
+                ModNetworking.CHANNEL.serverHandle(player).send(StartSelectingPacket())
                 return@forEach
             }
         } else if (target is EntityTkTarget) {
@@ -114,6 +115,7 @@ fun tickTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, play
                 target.entity
             } catch (e: NullPointerException) {
                 player.telekinesis().removeTarget(target)
+                ModNetworking.CHANNEL.serverHandle(player).send(StartSelectingPacket())
                 return@forEach
             }
         }
