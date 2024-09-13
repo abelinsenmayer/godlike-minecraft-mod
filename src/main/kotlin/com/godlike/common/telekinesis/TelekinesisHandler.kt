@@ -1,6 +1,5 @@
 package com.godlike.common.telekinesis
 
-import com.godlike.common.Godlike.logger
 import com.godlike.common.components.ModComponents
 import com.godlike.common.components.telekinesis
 import com.godlike.common.networking.ModNetworking
@@ -45,7 +44,7 @@ fun pickBlockToTk(pos: BlockPos, player: ServerPlayer) {
  * Add entity to the player's telekinesis targets. If the entity already a target of theirs and is hovering, stop hovering.
  */
 fun pickEntityToTk(entity: Entity, player: ServerPlayer) {
-    TODO("Not yet implemented")
+    player.telekinesis().addEntityAsTkTarget(entity)
 }
 
 /**
@@ -55,7 +54,6 @@ fun pickShipToTk(ship: ServerShip, player: ServerPlayer) {
     player.telekinesis().addShipIdAsTarget(ship.id)
     player.telekinesis().pointerDistance = ship.transform.positionInWorld.toVec3()
         .distanceTo(player.position().add(0.0, 1.5, 0.0))
-    player.telekinesis().sync()
 }
 
 /**
@@ -69,7 +67,7 @@ fun dropTk(player: ServerPlayer) {
  * Place all telekinesis targets that aren't hovering.
  */
 fun placeTk(player: ServerPlayer) {
-    val toPlace = player.telekinesis().getShipTargets().filter { it.hoverPos == null }
+    val toPlace = player.telekinesis().getTkTargets().filter { it.hoverPos == null }
     toPlace.forEach { target ->
         target.place(player.serverLevel())
         player.telekinesis().removeTarget(target)
@@ -80,7 +78,7 @@ fun placeTk(player: ServerPlayer) {
  * Hover all telekinesis targets that aren't hovering.
  */
 fun hoverTk(player: ServerPlayer, lookDirection: Vec3) {
-    player.telekinesis().getShipTargets().forEach { target ->
+    player.telekinesis().getTkTargets().forEach { target ->
         if (target.hoverPos == null) {
             target.hoverPos = getPointer(player, lookDirection, target)
         }
@@ -101,13 +99,21 @@ fun tickTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, play
     // Update the pointer distance
     player.telekinesis().pointerDistance += telekinesisControls.pointerDistanceDelta
 
-    player.telekinesis().getShipTargets().forEach { target ->
+    player.telekinesis().getTkTargets().forEach { target ->
         if (target is ShipTkTarget) {
             // If the target's ship doesn't exist (e.g. because it was broken or unloaded), remove it from the list
             try {
                 target.ship
             } catch (e: NullPointerException) {
                 player.telekinesis().removeShipIdAsTarget(target.shipId)
+                return@forEach
+            }
+        } else if (target is EntityTkTarget) {
+            // If the target's entity doesn't exist (e.g. because it was killed or unloaded), remove it from the list
+            try {
+                target.entity
+            } catch (e: NullPointerException) {
+                player.telekinesis().removeTarget(target)
                 return@forEach
             }
         }

@@ -9,6 +9,7 @@ import com.godlike.common.telekinesis.*
 import com.godlike.common.vs2.Vs2Util
 import io.wispforest.owo.network.OwoNetChannel
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
 import org.valkyrienskies.core.api.ships.ServerShip
 
@@ -52,8 +53,9 @@ object ModNetworking {
         }
 
         CHANNEL.registerServerbound(PickEntityToTkPacket::class.java) { packet, ctx ->
-            val entity = EntityType.create(packet.entityData, ctx.player.level()).orElse(null)
-            pickEntityToTk(entity, ctx.player)
+            ctx.player().level().getEntity(packet.entityId)?.let { entity ->
+                pickEntityToTk(entity, ctx.player)
+            }
         }
 
         CHANNEL.registerServerbound(PickShipToTkPacket::class.java) { packet, ctx ->

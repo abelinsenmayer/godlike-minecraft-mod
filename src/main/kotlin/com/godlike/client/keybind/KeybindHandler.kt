@@ -22,7 +22,6 @@ import com.godlike.common.networking.PlaceTkPacket
 import com.godlike.common.networking.SetModePacket
 import com.godlike.common.networking.TelekinesisControlsPacket
 import net.minecraft.client.Minecraft
-import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
 
 const val POINTER_DELTA_INCREMENT = 0.2
@@ -72,7 +71,7 @@ fun handleModInputEvents() {
     while (PICK_TO_TK.consumeClick()) {
         if (player.getMode() == Mode.TELEKINESIS) {
             // If we are carrying something, drop it. Otherwise, pick up the block/entity/ship
-            if (player.telekinesis().getShipTargets().isEmpty() || !player.telekinesis().hasNonHoveringTarget()) {
+            if (player.telekinesis().getTkTargets().isEmpty() || !player.telekinesis().hasNonHoveringTarget()) {
                 val selection = player.selection()
                 var didPick = false
                 selection.cursorTargetBlock?.let {
@@ -80,9 +79,7 @@ fun handleModInputEvents() {
                     didPick = true
                 }
                 selection.cursorTargetEntity?.let {
-                    val entityData = CompoundTag()
-                    it.save(entityData)
-                    CHANNEL.clientHandle().send(PickEntityToTkPacket(entityData))
+                    CHANNEL.clientHandle().send(PickEntityToTkPacket(it.id))
                     didPick = true
                 }
                 selection.cursorTargetShip?.let {

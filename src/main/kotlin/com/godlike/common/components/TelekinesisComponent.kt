@@ -1,12 +1,13 @@
 package com.godlike.common.components
 
-import com.godlike.common.Godlike.logger
+import com.godlike.common.telekinesis.EntityTkTarget
 import com.godlike.common.telekinesis.ShipTkTarget
 import com.godlike.common.telekinesis.TkTarget
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
 
 const val TK_TARGETS_KEY = "telekinesis-targets"
@@ -30,8 +31,13 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
     override fun readFromNbt(tag: CompoundTag) {
         tkTargets.clear()
         pointerDistance = tag.getDouble(POINTER_DISTANCE_KEY)
-        tag.getList(TK_TARGETS_KEY, 10).forEach {
-            tkTargets.add(ShipTkTarget.fromNbtAndPlayer(it as CompoundTag, player))
+        if (tag.contains(TK_TARGETS_KEY, 9)) {
+            val listTag = tag.getList(TK_TARGETS_KEY, 10)
+            for (i in 0..<listTag.size) {
+                val compound = listTag.getCompound(i)
+                val target = TkTarget.fromNbtAndPlayer(compound, player) ?: continue
+                tkTargets.add(target)
+            }
         }
         sync()
     }
@@ -55,7 +61,7 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
         return tkTargets.any { it.hoverPos == null }
     }
 
-    fun getShipTargets(): List<TkTarget> {
+    fun getTkTargets(): List<TkTarget> {
         return tkTargets.toList()
     }
 
@@ -65,7 +71,14 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
     }
 
     fun addTarget(target: TkTarget) {
-        tkTargets.add(target)
+        val existing = tkTargets.find { it == target }
+        if (existing != null) {
+            if (target.hoverPos != null) {
+                target.hoverPos = null
+            }
+        } else {
+            tkTargets.add(target)
+        }
         sync()
     }
 
@@ -80,15 +93,21 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
     }
 
     fun addShipIdAsTarget(id: Long) {
-        val target = tkTargets.find { it is ShipTkTarget && it.ship.id == id }
-        if (target != null) {
-            if (target.hoverPos != null) {
-                target.hoverPos = null
-            }
-            return
+        val existing = tkTargets.find { it is ShipTkTarget && it.ship.id == id }
+        if (existing != null) {
+            addTarget(existing)
+        } else {
+            addTarget(ShipTkTarget(id, player))
         }
-        tkTargets.add(ShipTkTarget(id, player))
-        sync()
+    }
+
+    fun addEntityAsTkTarget(entity: Entity) {
+        val existing = tkTargets.find { it is EntityTkTarget && it.entity == entity }
+        if (existing != null) {
+            addTarget(existing)
+        } else {
+            addTarget(EntityTkTarget(player, entity.id))
+        }
     }
 
     fun removeShipIdAsTarget(id: Long) {

@@ -31,28 +31,13 @@ class ShipTkTarget(
             return Vs2Util.getServerShipWorld((player as ServerPlayer).serverLevel()).loadedShips.getById(shipId)!!
         }
 
-    companion object {
-        fun fromNbtAndPlayer(tag: CompoundTag, player: Player) : ShipTkTarget {
-            val shipId = tag.getLong("shipId")
-            val target = ShipTkTarget(shipId, player)
-            if (tag.contains("anchorPos.x")) {
-                target.hoverPos = Vec3(
-                    tag.getDouble("anchorPos.x"),
-                    tag.getDouble("anchorPos.y"),
-                    tag.getDouble("anchorPos.z")
-                )
-            }
-            return target
-        }
-    }
-
     override fun toNbt() : CompoundTag {
         val tag = CompoundTag()
         tag.putLong("shipId", shipId)
         hoverPos?.let {
-            tag.putDouble("anchorPos.x", it.x)
-            tag.putDouble("anchorPos.y", it.y)
-            tag.putDouble("anchorPos.z", it.z)
+            tag.putDouble("hoverPos.x", it.x)
+            tag.putDouble("hoverPos.y", it.y)
+            tag.putDouble("hoverPos.z", it.z)
         }
         return tag
     }
