@@ -3,6 +3,7 @@ package com.godlike.client.keybind
 import com.godlike.common.networking.DoSelectionPacket
 import com.godlike.common.networking.TkSelectionPackage
 import com.godlike.client.keybind.ModKeybinds.DO_SELECT
+import com.godlike.client.keybind.ModKeybinds.LAUNCH_TK
 import com.godlike.client.keybind.ModKeybinds.PICK_TO_TK
 import com.godlike.client.keybind.ModKeybinds.PLACE_TK
 import com.godlike.client.keybind.ModKeybinds.SET_TK_HOVERING
@@ -14,15 +15,21 @@ import com.godlike.common.Godlike.logger
 import com.godlike.common.components.*
 import com.godlike.common.networking.DropTkPacket
 import com.godlike.common.networking.HoverTkPacket
+import com.godlike.common.networking.LaunchTkPacket
 import com.godlike.common.networking.ModNetworking.CHANNEL
 import com.godlike.common.networking.PickBlockToTkPacket
 import com.godlike.common.networking.PickEntityToTkPacket
 import com.godlike.common.networking.PickShipToTkPacket
 import com.godlike.common.networking.PlaceTkPacket
+import com.godlike.common.networking.SetChargingLaunchPacket
 import com.godlike.common.networking.SetModePacket
 import com.godlike.common.networking.TelekinesisControlsPacket
+import com.godlike.common.telekinesis.LAUNCH_POINTER_DISTANCE
+import com.godlike.common.telekinesis.getPointerAtDistance
+import com.godlike.common.util.toVec3
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
+import net.minecraft.world.phys.Vec3
 
 const val POINTER_DELTA_INCREMENT = 0.5
 
@@ -164,5 +171,19 @@ fun handleModInputEvents() {
             )
             client.player!!.setMode(Mode.TELEKINESIS)
         }
+    }
+
+    if (LAUNCH_TK.isDown && !player.selection().clientChargingLaunch) {
+        CHANNEL.clientHandle().send(SetChargingLaunchPacket(true))
+        player.selection().isSelecting = true
+        player.selection().clientChargingLaunch = true
+        player.sendSystemMessage(Component.literal("CHARGING LAUNCH"))
+    } else if (!LAUNCH_TK.isDown && player.selection().clientChargingLaunch) {
+        val launchTargetPos: Vec3 = player.selection().getSelectionPosition() ?:
+            getPointerAtDistance(player, Minecraft.getInstance().cameraEntity!!.lookAngle, LAUNCH_POINTER_DISTANCE)
+        CHANNEL.clientHandle().send(LaunchTkPacket(launchTargetPos))
+        player.selection().isSelecting = true
+        player.selection().clientChargingLaunch = false
+        player.sendSystemMessage(Component.literal("LAUNCHING!!"))
     }
 }

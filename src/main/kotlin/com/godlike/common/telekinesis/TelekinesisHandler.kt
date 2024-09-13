@@ -11,8 +11,11 @@ import com.godlike.common.vs2.Vs2Util
 import net.minecraft.core.BlockPos
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.phys.Vec3
 import org.valkyrienskies.core.api.ships.ServerShip
+
+const val LAUNCH_POINTER_DISTANCE = 100.0
 
 fun createShipFromSelection(player: ServerPlayer) {
     val cursors = ModComponents.CURSORS.get(player).getPositions()
@@ -86,6 +89,24 @@ fun hoverTk(player: ServerPlayer, lookDirection: Vec3) {
     player.telekinesis().sync()
 }
 
+fun setChargingLaunch(player: ServerPlayer, isCharging: Boolean) {
+    if (isCharging) {
+        player.telekinesis().getTkTargets().filter { it.hoverPos == null }.forEach { target ->
+            target.chargingLaunch = true
+        }
+        hoverTk(player, player.lookAngle)
+    }
+}
+
+fun launchTk(player: ServerPlayer, targetedPosition: Vec3) {
+    val toLaunch = player.telekinesis().getTkTargets().filter { it.chargingLaunch }
+    toLaunch.forEach { target ->
+        target.hoverPos = null
+        target.launchToward(targetedPosition)
+        player.telekinesis().removeTarget(target)
+    }
+}
+
 fun getPointer(player: ServerPlayer, lookDirection: Vec3, target: TkTarget) : Vec3 {
     // Find where the player is looking at on the sphere defined by the target's distance from them
     val eyePosition = player.position().add(0.0, 1.5, 0.0)
@@ -93,6 +114,11 @@ fun getPointer(player: ServerPlayer, lookDirection: Vec3, target: TkTarget) : Ve
     val pointer = findPointOnSphereAtRadius(eyePosition, pointerDistance, lookDirection)
         .subtract(target.pos().subtract(eyePosition).normalize().scale(0.03))
     return pointer
+}
+
+fun getPointerAtDistance(player: Player, lookDirection: Vec3, distance: Double) : Vec3 {
+    val eyePosition = player.position().add(0.0, 1.5, 0.0)
+    return findPointOnSphereAtRadius(eyePosition, distance, lookDirection)
 }
 
 fun tickTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, player: ServerPlayer) {

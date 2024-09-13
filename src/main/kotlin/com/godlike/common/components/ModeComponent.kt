@@ -2,6 +2,7 @@ package com.godlike.common.components
 
 import com.godlike.client.keybind.ModKeybinds
 import com.godlike.client.mixin.KeyBindingMixin
+import com.godlike.common.Godlike.logger
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.player.LocalPlayer
@@ -76,7 +77,8 @@ enum class Mode(val keybinds: List<KeyMapping>) {
         ModKeybinds.POINTER_PUSH,
         ModKeybinds.PICK_TO_TK,
         ModKeybinds.ROTATE_TK,
-        ModKeybinds.SET_TK_HOVERING
+        ModKeybinds.SET_TK_HOVERING,
+        ModKeybinds.LAUNCH_TK
     ));
 
     /**
@@ -100,6 +102,7 @@ enum class Mode(val keybinds: List<KeyMapping>) {
         if (this.keybinds.isNotEmpty()) {
             this.keybinds.forEach { keybind ->
                 activeBindings[(keybind as KeyBindingMixin).boundKey] = keybind
+                logger.info("Added keybind ${keybind.name} to active bindings")
             }
         }
     }

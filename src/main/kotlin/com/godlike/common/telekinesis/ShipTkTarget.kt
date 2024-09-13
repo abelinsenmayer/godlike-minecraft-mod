@@ -19,11 +19,13 @@ import kotlin.math.max
 
 const val SHIP_FORCE_SCALAR = 40.0
 const val SHIP_BRAKE_SCALAR = 5.0
+const val SHIP_LAUNCH_SCALAR = 100.0
 
 class ShipTkTarget(
     val shipId : Long,
     override val player: Player,
-    override var hoverPos: Vec3? = null
+    override var hoverPos: Vec3? = null,
+    override var chargingLaunch: Boolean = false
 ) : TkTarget {
     val ship : ServerShip
         get() {
@@ -41,6 +43,7 @@ class ShipTkTarget(
             tag.putDouble("hoverPos.y", it.y)
             tag.putDouble("hoverPos.z", it.z)
         }
+        tag.putBoolean("chargingLaunch", chargingLaunch)
         return tag
     }
 
@@ -54,6 +57,13 @@ class ShipTkTarget(
 
     override fun place(level : ServerLevel) {
         disassemble(ship, level)
+    }
+
+    override fun launchToward(pos: Vec3) {
+        val shipPos = ship.transform.positionInWorld.toVec3()
+        val shipToPos = pos.subtract(shipPos)
+        val launchForce = shipToPos.normalize().scale(ship.inertiaData.mass * SHIP_FORCE_SCALAR * SHIP_LAUNCH_SCALAR)
+        forceApplier().applyInvariantForce(launchForce.toVector3d())
     }
 
     override fun pos(): Vec3 {

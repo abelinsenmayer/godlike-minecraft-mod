@@ -12,11 +12,13 @@ import kotlin.math.max
 
 const val ENTITY_FORCE_SCALAR = 0.1
 const val ENTITY_BRAKE_SCALAR = 5.0
+const val ENTITY_LAUNCH_SCALAR = 100.0
 
 class EntityTkTarget(
     override val player: Player,
     private val entityId: Int,
-    override var hoverPos: Vec3? = null
+    override var hoverPos: Vec3? = null,
+    override var chargingLaunch: Boolean = false
 ) : TkTarget {
     val entity : Entity
         get() {
@@ -71,6 +73,12 @@ class EntityTkTarget(
         // TODO: set riding entity!!
     }
 
+    override fun launchToward(pos: Vec3) {
+        val entityToPos = pos.subtract(pos())
+        val force = entityToPos.normalize().scale(ENTITY_FORCE_SCALAR * ENTITY_LAUNCH_SCALAR)
+        addForce(force)
+    }
+
     override fun toNbt(): CompoundTag {
         val tag = CompoundTag()
         tag.putInt("entityId", entityId)
@@ -79,6 +87,7 @@ class EntityTkTarget(
             tag.putDouble("hoverPos.y", it.y)
             tag.putDouble("hoverPos.z", it.z)
         }
+        tag.putBoolean("chargingLaunch", chargingLaunch)
         return tag
     }
 }

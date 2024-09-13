@@ -76,5 +76,13 @@ object ModNetworking {
         CHANNEL.registerServerbound(HoverTkPacket::class.java) { packet, ctx ->
             hoverTk(ctx.player, packet.playerLookDirection)
         }
+
+        CHANNEL.registerServerbound(SetChargingLaunchPacket::class.java) { packet, ctx ->
+            setChargingLaunch(ctx.player, packet.chargingLaunch)
+        }
+
+        CHANNEL.registerServerbound(LaunchTkPacket::class.java) { packet, ctx ->
+            launchTk(ctx.player, packet.targetedPosition)
+        }
     }
 }

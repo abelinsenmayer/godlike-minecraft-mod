@@ -10,6 +10,7 @@ import net.minecraft.world.phys.Vec3
 interface TkTarget {
     val player : Player
     var hoverPos : Vec3?
+    var chargingLaunch : Boolean
 
     companion object {
         fun fromNbtAndPlayer(tag: CompoundTag, player: Player) : TkTarget {
@@ -27,6 +28,7 @@ interface TkTarget {
                     tag.getDouble("hoverPos.z")
                 )
             }
+            target.chargingLaunch = tag.getBoolean("chargingLaunch")
             return target
         }
     }
@@ -42,6 +44,8 @@ interface TkTarget {
     fun addRotationDrag()
 
     fun place(level : ServerLevel)
+
+    fun launchToward(pos: Vec3)
 
     fun toNbt() : CompoundTag
 }

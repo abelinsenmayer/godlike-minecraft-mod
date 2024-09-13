@@ -21,8 +21,8 @@ object ModKeybinds {
     val PICK_TO_TK: KeyMapping = KeyBindingHelper.registerKeyBinding(
         KeyMapping(
             "key.godlike.pick_to_tk",
-            InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_F,
+            InputConstants.Type.MOUSE,
+            GLFW.GLFW_MOUSE_BUTTON_RIGHT,
             "category.godlike"
         )
     )
@@ -41,6 +41,15 @@ object ModKeybinds {
             "key.godlike.rotate_tk",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_R,
+            "category.godlike"
+        )
+    )
+
+    val LAUNCH_TK: KeyMapping = KeyBindingHelper.registerKeyBinding(
+        KeyMapping(
+            "key.godlike.launch_tk",
+            InputConstants.Type.MOUSE,
+            GLFW.GLFW_MOUSE_BUTTON_LEFT,
             "category.godlike"
         )
     )
