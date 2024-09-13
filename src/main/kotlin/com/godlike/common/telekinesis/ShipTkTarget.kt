@@ -20,9 +20,9 @@ import kotlin.math.max
 
 class ShipTkTarget(
     val shipId : Long,
-    val player: Player
-) {
-    var hoverPos : Vec3? = null
+    override val player: Player,
+    override var hoverPos: Vec3? = null
+) : TkTarget {
     val ship : ServerShip
         get() {
             if (player is LocalPlayer) {
@@ -46,7 +46,7 @@ class ShipTkTarget(
         }
     }
 
-    fun toNbt() : CompoundTag {
+    override fun toNbt() : CompoundTag {
         val tag = CompoundTag()
         tag.putLong("shipId", shipId)
         hoverPos?.let {
@@ -65,11 +65,15 @@ class ShipTkTarget(
         return this.ship.getTorqueForceApplier()
     }
 
-    fun place(level : ServerLevel) {
+    override fun place(level : ServerLevel) {
         disassemble(ship, level)
     }
 
-    fun moveToward(pos: Vec3) {
+    override fun pos(): Vec3 {
+        return ship.transform.positionInWorld.toVec3()
+    }
+
+    override fun moveToward(pos: Vec3) {
         val shipPos = ship.transform.positionInWorld.toVec3()
 
         // Apply a force to the ship to move it towards the pointer
@@ -89,14 +93,14 @@ class ShipTkTarget(
         forceApplier().applyInvariantTorque(force.scale(distanceScalar).add(brakeForce).toVector3d())
     }
 
-    fun addLiftForce() {
+    override fun addLiftForce() {
         // Add enough force to counteract gravity on the ship
         val gravityNewtons = ship.inertiaData.mass * 30
         val liftForce = Vector3d(0.0, gravityNewtons, 0.0)
         forceApplier().applyInvariantForce(liftForce)
     }
 
-    fun rotateTowardPointer(pointer: Vec3, playerEyePos: Vec3) {
+    override fun rotateTowardPointer(pointer: Vec3, playerEyePos: Vec3) {
         val shipPos = ship.transform.positionInWorld.toVec3()
         val shipToPointer = shipPos.subtract(pointer)
         val playerToShip = playerEyePos.subtract(shipPos)
@@ -105,7 +109,7 @@ class ShipTkTarget(
         torqueApplier().applyInvariantTorque(torque.toVector3d())
     }
 
-    fun addRotationDrag() {
+    override fun addRotationDrag() {
         val dragForce = ship.omega.toVec3().scale(-ship.omega.length()).scale(TK_SCALAR * BRAKE_SCALAR)
         torqueApplier().applyInvariantTorque(dragForce.toVector3d())
     }

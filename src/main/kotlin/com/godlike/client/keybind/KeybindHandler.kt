@@ -71,8 +71,7 @@ fun handleModInputEvents() {
 
     while (PICK_TO_TK.consumeClick()) {
         if (player.getMode() == Mode.TELEKINESIS) {
-            // If we are carrying something, drop it. Otherwise, pick up the block/entity/ship.
-            logger.info("before pick ${player.telekinesis().getShipTargets().map { it.hoverPos }}" )
+            // If we are carrying something, drop it. Otherwise, pick up the block/entity/ship
             if (player.telekinesis().getShipTargets().isEmpty() || !player.telekinesis().hasNonHoveringTarget()) {
                 val selection = player.selection()
                 var didPick = false
@@ -102,7 +101,6 @@ fun handleModInputEvents() {
     }
 
     while (SET_TK_HOVERING.consumeClick()) {
-        logger.info("before hover ${player.telekinesis().getShipTargets().map { it.hoverPos }}")
         if (player.getMode() == Mode.TELEKINESIS) {
             CHANNEL.clientHandle().send(HoverTkPacket(Minecraft.getInstance().cameraEntity!!.lookAngle))
             player.selection().isSelecting = true

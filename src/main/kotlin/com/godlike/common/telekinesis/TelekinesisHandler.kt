@@ -23,7 +23,7 @@ fun createShipFromSelection(player: ServerPlayer) {
         return
     }
     val ship = Vs2Util.createShip(cursors, player.serverLevel())
-    ModComponents.TELEKINESIS_DATA.get(player).clearShipTargets()
+    ModComponents.TELEKINESIS_DATA.get(player).clearTargets()
     ModComponents.TELEKINESIS_DATA.get(player).addShipIdAsTarget(ship.id)
 
     // Set the pointer distance to the distance from the ship to the player's eyes
@@ -62,11 +62,7 @@ fun pickShipToTk(ship: ServerShip, player: ServerPlayer) {
  * Drop all telekinesis targets that aren't hovering.
  */
 fun dropTk(player: ServerPlayer) {
-    val toDrop = player.telekinesis().getShipTargets().filter { it.hoverPos == null }
-    logger.info("Dropping ${toDrop.size} ships")
-    toDrop.forEach { target ->
-        player.telekinesis().removeShipIdAsTarget(target.ship.id)
-    }
+    player.telekinesis().removeTargetsWhere { it.hoverPos == null }
 }
 
 /**
@@ -76,7 +72,7 @@ fun placeTk(player: ServerPlayer) {
     val toPlace = player.telekinesis().getShipTargets().filter { it.hoverPos == null }
     toPlace.forEach { target ->
         target.place(player.serverLevel())
-        player.telekinesis().removeShipIdAsTarget(target.ship.id)
+        player.telekinesis().removeTarget(target)
     }
 }
 
@@ -92,13 +88,12 @@ fun hoverTk(player: ServerPlayer, lookDirection: Vec3) {
     player.telekinesis().sync()
 }
 
-fun getPointer(player: ServerPlayer, lookDirection: Vec3, target: ShipTkTarget) : Vec3 {
+fun getPointer(player: ServerPlayer, lookDirection: Vec3, target: TkTarget) : Vec3 {
     // Find where the player is looking at on the sphere defined by the target's distance from them
     val eyePosition = player.position().add(0.0, 1.5, 0.0)
-    val shipPos = target.ship.transform.positionInWorld.toVec3()
     val pointerDistance = ModComponents.TELEKINESIS_DATA.get(player).pointerDistance
     val pointer = findPointOnSphereAtRadius(eyePosition, pointerDistance, lookDirection)
-        .subtract(shipPos.subtract(eyePosition).normalize().scale(0.03))
+        .subtract(target.pos().subtract(eyePosition).normalize().scale(0.03))
     return pointer
 }
 
@@ -107,12 +102,14 @@ fun tickTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, play
     player.telekinesis().pointerDistance += telekinesisControls.pointerDistanceDelta
 
     player.telekinesis().getShipTargets().forEach { target ->
-        // If the target's ship doesn't exist (e.g. because it was broken or unloaded), remove it from the list
-        try {
-            target.ship
-        } catch (e: NullPointerException) {
-            player.telekinesis().removeShipIdAsTarget(target.shipId)
-            return@forEach
+        if (target is ShipTkTarget) {
+            // If the target's ship doesn't exist (e.g. because it was broken or unloaded), remove it from the list
+            try {
+                target.ship
+            } catch (e: NullPointerException) {
+                player.telekinesis().removeShipIdAsTarget(target.shipId)
+                return@forEach
+            }
         }
 
         // Move the target

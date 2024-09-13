@@ -33,7 +33,7 @@ class ModeComponent(private val player : Player) : AutoSyncedComponent {
                 ModComponents.TARGET_POSITION.get(player).setPos(BlockPos(0, -3000, 0))
             }
             if (value != Mode.TELEKINESIS) {
-                player.telekinesis().clearShipTargets()
+                player.telekinesis().clearTargets()
                 if (player is LocalPlayer) {
                     player.selection().clear()
                 }

@@ -2,6 +2,7 @@ package com.godlike.common.components
 
 import com.godlike.common.Godlike.logger
 import com.godlike.common.telekinesis.ShipTkTarget
+import com.godlike.common.telekinesis.TkTarget
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
@@ -17,7 +18,7 @@ const val POINTER_DISTANCE_KEY = "pointer-distance"
  * server should send a packet.
  */
 class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
-    private val tkShips : MutableList<ShipTkTarget> = mutableListOf()
+    private val tkTargets : MutableList<TkTarget> = mutableListOf()
     var pointerDistance : Double = 0.0
 
     override fun shouldSyncWith(player: ServerPlayer?): Boolean {
@@ -27,10 +28,10 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
     }
 
     override fun readFromNbt(tag: CompoundTag) {
-        tkShips.clear()
+        tkTargets.clear()
         pointerDistance = tag.getDouble(POINTER_DISTANCE_KEY)
         tag.getList(TK_TARGETS_KEY, 10).forEach {
-            tkShips.add(ShipTkTarget.fromNbtAndPlayer(it as CompoundTag, player))
+            tkTargets.add(ShipTkTarget.fromNbtAndPlayer(it as CompoundTag, player))
         }
         sync()
     }
@@ -38,7 +39,7 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
     override fun writeToNbt(tag: CompoundTag) {
         tag.putDouble(POINTER_DISTANCE_KEY, pointerDistance)
         val listTag = ListTag()
-        tkShips.forEach {
+        tkTargets.forEach {
             listTag.add(it.toNbt())
         }
         tag.put(TK_TARGETS_KEY, listTag)
@@ -51,33 +52,47 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
     }
 
     fun hasNonHoveringTarget(): Boolean {
-        return tkShips.any { it.hoverPos == null }
+        return tkTargets.any { it.hoverPos == null }
     }
 
-    fun getShipTargets(): List<ShipTkTarget> {
-        return tkShips.toList()
+    fun getShipTargets(): List<TkTarget> {
+        return tkTargets.toList()
     }
 
-    fun clearShipTargets() {
-        tkShips.clear()
+    fun clearTargets() {
+        tkTargets.clear()
+        sync()
+    }
+
+    fun addTarget(target: TkTarget) {
+        tkTargets.add(target)
+        sync()
+    }
+
+    fun removeTarget(target: TkTarget) {
+        tkTargets.remove(target)
+        sync()
+    }
+
+    fun removeTargetsWhere(predicate: (TkTarget) -> Boolean) {
+        tkTargets.removeIf(predicate)
         sync()
     }
 
     fun addShipIdAsTarget(id: Long) {
-        val target = tkShips.find { it.ship.id == id }
+        val target = tkTargets.find { it is ShipTkTarget && it.ship.id == id }
         if (target != null) {
             if (target.hoverPos != null) {
-                logger.info("resetting hover pos")
                 target.hoverPos = null
             }
             return
         }
-        tkShips.add(ShipTkTarget(id, player))
+        tkTargets.add(ShipTkTarget(id, player))
         sync()
     }
 
     fun removeShipIdAsTarget(id: Long) {
-        tkShips.removeIf { it.shipId == id }
+        tkTargets.removeIf { it is ShipTkTarget && it.shipId == id }
         sync()
     }
 }
