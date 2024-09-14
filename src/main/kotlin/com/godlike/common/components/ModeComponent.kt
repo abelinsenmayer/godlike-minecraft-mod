@@ -102,7 +102,6 @@ enum class Mode(val keybinds: List<KeyMapping>) {
         if (this.keybinds.isNotEmpty()) {
             this.keybinds.forEach { keybind ->
                 activeBindings[(keybind as KeyBindingMixin).boundKey] = keybind
-                logger.info("Added keybind ${keybind.name} to active bindings")
             }
         }
     }

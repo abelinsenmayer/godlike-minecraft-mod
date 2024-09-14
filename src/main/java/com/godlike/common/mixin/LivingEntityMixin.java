@@ -1,6 +1,6 @@
 package com.godlike.common.mixin;
 
-import net.minecraft.core.BlockPos;
+import com.godlike.common.Godlike;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -8,11 +8,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.valkyrienskies.core.api.ships.LoadedServerShip;
 
 import java.util.List;
 
 import static com.godlike.common.util.KineticDamageUtilKt.*;
-import static com.godlike.common.util.MathUtilKt.toVec3i;
 
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin {
@@ -27,17 +27,24 @@ public class LivingEntityMixin {
         if (!thisAsAccessor.level().isClientSide) {
             float damage;
             if (thisAsAccessor.horizontalCollision) {
-                damage = kineticDamage(thisAsAccessor);
+                List<LoadedServerShip> collidingShips = getCollidingServerShips(thisAsAccessor);
+                if (!collidingShips.isEmpty()) {
+                    damage = collidingShips.stream().map(ship -> kineticDamageShipCollision(thisAsAccessor, ship)).max(Float::compareTo).orElse(0.0F);
+                } else {
+                    damage = kineticDamage(thisAsAccessor);
+                }
             } else {
                 List<Entity> collidingEntities = findCollidingEntities(thisAsAccessor);
                 if (!collidingEntities.isEmpty()) {
                     damage = kineticDamage(thisAsAccessor);
-                    collidingEntities.forEach(entity -> {
-                        if (entity instanceof LivingEntity) {
-                            entity.hurt(thisAsAccessor.damageSources().flyIntoWall(), damage);
-                            entity.playSound(damage > 4 ? SoundEvents.GENERIC_BIG_FALL : SoundEvents.GENERIC_SMALL_FALL, 1.0F, 1.0F);
-                        }
-                    });
+                    if (damage > 0.0F) {
+                        collidingEntities.forEach(entity -> {
+                            if (entity instanceof LivingEntity) {
+                                entity.hurt(thisAsAccessor.damageSources().flyIntoWall(), damage);
+                                entity.playSound(damage > 4 ? SoundEvents.GENERIC_BIG_FALL : SoundEvents.GENERIC_SMALL_FALL, 1.0F, 1.0F);
+                            }
+                        });
+                    }
                 } else {
                     damage = 0.0F;
                 }

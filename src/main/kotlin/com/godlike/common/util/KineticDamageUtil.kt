@@ -1,12 +1,16 @@
 package com.godlike.common.util
 
+import com.godlike.common.vs2.Vs2Util
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.tags.EntityTypeTags
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
+import org.joml.Vector3d
+import org.joml.primitives.AABBd
+import org.valkyrienskies.core.api.ships.LoadedServerShip
 import org.valkyrienskies.core.api.ships.ServerShip
 
-const val KINETIC_DAMAGE_MULTIPLIER = 3.0
-const val VELOCITY_DAMAGE_THRESHOLD = 1.0
+const val KINETIC_DAMAGE_MULTIPLIER = 8.0
 
 /**
  * Calculates kinetic damage for an entity hitting any stationary block.
@@ -26,12 +30,11 @@ fun LivingEntity.kineticDamageShipCollision(other: ServerShip) : Float {
     if (this.immuneToKineticDamage()) {
         return 0.0F
     }
-    val collisionVelocity = this.deltaMovement.subtract(other.velocity.toVec3())
-    return velocityToKineticDamage(collisionVelocity.length()).toFloat()
+    return velocityToKineticDamage(other.velocity.toVec3().length()/20.0).toFloat()
 }
 
 fun velocityToKineticDamage(velocity: Double) : Double {
-    return 0.0.coerceAtLeast(velocity * KINETIC_DAMAGE_MULTIPLIER - VELOCITY_DAMAGE_THRESHOLD)
+    return 0.0.coerceAtLeast(velocity * KINETIC_DAMAGE_MULTIPLIER - KINETIC_DAMAGE_MULTIPLIER)
 }
 
 fun LivingEntity.immuneToKineticDamage() : Boolean {
@@ -40,15 +43,18 @@ fun LivingEntity.immuneToKineticDamage() : Boolean {
 
 fun Entity.findCollidingEntities() : List<Entity> {
     return this.level().getEntities(this, this.boundingBox)
+}
 
-//    val startVec = this.position()
-//    val endVec = this.position().add(this.deltaMovement)
-//    val hitResult = ProjectileUtil.getEntityHitResult(
-//        this.level(),
-//        this,
-//        startVec,
-//        endVec,
-//        boundingBox.expandTowards(this.deltaMovement)
-//    ) { _: Entity -> true }
-//    return hitResult?.entity
+/**
+ * Gets all ships that this entity is colliding with. Only works on the server side.
+ */
+fun Entity.getCollidingServerShips() : List<LoadedServerShip> {
+    return if (!this.level().isClientSide) {
+        val bb = this.boundingBox.inflate(0.5, 0.5, 0.5)
+        Vs2Util.getServerShipWorld(this.level() as ServerLevel).loadedShips.getIntersecting(AABBd(
+            Vector3d(bb.minX, bb.minY, bb.minZ),
+            Vector3d(bb.maxX, bb.maxY, bb.maxZ)
+        )).toList()
+    }
+    else emptyList()
 }

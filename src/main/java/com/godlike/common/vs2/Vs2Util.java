@@ -18,6 +18,7 @@ import org.joml.Vector3i;
 import org.joml.primitives.AABBdc;
 import org.valkyrienskies.core.api.ships.ClientShip;
 import org.valkyrienskies.core.api.ships.ServerShip;
+import org.valkyrienskies.core.apigame.world.ClientShipWorldCore;
 import org.valkyrienskies.core.apigame.world.ServerShipWorldCore;
 import org.valkyrienskies.core.impl.datastructures.DenseBlockPosSet;
 import org.valkyrienskies.mod.common.assembly.ShipAssemblyKt;
@@ -48,6 +49,10 @@ public class Vs2Util {
         return ship;
     }
     public static ServerShipWorldCore getServerShipWorld(ServerLevel world) {
+        return VSGameUtilsKt.getShipObjectWorld(world);
+    }
+
+    public static ClientShipWorldCore getClientShipWorld(ClientLevel world) {
         return VSGameUtilsKt.getShipObjectWorld(world);
     }
 
