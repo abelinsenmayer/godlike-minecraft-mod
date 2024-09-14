@@ -3,6 +3,10 @@
   "package": "com.godlike.common.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "LivingEntityMixin"
+  ],
+  "server": [
+
   ],
   "injectors": {
     "defaultRequire": 1

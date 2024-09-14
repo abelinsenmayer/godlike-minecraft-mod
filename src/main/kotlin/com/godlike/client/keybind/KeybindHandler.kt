@@ -177,13 +177,11 @@ fun handleModInputEvents() {
         CHANNEL.clientHandle().send(SetChargingLaunchPacket(true))
         player.selection().isSelecting = true
         player.selection().clientChargingLaunch = true
-        player.sendSystemMessage(Component.literal("CHARGING LAUNCH"))
     } else if (!LAUNCH_TK.isDown && player.selection().clientChargingLaunch) {
         val launchTargetPos: Vec3 = player.selection().getSelectionPosition() ?:
             getPointerAtDistance(player, Minecraft.getInstance().cameraEntity!!.lookAngle, LAUNCH_POINTER_DISTANCE)
         CHANNEL.clientHandle().send(LaunchTkPacket(launchTargetPos))
         player.selection().isSelecting = true
         player.selection().clientChargingLaunch = false
-        player.sendSystemMessage(Component.literal("LAUNCHING!!"))
     }
 }

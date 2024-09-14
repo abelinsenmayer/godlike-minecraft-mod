@@ -55,6 +55,10 @@ public class Vs2Util {
         return VSGameUtilsKt.getShipObjectManagingPos(level, pos);
     }
 
+    public static ServerShip getServerShipManagingPos(ServerLevel level, BlockPos pos) {
+        return VSGameUtilsKt.getShipObjectManagingPos(level, pos);
+    }
+
     public static AABB toMinecraftAABB(AABBdc aabb) {
         return VectorConversionsMCKt.toMinecraft(aabb);
     }

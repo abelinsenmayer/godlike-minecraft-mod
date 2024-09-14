@@ -12,7 +12,7 @@ import kotlin.math.max
 
 const val ENTITY_FORCE_SCALAR = 0.1
 const val ENTITY_BRAKE_SCALAR = 5.0
-const val ENTITY_LAUNCH_SCALAR = 100.0
+const val ENTITY_LAUNCH_SCALAR = 60.0
 
 class EntityTkTarget(
     override val player: Player,
