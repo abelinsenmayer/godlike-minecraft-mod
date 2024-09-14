@@ -62,7 +62,7 @@ fun handleModInputEvents() {
     val client = Minecraft.getInstance()
     val player = client.player!!
 
-    while (TOGGLE_TK_MODE.consumeClick()) {
+    while (TOGGLE_TK_MODE.consumeClick() && !player.selection().clientChargingLaunch) {
         val currentMode = player.getMode()
         if (currentMode == Mode.TELEKINESIS) {
             CHANNEL.clientHandle().send(
@@ -76,7 +76,7 @@ fun handleModInputEvents() {
     }
 
     while (PICK_TO_TK.consumeClick()) {
-        if (player.getMode() == Mode.TELEKINESIS) {
+        if (player.getMode() == Mode.TELEKINESIS && !player.selection().clientChargingLaunch) {
             // If we are carrying something, drop it. Otherwise, pick up the block/entity/ship
             if (player.telekinesis().getTkTargets().isEmpty() || !player.telekinesis().hasNonHoveringTarget()) {
                 val selection = player.selection()
@@ -104,14 +104,14 @@ fun handleModInputEvents() {
         }
     }
 
-    while (SET_TK_HOVERING.consumeClick()) {
+    while (SET_TK_HOVERING.consumeClick() && !player.selection().clientChargingLaunch) {
         if (player.getMode() == Mode.TELEKINESIS) {
             CHANNEL.clientHandle().send(HoverTkPacket(Minecraft.getInstance().cameraEntity!!.lookAngle))
             player.selection().isSelecting = true
         }
     }
 
-    while (PLACE_TK.consumeClick()) {
+    while (PLACE_TK.consumeClick() && !player.selection().clientChargingLaunch) {
         if (player.getMode() == Mode.TELEKINESIS) {
             CHANNEL.clientHandle().send(PlaceTkPacket())
             player.selection().isSelecting = true
