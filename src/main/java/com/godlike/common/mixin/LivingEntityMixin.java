@@ -31,7 +31,7 @@ public class LivingEntityMixin {
             } else {
                 List<Entity> collidingEntities = findCollidingEntities(thisAsAccessor);
                 if (!collidingEntities.isEmpty()) {
-                    damage = kineticDamageEntityCollision(thisAsAccessor, collidingEntities.getFirst());
+                    damage = kineticDamage(thisAsAccessor);
                     collidingEntities.forEach(entity -> {
                         if (entity instanceof LivingEntity) {
                             entity.hurt(thisAsAccessor.damageSources().flyIntoWall(), damage);

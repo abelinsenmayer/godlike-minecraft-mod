@@ -19,18 +19,6 @@ fun LivingEntity.kineticDamage() : Float {
 }
 
 /**
- * Calculates kinetic damage for an entity hitting another entity.
- * TODO update this to account for entity mass
- */
-fun LivingEntity.kineticDamageEntityCollision(other: Entity) : Float {
-    if (this.immuneToKineticDamage()) {
-        return 0.0F
-    }
-    val collisionVelocity = this.deltaMovement.subtract(other.deltaMovement)
-    return velocityToKineticDamage(collisionVelocity.length()).toFloat()
-}
-
-/**
  * Calculates kinetic damage for an entity hitting a ship.
  * TODO update this to account for ship mass
  */
