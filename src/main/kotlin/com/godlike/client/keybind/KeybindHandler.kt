@@ -8,10 +8,10 @@ import com.godlike.client.keybind.ModKeybinds.PICK_TO_TK
 import com.godlike.client.keybind.ModKeybinds.PLACE_TK
 import com.godlike.client.keybind.ModKeybinds.SET_TK_HOVERING
 import com.godlike.client.keybind.ModKeybinds.TK_SELECTION
+import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECTION_MODE
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_FAR
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_VERTICAL
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
-import com.godlike.common.Godlike.logger
 import com.godlike.common.components.*
 import com.godlike.common.networking.DropTkPacket
 import com.godlike.common.networking.HoverTkPacket
@@ -26,7 +26,6 @@ import com.godlike.common.networking.SetModePacket
 import com.godlike.common.networking.TelekinesisControlsPacket
 import com.godlike.common.telekinesis.LAUNCH_POINTER_DISTANCE
 import com.godlike.common.telekinesis.getPointerAtDistance
-import com.godlike.common.util.toVec3
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
 import net.minecraft.world.phys.Vec3
@@ -41,10 +40,10 @@ fun doTelekinesisKeybindControls() {
     val playerLookDirection = Minecraft.getInstance().cameraEntity!!.lookAngle
 
     var pointerDistanceDelta = 0.0
-    while (ModKeybinds.POINTER_PULL.consumeClick()) {
+    if (ModKeybinds.POINTER_PULL.isDown) {
         pointerDistanceDelta -= POINTER_DELTA_INCREMENT
     }
-    while (ModKeybinds.POINTER_PUSH.consumeClick()) {
+    if (ModKeybinds.POINTER_PUSH.isDown) {
         pointerDistanceDelta += POINTER_DELTA_INCREMENT
     }
     val isRotating = ModKeybinds.ROTATE_TK.isDown
@@ -64,7 +63,7 @@ fun handleModInputEvents() {
 
     while (TOGGLE_TK_MODE.consumeClick() && !player.selection().clientChargingLaunch) {
         val currentMode = player.getMode()
-        if (currentMode == Mode.TELEKINESIS) {
+        if (currentMode == Mode.TELEKINESIS || currentMode == Mode.SELECTING) {
             CHANNEL.clientHandle().send(
                 SetModePacket(Mode.NONE.name)
             )
@@ -95,11 +94,11 @@ fun handleModInputEvents() {
                 }
                 if (didPick) {
                     player.selection().clear()
-                    player.selection().isSelecting = false
+                    player.selection().doRaycast = false
                 }
             } else {
                 CHANNEL.clientHandle().send(DropTkPacket())
-                player.selection().isSelecting = true
+                player.selection().doRaycast = true
             }
         }
     }
@@ -107,25 +106,25 @@ fun handleModInputEvents() {
     while (SET_TK_HOVERING.consumeClick() && !player.selection().clientChargingLaunch) {
         if (player.getMode() == Mode.TELEKINESIS) {
             CHANNEL.clientHandle().send(HoverTkPacket(Minecraft.getInstance().cameraEntity!!.lookAngle))
-            player.selection().isSelecting = true
+            player.selection().doRaycast = true
         }
     }
 
     while (PLACE_TK.consumeClick() && !player.selection().clientChargingLaunch) {
         if (player.getMode() == Mode.TELEKINESIS) {
             CHANNEL.clientHandle().send(PlaceTkPacket())
-            player.selection().isSelecting = true
+            player.selection().doRaycast = true
         }
     }
 
-//    while (TOGGLE_SELECTION_MODE.consumeClick()) {
-//        val currentMode = player.getMode()
-//        if (currentMode == Mode.SELECTING) {
-//            player.setMode(Mode.NONE)
-//        } else {
-//            player.setMode(Mode.SELECTING)
-//        }
-//    }
+    while (TOGGLE_SELECTION_MODE.consumeClick()) {
+        val currentMode = player.getMode()
+        if (currentMode == Mode.SELECTING) {
+            player.setMode(Mode.TELEKINESIS)
+        } else if (currentMode == Mode.TELEKINESIS) {
+            player.setMode(Mode.SELECTING)
+        }
+    }
 
     while (TOGGLE_SELECT_VERTICAL.consumeClick()) {
         if (player.getMode() == Mode.SELECTING) {
@@ -152,14 +151,10 @@ fun handleModInputEvents() {
     }
 
     while (DO_SELECT.consumeClick()) {
-        // send a packet to the server to add the preview to their cursor selection
         if (player.getMode() == Mode.SELECTING) {
-            CHANNEL.clientHandle().send(
-                DoSelectionPacket(
-                    ModComponents.CURSOR_PREVIEWS.get(client.player!!).getPositions(),
-                    ModComponents.TARGET_POSITION.get(client.player!!).getPos()
-                )
-            )
+            player.selection().cursorTargetBlock?.let {
+                player.selection().selectedPositions.add(it)
+            }
         }
     }
 
@@ -175,13 +170,13 @@ fun handleModInputEvents() {
 
     if (LAUNCH_TK.isDown && !player.selection().clientChargingLaunch) {
         CHANNEL.clientHandle().send(SetChargingLaunchPacket(true))
-        player.selection().isSelecting = true
+        player.selection().doRaycast = true
         player.selection().clientChargingLaunch = true
     } else if (!LAUNCH_TK.isDown && player.selection().clientChargingLaunch) {
         val launchTargetPos: Vec3 = player.selection().getSelectionPosition() ?:
             getPointerAtDistance(player, Minecraft.getInstance().cameraEntity!!.lookAngle, LAUNCH_POINTER_DISTANCE)
         CHANNEL.clientHandle().send(LaunchTkPacket(launchTargetPos))
-        player.selection().isSelecting = true
+        player.selection().doRaycast = true
         player.selection().clientChargingLaunch = false
     }
 }

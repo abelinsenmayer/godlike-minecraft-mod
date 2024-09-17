@@ -14,7 +14,7 @@ object ModClientNetworking {
         }
 
         CHANNEL.registerClientbound(StartSelectingPacket::class.java) { packet, ctx ->
-            ctx.player().selection().isSelecting = true
+            ctx.player().selection().doRaycast = true
         }
     }
 }

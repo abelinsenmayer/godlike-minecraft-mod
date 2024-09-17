@@ -16,7 +16,7 @@ object ClientTickHandler {
         // This code will run every tick on the client side
         ClientTickEvents.START_CLIENT_TICK.register(ClientTickEvents.StartTick { client ->
             client.player?.let { player ->
-                if (!client.isPaused && player.getMode() == Mode.TELEKINESIS) {
+                if (!client.isPaused) {
                     clientTelekinesisTick(player)
                 }
 

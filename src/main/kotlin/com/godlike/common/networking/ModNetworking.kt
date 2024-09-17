@@ -9,8 +9,6 @@ import com.godlike.common.telekinesis.*
 import com.godlike.common.vs2.Vs2Util
 import io.wispforest.owo.network.OwoNetChannel
 import net.minecraft.resources.ResourceLocation
-import net.minecraft.world.entity.Entity
-import net.minecraft.world.entity.EntityType
 import org.valkyrienskies.core.api.ships.ServerShip
 
 object ModNetworking {

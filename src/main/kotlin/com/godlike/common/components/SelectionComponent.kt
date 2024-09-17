@@ -1,13 +1,11 @@
 package com.godlike.common.components
 
 import com.godlike.client.render.setEntityGlowing
-import com.godlike.common.telekinesis.LAUNCH_POINTER_DISTANCE
-import com.godlike.common.telekinesis.getPointerAtDistance
 import com.godlike.common.util.toVec3
 import dev.onyxstudios.cca.api.v3.component.Component
-import net.minecraft.client.Minecraft
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Vec3i
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
@@ -32,8 +30,10 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
             field?.let { new -> setEntityGlowing(new, true) }
         }
     var cursorTargetShip : ClientShip? = null
-    var isSelecting = false
+    var doRaycast = false
     var clientChargingLaunch : Boolean = false  // TODO move this out of this component
+    var selectedPositions: MutableSet<BlockPos> = mutableSetOf()
+    var previewPositions: MutableSet<BlockPos> = mutableSetOf()
 
     override fun readFromNbt(tag: CompoundTag) {
         this.cursorTargetEntity = tag.getCompound(CURSOR_TARGET_ENTITY).let {
@@ -41,6 +41,8 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
         }
         tag.getLong(CURSOR_TARGET_BLOCK).let { cursorTargetBlock = BlockPos.of(it) }
         clientChargingLaunch = tag.getBoolean("clientChargingLaunch")
+        selectedPositions = tag.getLongArray("selectedPositions").map { BlockPos.of(it) }.toMutableSet()
+        previewPositions = tag.getLongArray("previewPositions").map { BlockPos.of(it) }.toMutableSet()
     }
 
     override fun writeToNbt(tag: CompoundTag) {
@@ -51,16 +53,22 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
         }
         this.cursorTargetBlock?.let { tag.putLong(CURSOR_TARGET_BLOCK, it.asLong()) }
         tag.putBoolean("clientChargingLaunch", clientChargingLaunch)
+        tag.putLongArray("selectedPositions", selectedPositions.map { it.asLong() }.toLongArray())
+        tag.putLongArray("previewPositions", previewPositions.map { it.asLong() }.toLongArray())
     }
 
     fun clear() {
         cursorTargetBlock = null
         cursorTargetEntity = null
         cursorTargetShip = null
+        selectedPositions.clear()
+        previewPositions.clear()
     }
 
     fun setSingleTarget(target: Any) {
-        clear()
+        cursorTargetBlock = null
+        cursorTargetEntity = null
+        cursorTargetShip = null
         when (target) {
             is BlockPos -> {
                 cursorTargetBlock = target

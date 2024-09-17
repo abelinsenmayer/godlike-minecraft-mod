@@ -15,7 +15,6 @@ import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.shapes.Shapes
 import org.joml.Vector3d
 import org.joml.Vector3dc
-import org.joml.primitives.AABBic
 import org.valkyrienskies.core.api.ships.ClientShip
 import org.valkyrienskies.mod.common.VSClientGameUtils.transformRenderWithShip
 
@@ -24,7 +23,7 @@ fun setEntityGlowing(entity: Entity, glowing: Boolean) {
 }
 
 // Note: Entities are highlighted automatically because we set them glowing
-fun highlightSelectionTarget(poseStack: PoseStack, camera: Camera, outlineBufferSource: OutlineBufferSource) {
+fun highlightSelections(poseStack: PoseStack, camera: Camera, outlineBufferSource: OutlineBufferSource) {
     val selection = Minecraft.getInstance().player!!.selection()
     selection.cursorTargetBlock?.let {
         outlineBlockPos(it, poseStack, camera, 1f, 1f, 1f, 1.0f)
@@ -32,6 +31,8 @@ fun highlightSelectionTarget(poseStack: PoseStack, camera: Camera, outlineBuffer
     selection.cursorTargetShip?.let {
         outlineShip(it, poseStack, camera, 100f, 100f, 100f, 1.0f)
     }
+    selection.selectedPositions.forEach { outlineBlockPos(it, poseStack, camera, 0f, 0f, 1f, 1.0f) }
+    selection.previewPositions.forEach { outlineBlockPos(it, poseStack, camera, 1f, 1f, 1f, 0.5f) }
 }
 
 fun outlineShip(

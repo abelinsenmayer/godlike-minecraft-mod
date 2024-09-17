@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static com.godlike.client.render.RenderUtilKt.highlightSelectionTarget;
+import static com.godlike.client.render.RenderUtilKt.highlightSelections;
 
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
@@ -32,8 +32,8 @@ public abstract class LevelRendererMixin {
             return;
         }
 
-        // highlight target position or entity
-        highlightSelectionTarget(poseStack, camera, this.renderBuffers.outlineBufferSource());
+        // highlight target position or entity, plus selections and previews
+        highlightSelections(poseStack, camera, this.renderBuffers.outlineBufferSource());
 
 //        // highlight the block the player is targeting
 //        BlockPos targetPos = ModComponents.TARGET_POSITION.get(player).getPos();

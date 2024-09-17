@@ -58,7 +58,7 @@ object ModKeybinds {
         KeyMapping(
             "key.godlike.selection_mode",
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_S,
+            GLFW.GLFW_KEY_B,
             "category.godlike"
         )
     )

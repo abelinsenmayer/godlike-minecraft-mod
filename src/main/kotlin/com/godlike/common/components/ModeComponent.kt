@@ -27,14 +27,11 @@ class ModeComponent(private val player : Player) : AutoSyncedComponent {
             if (player is LocalPlayer) {
                 player.sendSystemMessage(Component.literal("Mode set to $value"))
                 this.mode.setKeybindsForMode()
-                player.selection().isSelecting = value == Mode.TELEKINESIS
+                player.selection().doRaycast = value == Mode.TELEKINESIS || value == Mode.SELECTING
             }
             if (value != Mode.SELECTING) {
                 ModComponents.CURSOR_PREVIEWS.get(player).clearPositions()
                 ModComponents.TARGET_POSITION.get(player).setPos(BlockPos(0, -3000, 0))
-            }
-            if (value != Mode.TELEKINESIS) {
-                player.telekinesis().clearTargets()
                 if (player is LocalPlayer) {
                     player.selection().clear()
                 }
@@ -64,13 +61,12 @@ fun Player.getMode(): Mode {
     return ModComponents.MODE.get(this).mode
 }
 
-enum class Mode(val keybinds: List<KeyMapping>) {
+enum class Mode(private val keybinds: List<KeyMapping>) {
     NONE(emptyList()),
     SELECTING(listOf(
-        ModKeybinds.TOGGLE_SELECT_VERTICAL,
         ModKeybinds.DO_SELECT,
-        ModKeybinds.TOGGLE_SELECT_FAR,
         ModKeybinds.TK_SELECTION,
+        ModKeybinds.TOGGLE_SELECTION_MODE
     )),
     TELEKINESIS(listOf(
         ModKeybinds.POINTER_PULL,
@@ -78,7 +74,8 @@ enum class Mode(val keybinds: List<KeyMapping>) {
         ModKeybinds.PICK_TO_TK,
         ModKeybinds.ROTATE_TK,
         ModKeybinds.SET_TK_HOVERING,
-        ModKeybinds.LAUNCH_TK
+        ModKeybinds.LAUNCH_TK,
+        ModKeybinds.TOGGLE_SELECTION_MODE
     ));
 
     /**
