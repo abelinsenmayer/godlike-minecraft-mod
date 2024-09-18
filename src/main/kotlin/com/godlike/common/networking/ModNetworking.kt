@@ -2,7 +2,6 @@ package com.godlike.common.networking
 
 import com.godlike.common.Godlike.logger
 import com.godlike.common.MOD_ID
-import com.godlike.common.components.ModComponents
 import com.godlike.common.components.Mode
 import com.godlike.common.components.setMode
 import com.godlike.common.telekinesis.*
@@ -21,27 +20,18 @@ object ModNetworking {
         // Client-bound packets, deferred registration
         CHANNEL.registerClientboundDeferred(TracerParticlePacket::class.java)
 
-        CHANNEL.registerClientboundDeferred(StartSelectingPacket::class.java)
-
         // Server-bound packets
         CHANNEL.registerServerbound(ServerBoundPacket::class.java) { packet, ctx ->
             logger.info("Received message on server: ${packet.message}")
         }
 
-        CHANNEL.registerServerbound(DoSelectionPacket::class.java) { packet, ctx ->
-            ModComponents.CURSORS.get(ctx.player).addAllPositions(packet.cursorPreviews)
-            ModComponents.CURSORS.get(ctx.player).addPosition(packet.targetPosition)
-            ModComponents.CURSOR_ANCHORS.get(ctx.player).addPosition(packet.targetPosition)
-        }
-
-        CHANNEL.registerServerbound(TkSelectionPackage::class.java) { packet, ctx ->
-            createShipFromSelection(ctx.player)
-            ModComponents.CURSORS.get(ctx.player).clearPositions()
-            ModComponents.CURSOR_ANCHORS.get(ctx.player).clearPositions()
+        CHANNEL.registerServerbound(TkPositionsPacket::class.java) { packet, ctx ->
+            ctx.player.setMode(Mode.TELEKINESIS)
+            tkPositions(packet.positions.toSet(), ctx.player)
         }
 
         CHANNEL.registerServerbound(TelekinesisControlsPacket::class.java) { packet, ctx ->
-            tickTelekinesisControls(packet, ctx.player)
+            serverTelekinesisTick(packet, ctx.player)
         }
 
         CHANNEL.registerServerbound(SetModePacket::class.java) { packet, ctx ->

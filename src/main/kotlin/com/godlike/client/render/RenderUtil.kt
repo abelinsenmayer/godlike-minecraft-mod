@@ -2,6 +2,9 @@ package com.godlike.client.render
 
 import com.godlike.client.mixin.EntityInvoker
 import com.godlike.client.mixin.WorldRendererAccessor
+import com.godlike.client.util.isTargetContiguousWithSelection
+import com.godlike.common.components.Mode
+import com.godlike.common.components.getMode
 import com.godlike.common.components.selection
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.Camera
@@ -17,6 +20,7 @@ import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.valkyrienskies.core.api.ships.ClientShip
 import org.valkyrienskies.mod.common.VSClientGameUtils.transformRenderWithShip
+import java.awt.Color
 
 fun setEntityGlowing(entity: Entity, glowing: Boolean) {
     (entity as EntityInvoker).invokeSetSharedFlag(6, glowing)
@@ -24,15 +28,26 @@ fun setEntityGlowing(entity: Entity, glowing: Boolean) {
 
 // Note: Entities are highlighted automatically because we set them glowing
 fun highlightSelections(poseStack: PoseStack, camera: Camera, outlineBufferSource: OutlineBufferSource) {
-    val selection = Minecraft.getInstance().player!!.selection()
-    selection.cursorTargetBlock?.let {
-        outlineBlockPos(it, poseStack, camera, 1f, 1f, 1f, 1.0f)
-    }
+    val player = Minecraft.getInstance().player!!
+    val selection = player.selection()
+
     selection.cursorTargetShip?.let {
         outlineShip(it, poseStack, camera, 100f, 100f, 100f, 1.0f)
     }
-    selection.selectedPositions.forEach { outlineBlockPos(it, poseStack, camera, 0f, 0f, 1f, 1.0f) }
-    selection.previewPositions.forEach { outlineBlockPos(it, poseStack, camera, 1f, 1f, 1f, 0.5f) }
+
+    selection.cursorTargetBlock?.let {
+        val color = if (player.getMode() == Mode.SELECTING) {
+            if (selection.selectionIsContiguous) Color(0, 255, 0) else Color(255, 0, 0)
+        } else {
+            Color(255, 255, 255)
+        }
+        outlineBlockPos(it, poseStack, camera, color)
+    }
+
+    if (player.getMode() == Mode.SELECTING) {
+        selection.previewPositions.forEach { outlineBlockPos(it, poseStack, camera, 1f, 1f, 1f, 0.5f) }
+        selection.selectedPositions.forEach { outlineBlockPos(it, poseStack, camera, 0f, 0f, 1f, 1.0f) }
+    }
 }
 
 fun outlineShip(
@@ -79,6 +94,14 @@ fun outlineShip(
         poseStack.popPose()
     }
 }
+
+fun outlineBlockPos(targetPos: BlockPos, poseStack: PoseStack, camera: Camera, color: Color) = outlineBlockPos(
+    targetPos, poseStack, camera,
+    color.red.toFloat() / 255f,
+    color.green.toFloat() / 255f,
+    color.blue.toFloat() / 255f,
+    color.alpha.toFloat() / 255f
+)
 
 fun outlineBlockPos(
     targetPos: BlockPos, poseStack: PoseStack, camera: Camera, red: Float, green: Float, blue: Float, alpha: Float

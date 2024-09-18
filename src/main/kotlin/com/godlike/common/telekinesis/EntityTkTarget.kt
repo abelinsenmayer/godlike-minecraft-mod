@@ -90,4 +90,8 @@ class EntityTkTarget(
         tag.putBoolean("chargingLaunch", chargingLaunch)
         return tag
     }
+
+    override fun equals(other: Any?): Boolean {
+        return other is EntityTkTarget && other.entityId == entityId
+    }
 }

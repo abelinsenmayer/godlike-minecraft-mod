@@ -1,9 +1,15 @@
 package com.godlike.client
 
 import com.godlike.client.keybind.handleModInputEvents
+import com.godlike.client.keybind.sendTelekinesisTick
+import com.godlike.client.util.isTargetContiguousWithSelection
+import com.godlike.client.util.selectRaycastTarget
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
+import com.godlike.common.components.selection
+import com.godlike.common.components.telekinesis
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.minecraft.client.player.LocalPlayer
 import org.slf4j.LoggerFactory
 
 /**
@@ -23,5 +29,22 @@ object ClientTickHandler {
                 handleModInputEvents()
             }
         })
+    }
+
+    /**
+     * Handles all client side actions that need to happen every tick for telekinesis "stuff".
+     */
+    private fun clientTelekinesisTick(player : LocalPlayer) {
+        if (player.telekinesis().activeTkTarget == null && (player.getMode() == Mode.TELEKINESIS || player.getMode() == Mode.SELECTING)) {
+            selectRaycastTarget()
+        }
+
+        if (player.telekinesis().getTkTargets().isNotEmpty()) {
+            sendTelekinesisTick()
+        }
+
+        if (player.getMode() == Mode.SELECTING) {
+            player.selection().selectionIsContiguous = player.isTargetContiguousWithSelection()
+        }
     }
 }

@@ -110,4 +110,8 @@ class ShipTkTarget(
         val dragForce = ship.omega.toVec3().scale(-ship.omega.length()).scale(SHIP_FORCE_SCALAR * SHIP_BRAKE_SCALAR)
         torqueApplier().applyInvariantTorque(dragForce.toVector3d())
     }
+
+    override fun equals(other: Any?): Boolean {
+        return other is ShipTkTarget && other.shipId == this.shipId
+    }
 }

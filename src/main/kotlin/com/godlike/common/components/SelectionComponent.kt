@@ -30,10 +30,10 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
             field?.let { new -> setEntityGlowing(new, true) }
         }
     var cursorTargetShip : ClientShip? = null
-    var doRaycast = false
     var clientChargingLaunch : Boolean = false  // TODO move this out of this component
     var selectedPositions: MutableSet<BlockPos> = mutableSetOf()
     var previewPositions: MutableSet<BlockPos> = mutableSetOf()
+    var selectionIsContiguous: Boolean = false
 
     override fun readFromNbt(tag: CompoundTag) {
         this.cursorTargetEntity = tag.getCompound(CURSOR_TARGET_ENTITY).let {
@@ -43,6 +43,7 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
         clientChargingLaunch = tag.getBoolean("clientChargingLaunch")
         selectedPositions = tag.getLongArray("selectedPositions").map { BlockPos.of(it) }.toMutableSet()
         previewPositions = tag.getLongArray("previewPositions").map { BlockPos.of(it) }.toMutableSet()
+        selectionIsContiguous = tag.getBoolean("selectionIsContiguous")
     }
 
     override fun writeToNbt(tag: CompoundTag) {
@@ -55,6 +56,7 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
         tag.putBoolean("clientChargingLaunch", clientChargingLaunch)
         tag.putLongArray("selectedPositions", selectedPositions.map { it.asLong() }.toLongArray())
         tag.putLongArray("previewPositions", previewPositions.map { it.asLong() }.toLongArray())
+        tag.putBoolean("selectionIsContiguous", selectionIsContiguous)
     }
 
     fun clear() {
@@ -94,4 +96,4 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
     }
 }
 
-fun LocalPlayer.selection() = ModComponents.SELECTION_DATA.get(this)
+fun LocalPlayer.selection(): SelectionComponent = ModComponents.SELECTION_DATA.get(this)

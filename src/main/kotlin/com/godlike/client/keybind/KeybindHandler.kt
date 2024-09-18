@@ -1,7 +1,6 @@
 package com.godlike.client.keybind
 
-import com.godlike.common.networking.DoSelectionPacket
-import com.godlike.common.networking.TkSelectionPackage
+import com.godlike.common.networking.TkPositionsPacket
 import com.godlike.client.keybind.ModKeybinds.DO_SELECT
 import com.godlike.client.keybind.ModKeybinds.LAUNCH_TK
 import com.godlike.client.keybind.ModKeybinds.PICK_TO_TK
@@ -36,7 +35,7 @@ const val POINTER_DELTA_INCREMENT = 0.5
  * Called every client tick to handle keybinds related to telekinesis.
  * Constructs a [TelekinesisControlsPacket] based on key inputs and send it to the server.
  */
-fun doTelekinesisKeybindControls() {
+fun sendTelekinesisTick() {
     val playerLookDirection = Minecraft.getInstance().cameraEntity!!.lookAngle
 
     var pointerDistanceDelta = 0.0
@@ -77,7 +76,7 @@ fun handleModInputEvents() {
     while (PICK_TO_TK.consumeClick()) {
         if (player.getMode() == Mode.TELEKINESIS && !player.selection().clientChargingLaunch) {
             // If we are carrying something, drop it. Otherwise, pick up the block/entity/ship
-            if (player.telekinesis().getTkTargets().isEmpty() || !player.telekinesis().hasNonHoveringTarget()) {
+            if (player.telekinesis().getTkTargets().isEmpty() || player.telekinesis().activeTkTarget == null) {
                 val selection = player.selection()
                 var didPick = false
                 selection.cursorTargetBlock?.let {
@@ -94,11 +93,9 @@ fun handleModInputEvents() {
                 }
                 if (didPick) {
                     player.selection().clear()
-                    player.selection().doRaycast = false
                 }
             } else {
                 CHANNEL.clientHandle().send(DropTkPacket())
-                player.selection().doRaycast = true
             }
         }
     }
@@ -106,14 +103,12 @@ fun handleModInputEvents() {
     while (SET_TK_HOVERING.consumeClick() && !player.selection().clientChargingLaunch) {
         if (player.getMode() == Mode.TELEKINESIS) {
             CHANNEL.clientHandle().send(HoverTkPacket(Minecraft.getInstance().cameraEntity!!.lookAngle))
-            player.selection().doRaycast = true
         }
     }
 
     while (PLACE_TK.consumeClick() && !player.selection().clientChargingLaunch) {
         if (player.getMode() == Mode.TELEKINESIS) {
             CHANNEL.clientHandle().send(PlaceTkPacket())
-            player.selection().doRaycast = true
         }
     }
 
@@ -151,7 +146,7 @@ fun handleModInputEvents() {
     }
 
     while (DO_SELECT.consumeClick()) {
-        if (player.getMode() == Mode.SELECTING) {
+        if (player.getMode() == Mode.SELECTING && player.selection().selectionIsContiguous) {
             player.selection().cursorTargetBlock?.let {
                 player.selection().selectedPositions.add(it)
             }
@@ -162,21 +157,18 @@ fun handleModInputEvents() {
         // send a packet to the server to create a physics object from the cursor selection
         if (player.getMode() == Mode.SELECTING) {
             CHANNEL.clientHandle().send(
-                TkSelectionPackage()
+                TkPositionsPacket(player.selection().selectedPositions.toList())
             )
-            client.player!!.setMode(Mode.TELEKINESIS)
         }
     }
 
     if (LAUNCH_TK.isDown && !player.selection().clientChargingLaunch) {
         CHANNEL.clientHandle().send(SetChargingLaunchPacket(true))
-        player.selection().doRaycast = true
         player.selection().clientChargingLaunch = true
     } else if (!LAUNCH_TK.isDown && player.selection().clientChargingLaunch) {
         val launchTargetPos: Vec3 = player.selection().getSelectionPosition() ?:
             getPointerAtDistance(player, Minecraft.getInstance().cameraEntity!!.lookAngle, LAUNCH_POINTER_DISTANCE)
         CHANNEL.clientHandle().send(LaunchTkPacket(launchTargetPos))
-        player.selection().doRaycast = true
         player.selection().clientChargingLaunch = false
     }
 }

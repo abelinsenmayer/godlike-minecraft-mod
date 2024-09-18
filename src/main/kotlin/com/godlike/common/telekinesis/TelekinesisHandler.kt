@@ -1,9 +1,9 @@
 package com.godlike.common.telekinesis
 
+import com.godlike.common.Godlike.logger
 import com.godlike.common.components.ModComponents
 import com.godlike.common.components.telekinesis
 import com.godlike.common.networking.ModNetworking
-import com.godlike.common.networking.StartSelectingPacket
 import com.godlike.common.networking.TelekinesisControlsPacket
 import com.godlike.common.networking.TracerParticlePacket
 import com.godlike.common.util.*
@@ -16,20 +16,6 @@ import net.minecraft.world.phys.Vec3
 import org.valkyrienskies.core.api.ships.ServerShip
 
 const val LAUNCH_POINTER_DISTANCE = 100.0
-
-fun createShipFromSelection(player: ServerPlayer) {
-    val cursors = ModComponents.CURSORS.get(player).getPositions()
-    if (cursors.isEmpty()) {
-        return
-    }
-    val ship = Vs2Util.createShip(cursors, player.serverLevel())
-    ModComponents.TELEKINESIS_DATA.get(player).clearTargets()
-    ModComponents.TELEKINESIS_DATA.get(player).addShipIdAsTarget(ship.id)
-
-    // Set the pointer distance to the distance from the ship to the player's eyes
-    ModComponents.TELEKINESIS_DATA.get(player).pointerDistance = ship.transform.positionInWorld.toVec3()
-        .distanceTo(player.position().add(0.0, 1.5, 0.0))
-}
 
 /**
  * Turn the block at the given position into a ship and add it to the player's telekinesis targets.
@@ -60,14 +46,24 @@ fun pickShipToTk(ship: ServerShip, player: ServerPlayer) {
 }
 
 /**
- * Drop all telekinesis targets that aren't hovering.
+ * Create a ship from the given set of positions and add it to the player's telekinesis targets.
  */
-fun dropTk(player: ServerPlayer) {
-    player.telekinesis().removeTargetsWhere { it.hoverPos == null }
+fun tkPositions(positions: Set<BlockPos>, player: ServerPlayer) {
+    val ship = Vs2Util.createShip(positions, player.serverLevel())
+    player.telekinesis().addShipIdAsTarget(ship.id)
+    player.telekinesis().pointerDistance = ship.transform.positionInWorld.toVec3()
+        .distanceTo(player.position().add(0.0, 1.5, 0.0))
 }
 
 /**
- * Place all telekinesis targets that aren't hovering.
+ * Drop the player's currently-active telekinesis target.
+ */
+fun dropTk(player: ServerPlayer) {
+    player.telekinesis().activeTkTarget?.let { player.telekinesis().removeTarget(it) }
+}
+
+/**
+ * Place the player's currently-active telekinesis target.
  */
 fun placeTk(player: ServerPlayer) {
     val toPlace = player.telekinesis().getTkTargets().filter { it.hoverPos == null }
@@ -78,15 +74,11 @@ fun placeTk(player: ServerPlayer) {
 }
 
 /**
- * Hover all telekinesis targets that aren't hovering.
+ * Hover the player's currently-active telekinesis target.
  */
 fun hoverTk(player: ServerPlayer, lookDirection: Vec3) {
-    player.telekinesis().getTkTargets().forEach { target ->
-        if (target.hoverPos == null) {
-            target.hoverPos = getPointer(player, lookDirection, target)
-        }
-    }
-    player.telekinesis().sync()
+    player.telekinesis().activeTkTarget?.hoverPos = getPointer(player, lookDirection, player.telekinesis().activeTkTarget!!)
+    player.telekinesis().activeTkTarget = null
 }
 
 fun setChargingLaunch(player: ServerPlayer, isCharging: Boolean) {
@@ -121,18 +113,43 @@ fun getPointerAtDistance(player: Player, lookDirection: Vec3, distance: Double) 
     return findPointOnSphereAtRadius(eyePosition, distance, lookDirection)
 }
 
-fun tickTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, player: ServerPlayer) {
-    // Update the pointer distance
+/**
+ * Called every tick on the server side to update telekinesis targets. Handles controls from the client and every-tick
+ * updates to the targets (e.g. hovering).
+ */
+fun serverTelekinesisTick(telekinesisControls: TelekinesisControlsPacket, player: ServerPlayer) {
+    player.clearNonexistentTargets()
+
     player.telekinesis().pointerDistance += telekinesisControls.pointerDistanceDelta
 
     player.telekinesis().getTkTargets().forEach { target ->
+        val pointer = getPointer(player, telekinesisControls.playerLookDirection, target)
+        if (player.telekinesis().activeTkTarget != null) {
+            ModNetworking.CHANNEL.serverHandle(player).send(TracerParticlePacket(pointer))
+        }
+
+        target.addLiftForce()
+        if (telekinesisControls.rotating()) {
+            target.rotateTowardPointer(pointer, player.position().add(0.0, 1.5, 0.0))
+        } else {
+            target.addRotationDrag()
+            if (target.hoverPos != null) {
+                target.moveToward(target.hoverPos!!)
+            } else {
+                target.moveToward(pointer)
+            }
+        }
+    }
+}
+
+fun ServerPlayer.clearNonexistentTargets() {
+    this.telekinesis().getTkTargets().forEach { target ->
         if (target is ShipTkTarget) {
             // If the target's ship doesn't exist (e.g. because it was broken or unloaded), remove it from the list
             try {
                 target.ship
             } catch (e: NullPointerException) {
-                player.telekinesis().removeShipIdAsTarget(target.shipId)
-                ModNetworking.CHANNEL.serverHandle(player).send(StartSelectingPacket())
+                this.telekinesis().removeShipIdAsTarget(target.shipId)
                 return@forEach
             }
         } else if (target is EntityTkTarget) {
@@ -140,28 +157,8 @@ fun tickTelekinesisControls(telekinesisControls: TelekinesisControlsPacket, play
             try {
                 target.entity
             } catch (e: NullPointerException) {
-                player.telekinesis().removeTarget(target)
-                ModNetworking.CHANNEL.serverHandle(player).send(StartSelectingPacket())
+                this.telekinesis().removeTarget(target)
                 return@forEach
-            }
-        }
-
-        // Move the target
-        val pointer = getPointer(player, telekinesisControls.playerLookDirection, target)
-        if (player.telekinesis().hasNonHoveringTarget()) {
-            ModNetworking.CHANNEL.serverHandle(player).send(TracerParticlePacket(pointer))
-        }
-        val eyePosition = player.position().add(0.0, 1.5, 0.0)
-
-        target.addLiftForce()
-        if (telekinesisControls.rotating()) {
-            target.rotateTowardPointer(pointer, eyePosition)
-        } else {
-            target.addRotationDrag()
-            if (target.hoverPos != null) {
-                target.moveToward(target.hoverPos!!)
-            } else {
-                target.moveToward(pointer)
             }
         }
     }

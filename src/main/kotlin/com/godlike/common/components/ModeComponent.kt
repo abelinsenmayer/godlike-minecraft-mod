@@ -27,7 +27,6 @@ class ModeComponent(private val player : Player) : AutoSyncedComponent {
             if (player is LocalPlayer) {
                 player.sendSystemMessage(Component.literal("Mode set to $value"))
                 this.mode.setKeybindsForMode()
-                player.selection().doRaycast = value == Mode.TELEKINESIS || value == Mode.SELECTING
             }
             if (value != Mode.SELECTING) {
                 ModComponents.CURSOR_PREVIEWS.get(player).clearPositions()

@@ -1,11 +1,11 @@
 package com.godlike.client.util
 
-import com.godlike.common.Godlike.logger
 import com.godlike.common.components.ModComponents
 import com.godlike.common.components.selection
 import com.godlike.common.util.*
 import com.godlike.common.vs2.Vs2Util
 import net.minecraft.client.Minecraft
+import net.minecraft.client.player.LocalPlayer
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Vec3i
 import net.minecraft.world.entity.Entity
@@ -39,6 +39,34 @@ fun selectRaycastTarget() {
             selection.clear()
         }
     }
+}
+
+/**
+ * Returns true if the block the player is looking at is contiguous with the current selection.
+ * Also returns true if they have no selection. Returns false if there is no selected block.
+ */
+fun LocalPlayer.isTargetContiguousWithSelection() : Boolean {
+    val selection = this.selection()
+    if (selection.selectedPositions.isEmpty()) {
+        return true
+    }
+    if (selection.cursorTargetBlock == null) {
+        return false
+    }
+    return isPosContiguousWith(selection.cursorTargetBlock!!, selection.selectedPositions)
+}
+
+/**
+ * Returns true if the given position is contiguous with any of the positions in the given set.
+ * TODO consider implementing this using dfs.
+ */
+fun isPosContiguousWith(pos: BlockPos, set: Set<BlockPos>) : Boolean {
+    set.forEach { selectedPos ->
+        if (pos.distManhattan(selectedPos) == 1) {
+            return true
+        }
+    }
+    return false
 }
 
 /**

@@ -1,5 +1,6 @@
 package com.godlike.common.components
 
+import com.godlike.common.Godlike.logger
 import com.godlike.common.telekinesis.EntityTkTarget
 import com.godlike.common.telekinesis.ShipTkTarget
 import com.godlike.common.telekinesis.TkTarget
@@ -21,6 +22,17 @@ const val POINTER_DISTANCE_KEY = "pointer-distance"
 class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
     private val tkTargets : MutableList<TkTarget> = mutableListOf()
     var pointerDistance : Double = 0.0
+    var activeTkTarget : TkTarget? = null
+        set(value) {
+            if (!player.level().isClientSide) {
+                // if we already have an active target, make it hover and promote our new target to active
+                if (field != null && field!!.hoverPos == null) {
+                    field!!.hoverPos = field!!.pos()
+                }
+            }
+            field = value
+            sync()
+        }
 
     override fun shouldSyncWith(player: ServerPlayer?): Boolean {
         // we only want to sync this data with the player that owns it
@@ -35,9 +47,14 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
             val listTag = tag.getList(TK_TARGETS_KEY, 10)
             for (i in 0..<listTag.size) {
                 val compound = listTag.getCompound(i)
-                val target = TkTarget.fromNbtAndPlayer(compound, player) ?: continue
+                val target = TkTarget.fromNbtAndPlayer(compound, player)
                 tkTargets.add(target)
             }
+        }
+        if (tag.contains("activeTkTarget")) {
+            activeTkTarget = TkTarget.fromNbtAndPlayer(tag.getCompound("activeTkTarget"), player)
+        } else {
+            activeTkTarget = null
         }
         sync()
     }
@@ -49,47 +66,42 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
             listTag.add(it.toNbt())
         }
         tag.put(TK_TARGETS_KEY, listTag)
+        activeTkTarget?.let { tag.put("activeTkTarget", it.toNbt()) }
     }
 
-    fun sync() {
+    private fun sync() {
         if (player is ServerPlayer) {
             ModComponents.TELEKINESIS_DATA.sync(player)
         }
-    }
-
-    fun hasNonHoveringTarget(): Boolean {
-        return tkTargets.any { it.hoverPos == null }
     }
 
     fun getTkTargets(): List<TkTarget> {
         return tkTargets.toList()
     }
 
-    fun clearTargets() {
-        tkTargets.clear()
-        sync()
-    }
-
+    /**
+     * Adds a target to the player's telekinesis targets and promotes it to the active target.
+     */
     fun addTarget(target: TkTarget) {
         val existing = tkTargets.find { it == target }
         if (existing != null) {
-            if (target.hoverPos != null) {
-                target.hoverPos = null
-            }
+            target.hoverPos = null
         } else {
             tkTargets.add(target)
         }
-        sync()
+        activeTkTarget = target
     }
 
     fun removeTarget(target: TkTarget) {
+        if (activeTkTarget == target) {
+            activeTkTarget = null
+        }
         tkTargets.remove(target)
         sync()
     }
 
     fun removeTargetsWhere(predicate: (TkTarget) -> Boolean) {
-        tkTargets.removeIf(predicate)
-        sync()
+        tkTargets.filter { predicate(it) }.forEach { removeTarget(it) }
     }
 
     fun addShipIdAsTarget(id: Long) {
@@ -111,7 +123,7 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
     }
 
     fun removeShipIdAsTarget(id: Long) {
-        tkTargets.removeIf { it is ShipTkTarget && it.shipId == id }
+        tkTargets.filter { it is ShipTkTarget && it.shipId == id }.forEach { removeTarget(it) }
         sync()
     }
 }
