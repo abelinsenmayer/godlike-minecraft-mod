@@ -42,6 +42,8 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
                 field = value
             }
         }
+    val hasRaycastTarget
+        get() = cursorTargetBlock != null || cursorTargetEntity != null || cursorTargetShip != null
 
     override fun readFromNbt(tag: CompoundTag) {
         this.cursorTargetEntity = tag.getCompound(CURSOR_TARGET_ENTITY).let {

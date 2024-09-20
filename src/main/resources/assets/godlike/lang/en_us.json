@@ -1,15 +1,22 @@
 {
   "item.godlike.dev_wand": "Dev Wand",
   "category.godlike": "Godlike",
-  "key.godlike.selection_mode": "Toggle Selection Mode",
-  "key.godlike.do_select": "Confirm Selection",
-  "key.godlike.tk_selection": "Telekinesis Selection",
   "key.godlike.set_tk_hovering": "Hover",
   "key.godlike.pointer_away": "Push Pointer/Expand Selection",
+  "key.godlike.push_pointer": "Push Pointer",
+  "key.godlike.expand_selection": "Expand Selection",
   "key.godlike.pointer_towards": "Pull Pointer/Contract Selection",
+  "key.godlike.contract_selection": "Contract Selection",
+  "key.godlike.pull_pointer": "Pull Pointer",
   "key.godlike.launch_tk": "Launch",
+  "key.godlike.charge_launch_tk": "Charge Launch",
   "key.godlike.rotate_tk": "Rotate",
   "key.godlike.place_tk": "Place",
   "key.godlike.pick_to_tk": "Telekinesis",
-  "key.godlike.tk_mode": "Toggle Telekinesis Mode"
+  "key.godlike.drop_tk": "Drop",
+  "key.godlike.tk_mode": "Toggle Telekinesis",
+
+  "hud.godlike.hello-world": "Hello, World!",
+  "hud.godlike.hold": "(Hold)",
+  "hud.godlike.release": "(Release)"
 }

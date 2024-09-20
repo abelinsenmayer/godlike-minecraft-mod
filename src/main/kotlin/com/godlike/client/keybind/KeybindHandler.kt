@@ -1,16 +1,16 @@
 package com.godlike.client.keybind
 
-import com.godlike.client.keybind.ModKeybinds.DO_SELECT
 import com.godlike.client.keybind.ModKeybinds.LAUNCH_TK
 import com.godlike.client.keybind.ModKeybinds.PICK_TO_TK
 import com.godlike.client.keybind.ModKeybinds.PLACE_TK
 import com.godlike.client.keybind.ModKeybinds.POINTER_PULL
 import com.godlike.client.keybind.ModKeybinds.POINTER_PUSH
 import com.godlike.client.keybind.ModKeybinds.SET_TK_HOVERING
-import com.godlike.client.keybind.ModKeybinds.TK_SELECTION
-import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECTION_MODE
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
-import com.godlike.common.components.*
+import com.godlike.common.components.Mode
+import com.godlike.common.components.getMode
+import com.godlike.common.components.selection
+import com.godlike.common.components.telekinesis
 import com.godlike.common.networking.*
 import com.godlike.common.networking.ModNetworking.CHANNEL
 import com.godlike.common.telekinesis.LAUNCH_POINTER_DISTANCE

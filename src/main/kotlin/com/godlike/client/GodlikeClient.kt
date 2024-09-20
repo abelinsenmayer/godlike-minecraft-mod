@@ -3,7 +3,9 @@ package com.godlike.client
 import com.godlike.client.ClientTickHandler
 import com.godlike.client.keybind.ModKeybinds
 import com.godlike.client.networking.ModClientNetworking
+import com.godlike.client.render.ControlsHudOverlay
 import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 
 object GodlikeClient : ClientModInitializer {
 
@@ -18,5 +20,8 @@ object GodlikeClient : ClientModInitializer {
 
 		// Register client networking
 		ModClientNetworking.register()
+
+		// Register HUD
+		HudRenderCallback.EVENT.register(ControlsHudOverlay())
 	}
 }
