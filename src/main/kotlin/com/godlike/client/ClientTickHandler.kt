@@ -35,16 +35,12 @@ object ClientTickHandler {
      * Handles all client side actions that need to happen every tick for telekinesis "stuff".
      */
     private fun clientTelekinesisTick(player : LocalPlayer) {
-        if (player.telekinesis().activeTkTarget == null && (player.getMode() == Mode.TELEKINESIS || player.getMode() == Mode.SELECTING)) {
+        if (player.telekinesis().activeTkTarget == null && player.getMode() == Mode.TELEKINESIS) {
             selectRaycastTarget()
         }
 
         if (player.telekinesis().getTkTargets().isNotEmpty()) {
             sendTelekinesisTick()
-        }
-
-        if (player.getMode() == Mode.SELECTING) {
-            player.selection().selectionIsContiguous = player.isTargetContiguousWithSelection()
         }
     }
 }

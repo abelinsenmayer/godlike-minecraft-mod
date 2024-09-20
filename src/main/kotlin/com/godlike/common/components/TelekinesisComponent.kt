@@ -5,6 +5,7 @@ import com.godlike.common.telekinesis.EntityTkTarget
 import com.godlike.common.telekinesis.ShipTkTarget
 import com.godlike.common.telekinesis.TkTarget
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
+import net.minecraft.client.player.LocalPlayer
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
 import net.minecraft.server.level.ServerPlayer
@@ -29,6 +30,8 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
                 if (value != null && field != null && field!!.hoverPos == null) {
                     field!!.hoverPos = field!!.pos()
                 }
+            } else if (value != null) {
+                (player as LocalPlayer).selection().clear()
             }
             field = value
             sync()

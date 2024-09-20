@@ -34,20 +34,10 @@ fun highlightSelections(poseStack: PoseStack, camera: Camera, outlineBufferSourc
     selection.cursorTargetShip?.let {
         outlineShip(it, poseStack, camera, 100f, 100f, 100f, 1.0f)
     }
-
     selection.cursorTargetBlock?.let {
-        val color = if (player.getMode() == Mode.SELECTING) {
-            if (selection.selectionIsContiguous) Color(0, 255, 0) else Color(255, 0, 0)
-        } else {
-            Color(255, 255, 255)
-        }
-        outlineBlockPos(it, poseStack, camera, color)
+        outlineBlockPos(it, poseStack, camera, Color(255, 255, 255))
     }
-
-    if (player.getMode() == Mode.SELECTING) {
-        selection.previewPositions.forEach { outlineBlockPos(it, poseStack, camera, 1f, 1f, 1f, 0.5f) }
-        selection.selectedPositions.forEach { outlineBlockPos(it, poseStack, camera, 0f, 0f, 1f, 1.0f) }
-    }
+    selection.previewPositions.forEach { outlineBlockPos(it, poseStack, camera, 1f, 1f, 1f, 0.5f) }
 }
 
 fun outlineShip(

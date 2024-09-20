@@ -75,6 +75,7 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
         cursorTargetShip = null
         selectedPositions.clear()
         previewPositions.clear()
+        dfsDepth = 0
     }
 
     fun setSingleTarget(target: Any) {

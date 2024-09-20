@@ -31,10 +31,10 @@ fun sendTelekinesisTick() {
     if (Minecraft.getInstance().player!!.getMode() == Mode.TELEKINESIS) {
         // Only allow the player to change the pointer distance if they are in telekinesis mode;
         // we use these keybinds for other things in other modes.
-        if (ModKeybinds.POINTER_PULL.isDown) {
+        if (POINTER_PULL.isDown) {
             pointerDistanceDelta -= POINTER_DELTA_INCREMENT
         }
-        if (ModKeybinds.POINTER_PUSH.isDown) {
+        if (POINTER_PUSH.isDown) {
             pointerDistanceDelta += POINTER_DELTA_INCREMENT
         }
     }
@@ -55,7 +55,7 @@ fun handleModInputEvents() {
 
     while (TOGGLE_TK_MODE.consumeClick() && !player.selection().clientChargingLaunch) {
         val currentMode = player.getMode()
-        if (currentMode == Mode.TELEKINESIS || currentMode == Mode.SELECTING) {
+        if (currentMode == Mode.TELEKINESIS) {
             CHANNEL.clientHandle().send(
                 SetModePacket(Mode.NONE.name)
             )
@@ -73,7 +73,9 @@ fun handleModInputEvents() {
                 val selection = player.selection()
                 var didPick = false
                 selection.cursorTargetBlock?.let {
-                    CHANNEL.clientHandle().send(PickBlockToTkPacket(it))
+                    val toTk = mutableListOf(it)
+                    toTk.addAll(selection.previewPositions)
+                    CHANNEL.clientHandle().send(TkPositionsPacket(toTk))
                     didPick = true
                 }
                 selection.cursorTargetEntity?.let {
@@ -105,35 +107,35 @@ fun handleModInputEvents() {
         }
     }
 
-    while (TOGGLE_SELECTION_MODE.consumeClick()) {
-        val currentMode = player.getMode()
-        if (currentMode == Mode.SELECTING) {
-            player.setMode(Mode.TELEKINESIS)
-            player.selection().dfsDepth = 0
-        } else if (currentMode == Mode.TELEKINESIS) {
-            player.setMode(Mode.SELECTING)
-        }
-    }
+//    while (TOGGLE_SELECTION_MODE.consumeClick()) {
+//        val currentMode = player.getMode()
+//        if (currentMode == Mode.SELECTING) {
+//            player.setMode(Mode.TELEKINESIS)
+//            player.selection().dfsDepth = 0
+//        } else if (currentMode == Mode.TELEKINESIS) {
+//            player.setMode(Mode.SELECTING)
+//        }
+//    }
 
-    while (DO_SELECT.consumeClick()) {
-        if (player.getMode() == Mode.SELECTING && player.selection().selectionIsContiguous) {
-            player.selection().cursorTargetBlock?.let {
-                player.selection().selectedPositions.add(it)
-            }
-            player.selection().selectedPositions.addAll(player.selection().previewPositions)
-            player.selection().dfsDepth = 0
-        }
-    }
+//    while (DO_SELECT.consumeClick()) {
+//        if (player.getMode() == Mode.SELECTING && player.selection().selectionIsContiguous) {
+//            player.selection().cursorTargetBlock?.let {
+//                player.selection().selectedPositions.add(it)
+//            }
+//            player.selection().selectedPositions.addAll(player.selection().previewPositions)
+//            player.selection().dfsDepth = 0
+//        }
+//    }
 
-    while (TK_SELECTION.consumeClick()) {
-        // send a packet to the server to create a physics object from the cursor selection
-        if (player.getMode() == Mode.SELECTING && player.selection().selectedPositions.isNotEmpty()) {
-            CHANNEL.clientHandle().send(
-                TkPositionsPacket(player.selection().selectedPositions.toList())
-            )
-        }
-        player.selection().dfsDepth = 0
-    }
+//    while (TK_SELECTION.consumeClick()) {
+//        // send a packet to the server to create a physics object from the cursor selection
+//        if (player.getMode() == Mode.SELECTING && player.selection().selectedPositions.isNotEmpty()) {
+//            CHANNEL.clientHandle().send(
+//                TkPositionsPacket(player.selection().previewPositions.toList())
+//            )
+//        }
+//        player.selection().dfsDepth = 0
+//    }
 
     if (LAUNCH_TK.isDown && !player.selection().clientChargingLaunch) {
         CHANNEL.clientHandle().send(SetChargingLaunchPacket(true))
@@ -145,10 +147,10 @@ fun handleModInputEvents() {
         player.selection().clientChargingLaunch = false
     }
 
-    if (player.getMode() == Mode.SELECTING && POINTER_PUSH.isDown) {
+    if (player.telekinesis().activeTkTarget == null && POINTER_PUSH.isDown) {
         player.selection().dfsDepth++
     }
-    if (player.getMode() == Mode.SELECTING && POINTER_PULL.isDown) {
+    if (player.telekinesis().activeTkTarget == null && POINTER_PULL.isDown) {
         player.selection().dfsDepth--
     }
 }
