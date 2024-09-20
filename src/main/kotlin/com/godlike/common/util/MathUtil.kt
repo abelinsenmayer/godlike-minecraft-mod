@@ -31,6 +31,17 @@ fun Vec3.toVec3i(): Vec3i {
     return Vec3i(x.toInt(), y.toInt(), z.toInt())
 }
 
+fun Vec3i.getNeighbors() : List<Vec3i> {
+    return listOf(
+        Vec3i(x + 1, y, z),
+        Vec3i(x - 1, y, z),
+        Vec3i(x, y + 1, z),
+        Vec3i(x, y - 1, z),
+        Vec3i(x, y, z + 1),
+        Vec3i(x, y, z - 1)
+    )
+}
+
 /**
  * Given a point p and a vector v, finds where v intersects the plane perpendicular to v and passing
  * through the point t.

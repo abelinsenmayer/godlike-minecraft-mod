@@ -65,7 +65,9 @@ enum class Mode(private val keybinds: List<KeyMapping>) {
     SELECTING(listOf(
         ModKeybinds.DO_SELECT,
         ModKeybinds.TK_SELECTION,
-        ModKeybinds.TOGGLE_SELECTION_MODE
+        ModKeybinds.TOGGLE_SELECTION_MODE,
+        ModKeybinds.POINTER_PULL,
+        ModKeybinds.POINTER_PUSH,
     )),
     TELEKINESIS(listOf(
         ModKeybinds.POINTER_PULL,

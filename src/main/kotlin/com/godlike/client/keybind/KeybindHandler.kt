@@ -1,32 +1,21 @@
 package com.godlike.client.keybind
 
-import com.godlike.common.networking.TkPositionsPacket
 import com.godlike.client.keybind.ModKeybinds.DO_SELECT
 import com.godlike.client.keybind.ModKeybinds.LAUNCH_TK
 import com.godlike.client.keybind.ModKeybinds.PICK_TO_TK
 import com.godlike.client.keybind.ModKeybinds.PLACE_TK
+import com.godlike.client.keybind.ModKeybinds.POINTER_PULL
+import com.godlike.client.keybind.ModKeybinds.POINTER_PUSH
 import com.godlike.client.keybind.ModKeybinds.SET_TK_HOVERING
 import com.godlike.client.keybind.ModKeybinds.TK_SELECTION
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECTION_MODE
-import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_FAR
-import com.godlike.client.keybind.ModKeybinds.TOGGLE_SELECT_VERTICAL
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
 import com.godlike.common.components.*
-import com.godlike.common.networking.DropTkPacket
-import com.godlike.common.networking.HoverTkPacket
-import com.godlike.common.networking.LaunchTkPacket
+import com.godlike.common.networking.*
 import com.godlike.common.networking.ModNetworking.CHANNEL
-import com.godlike.common.networking.PickBlockToTkPacket
-import com.godlike.common.networking.PickEntityToTkPacket
-import com.godlike.common.networking.PickShipToTkPacket
-import com.godlike.common.networking.PlaceTkPacket
-import com.godlike.common.networking.SetChargingLaunchPacket
-import com.godlike.common.networking.SetModePacket
-import com.godlike.common.networking.TelekinesisControlsPacket
 import com.godlike.common.telekinesis.LAUNCH_POINTER_DISTANCE
 import com.godlike.common.telekinesis.getPointerAtDistance
 import net.minecraft.client.Minecraft
-import net.minecraft.network.chat.Component
 import net.minecraft.world.phys.Vec3
 
 const val POINTER_DELTA_INCREMENT = 0.5
@@ -39,11 +28,15 @@ fun sendTelekinesisTick() {
     val playerLookDirection = Minecraft.getInstance().cameraEntity!!.lookAngle
 
     var pointerDistanceDelta = 0.0
-    if (ModKeybinds.POINTER_PULL.isDown) {
-        pointerDistanceDelta -= POINTER_DELTA_INCREMENT
-    }
-    if (ModKeybinds.POINTER_PUSH.isDown) {
-        pointerDistanceDelta += POINTER_DELTA_INCREMENT
+    if (Minecraft.getInstance().player!!.getMode() == Mode.TELEKINESIS) {
+        // Only allow the player to change the pointer distance if they are in telekinesis mode;
+        // we use these keybinds for other things in other modes.
+        if (ModKeybinds.POINTER_PULL.isDown) {
+            pointerDistanceDelta -= POINTER_DELTA_INCREMENT
+        }
+        if (ModKeybinds.POINTER_PUSH.isDown) {
+            pointerDistanceDelta += POINTER_DELTA_INCREMENT
+        }
     }
     val isRotating = ModKeybinds.ROTATE_TK.isDown
 
@@ -116,32 +109,9 @@ fun handleModInputEvents() {
         val currentMode = player.getMode()
         if (currentMode == Mode.SELECTING) {
             player.setMode(Mode.TELEKINESIS)
+            player.selection().dfsDepth = 0
         } else if (currentMode == Mode.TELEKINESIS) {
             player.setMode(Mode.SELECTING)
-        }
-    }
-
-    while (TOGGLE_SELECT_VERTICAL.consumeClick()) {
-        if (player.getMode() == Mode.SELECTING) {
-            ModComponents.SELECTING_VERTICAL.get(client.player!!).toggle()
-            client.player!!.sendSystemMessage(
-                Component.literal(
-                    if (ModComponents.SELECTING_VERTICAL.get(client.player!!).getValue()) "Vertical selection"
-                    else "Horizontal selection"
-                )
-            )
-        }
-    }
-
-    while (TOGGLE_SELECT_FAR.consumeClick()) {
-        if (player.getMode() == Mode.SELECTING) {
-            ModComponents.SELECTING_FAR.get(client.player!!).toggle()
-            client.player!!.sendSystemMessage(
-                Component.literal(
-                    if (ModComponents.SELECTING_FAR.get(client.player!!).getValue()) "Selecting far"
-                    else "Selecting near"
-                )
-            )
         }
     }
 
@@ -150,16 +120,19 @@ fun handleModInputEvents() {
             player.selection().cursorTargetBlock?.let {
                 player.selection().selectedPositions.add(it)
             }
+            player.selection().selectedPositions.addAll(player.selection().previewPositions)
+            player.selection().dfsDepth = 0
         }
     }
 
     while (TK_SELECTION.consumeClick()) {
         // send a packet to the server to create a physics object from the cursor selection
-        if (player.getMode() == Mode.SELECTING) {
+        if (player.getMode() == Mode.SELECTING && player.selection().selectedPositions.isNotEmpty()) {
             CHANNEL.clientHandle().send(
                 TkPositionsPacket(player.selection().selectedPositions.toList())
             )
         }
+        player.selection().dfsDepth = 0
     }
 
     if (LAUNCH_TK.isDown && !player.selection().clientChargingLaunch) {
@@ -170,5 +143,12 @@ fun handleModInputEvents() {
             getPointerAtDistance(player, Minecraft.getInstance().cameraEntity!!.lookAngle, LAUNCH_POINTER_DISTANCE)
         CHANNEL.clientHandle().send(LaunchTkPacket(launchTargetPos))
         player.selection().clientChargingLaunch = false
+    }
+
+    if (player.getMode() == Mode.SELECTING && POINTER_PUSH.isDown) {
+        player.selection().dfsDepth++
+    }
+    if (player.getMode() == Mode.SELECTING && POINTER_PULL.isDown) {
+        player.selection().dfsDepth--
     }
 }

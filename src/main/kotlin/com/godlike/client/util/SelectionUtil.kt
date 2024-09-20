@@ -14,6 +14,10 @@ import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
 
+/**
+ * Selects the block, entity, or ship the player is looking at.
+ * If they select a block, updates selection based on the block's position.
+ */
 fun selectRaycastTarget() {
     val client = Minecraft.getInstance()
     val player = client.player!!
@@ -30,6 +34,9 @@ fun selectRaycastTarget() {
                 selection.setSingleTarget(ship)
             } else {
                 selection.setSingleTarget(hit.blockPos)
+                if (selection.dfsDepth > 0) {
+                    player.updatePreviewsFromPosition(hit.blockPos)
+                }
             }
         }
         HitResult.Type.ENTITY -> {
@@ -68,6 +75,40 @@ fun isPosContiguousWith(pos: BlockPos, set: Set<BlockPos>) : Boolean {
     }
     return false
 }
+
+fun LocalPlayer.updatePreviewsFromPosition(pos: Vec3i) {
+    val searchCondition = { position: Vec3i -> !this.clientLevel.getBlockState(BlockPos(position)).isAir &&
+            !this.selection().selectedPositions.contains(position) }
+    val found = blockPosDfs(pos, this.selection().dfsDepth, false, searchCondition)
+    this.selection().previewPositions.clear()
+    this.selection().previewPositions.addAll(found)
+}
+
+fun blockPosDfs(startPos: Vec3i, range: Int, manhattan: Boolean, condition: (Vec3i) -> Boolean) : Set<BlockPos> {
+    return dfs(startPos, startPos, range, manhattan, mutableSetOf(), condition).map { BlockPos(it) }.toSet()
+}
+
+fun dfs(pos: Vec3i, origin: Vec3i, range: Int, manhattan: Boolean, visited: MutableSet<Vec3i>, condition: (Vec3i) -> Boolean) : Set<Vec3i> {
+    val distance = if (manhattan) pos.distManhattan(origin).toDouble() else pos.distSqr(origin)
+    if (distance >= range) {
+        return visited
+    }
+    if (condition(pos)) {
+        visited.add(pos)
+    }
+    pos.getNeighbors().filter { !visited.contains(it) }.filter { condition(it) }.forEach {
+        dfs(it, origin, range, manhattan, visited, condition)
+    }
+    return visited
+}
+
+
+
+
+
+
+
+
 
 /**
  * Called every tick on the client side when the player is in selection mode.

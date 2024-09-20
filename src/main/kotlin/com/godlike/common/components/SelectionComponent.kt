@@ -15,6 +15,8 @@ import org.valkyrienskies.core.api.ships.ClientShip
 const val CURSOR_TARGET_BLOCK = "cursor_target_block"
 const val CURSOR_TARGET_ENTITY = "cursor_target_entity"
 
+const val MAX_DFS_DEPTH = 200
+
 /**
  * This component is used to store the player's current selection data.
  * Note that it is written and read on the client side; you should not use this component on the server side.
@@ -34,6 +36,12 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
     var selectedPositions: MutableSet<BlockPos> = mutableSetOf()
     var previewPositions: MutableSet<BlockPos> = mutableSetOf()
     var selectionIsContiguous: Boolean = false
+    var dfsDepth: Int = 0
+        set(value) {
+            if (value <= MAX_DFS_DEPTH) {
+                field = value
+            }
+        }
 
     override fun readFromNbt(tag: CompoundTag) {
         this.cursorTargetEntity = tag.getCompound(CURSOR_TARGET_ENTITY).let {
@@ -44,6 +52,7 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
         selectedPositions = tag.getLongArray("selectedPositions").map { BlockPos.of(it) }.toMutableSet()
         previewPositions = tag.getLongArray("previewPositions").map { BlockPos.of(it) }.toMutableSet()
         selectionIsContiguous = tag.getBoolean("selectionIsContiguous")
+        dfsDepth = tag.getInt("dfsDepth")
     }
 
     override fun writeToNbt(tag: CompoundTag) {
@@ -57,6 +66,7 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
         tag.putLongArray("selectedPositions", selectedPositions.map { it.asLong() }.toLongArray())
         tag.putLongArray("previewPositions", previewPositions.map { it.asLong() }.toLongArray())
         tag.putBoolean("selectionIsContiguous", selectionIsContiguous)
+        tag.putInt("dfsDepth", dfsDepth)
     }
 
     fun clear() {

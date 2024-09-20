@@ -26,7 +26,7 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
         set(value) {
             if (!player.level().isClientSide) {
                 // if we already have an active target, make it hover and promote our new target to active
-                if (field != null && field!!.hoverPos == null) {
+                if (value != null && field != null && field!!.hoverPos == null) {
                     field!!.hoverPos = field!!.pos()
                 }
             }
