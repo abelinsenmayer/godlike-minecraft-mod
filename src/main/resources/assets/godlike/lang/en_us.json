@@ -3,5 +3,13 @@
   "category.godlike": "Godlike",
   "key.godlike.selection_mode": "Toggle Selection Mode",
   "key.godlike.do_select": "Confirm Selection",
-  "key.godlike.tk_selection": "Telekinesis Selection"
+  "key.godlike.tk_selection": "Telekinesis Selection",
+  "key.godlike.set_tk_hovering": "Hover",
+  "key.godlike.pointer_away": "Push Pointer/Expand Selection",
+  "key.godlike.pointer_towards": "Pull Pointer/Contract Selection",
+  "key.godlike.launch_tk": "Launch",
+  "key.godlike.rotate_tk": "Rotate",
+  "key.godlike.place_tk": "Place",
+  "key.godlike.pick_to_tk": "Telekinesis",
+  "key.godlike.tk_mode": "Toggle Telekinesis Mode"
 }
