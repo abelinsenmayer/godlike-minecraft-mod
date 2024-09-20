@@ -1,5 +1,6 @@
 package com.godlike.common.telekinesis
 
+import com.godlike.common.Godlike.logger
 import com.godlike.common.util.disassemble
 import com.godlike.common.util.negate
 import com.godlike.common.util.toVec3
@@ -101,14 +102,16 @@ class ShipTkTarget(
         val shipPos = ship.transform.positionInWorld.toVec3()
         val shipToPointer = shipPos.subtract(pointer)
         val playerToShip = playerEyePos.subtract(shipPos)
-        val torque = shipToPointer.cross(playerToShip).normalize().scale(ship.inertiaData.mass/10 * SHIP_FORCE_SCALAR)
+        val torqueAxis = shipToPointer.cross(playerToShip).normalize()
+        val torque = ship.inertiaData.momentOfInertiaTensor.transform(torqueAxis.toVector3d()).toVec3().scale(6.0)
 
         torqueApplier().applyInvariantTorque(torque.toVector3d())
     }
 
     override fun addRotationDrag() {
-        val dragForce = ship.omega.toVec3().scale(-ship.omega.length()).scale(SHIP_FORCE_SCALAR * SHIP_BRAKE_SCALAR)
-        torqueApplier().applyInvariantTorque(dragForce.toVector3d())
+        val dragAxis = ship.inertiaData.momentOfInertiaTensor.transform(ship.omega.toVec3().toVector3d()).toVec3()
+        val dragTorque = dragAxis.scale(-ship.omega.length()).scale(6.0)
+        torqueApplier().applyInvariantTorque(dragTorque.toVector3d())
     }
 
     override fun equals(other: Any?): Boolean {
