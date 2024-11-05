@@ -25,7 +25,7 @@ class ModeComponent(private val player : Player) : AutoSyncedComponent {
             _mode = value
             ModComponents.MODE.sync(player)
             if (player is LocalPlayer) {
-                player.sendSystemMessage(Component.literal("Mode set to $value"))
+                // player.sendSystemMessage(Component.literal("Mode set to $value"))
                 this.mode.setKeybindsForMode()
             }
             if (value != Mode.SELECTING) {
