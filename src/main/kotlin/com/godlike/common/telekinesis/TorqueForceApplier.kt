@@ -3,8 +3,8 @@ package com.godlike.common.telekinesis
 import org.joml.Vector3dc
 import org.valkyrienskies.core.api.ships.PhysShip
 import org.valkyrienskies.core.api.ships.ServerShip
-import org.valkyrienskies.core.impl.api.ShipForcesInducer
-import org.valkyrienskies.core.impl.util.pollUntilEmpty
+import org.valkyrienskies.core.api.ships.ShipForcesInducer
+import org.valkyrienskies.core.util.pollUntilEmpty
 import java.util.concurrent.ConcurrentLinkedQueue
 import org.valkyrienskies.mod.common.util.GameTickForceApplier
 

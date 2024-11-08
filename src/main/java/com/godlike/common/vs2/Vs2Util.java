@@ -20,7 +20,7 @@ import org.valkyrienskies.core.api.ships.ClientShip;
 import org.valkyrienskies.core.api.ships.ServerShip;
 import org.valkyrienskies.core.apigame.world.ClientShipWorldCore;
 import org.valkyrienskies.core.apigame.world.ServerShipWorldCore;
-import org.valkyrienskies.core.impl.datastructures.DenseBlockPosSet;
+import org.valkyrienskies.core.util.datastructures.DenseBlockPosSet;
 import org.valkyrienskies.mod.common.assembly.ShipAssemblyKt;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.util.MinecraftPlayer;
@@ -28,7 +28,6 @@ import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 import org.valkyrienskies.mod.util.RelocationUtilKt;
 
 import java.util.Collection;
-import java.util.function.Supplier;
 
 public class Vs2Util {
     public static ServerShip createShip(Collection<BlockPos> positions, ServerLevel world) {

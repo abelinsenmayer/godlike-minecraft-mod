@@ -52,15 +52,10 @@ repositories {
 }
 
 loom {
-//	splitEnvironmentSourceSets()
-//
 	mods {
 		"godlike" {
-//			sourceSet sourceSets.main
-//			sourceSet sourceSets.client
 		}
 	}
-
 }
 
 fabricApi {
@@ -87,7 +82,8 @@ dependencies {
 
 	modImplementation "io.wispforest:owo-lib:${project.owo_version}"
 	modImplementation("team.lodestar.lodestone:lodestone:${project.minecraft_version}-${project.lodestone_version}-fabric")
-	modApi "org.valkyrienskies:valkyrienskies-1201-fabric:${project.vs2_version}"
+
+	modImplementation("maven.modrinth:valkyrien-skies:${project.vs2_version}")
 
 	modImplementation("dev.emi:trinkets:${project.trinkets_version}")
 	modImplementation("com.jamieswhiteshirt:reach-entity-attributes:${project.rea_version}")

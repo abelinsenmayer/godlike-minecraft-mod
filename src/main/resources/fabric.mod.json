@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "godlike",
-	"version": "${version}",
+	"version": "1.0",
 	"name": "Godlike",
 	"description": "A Minecraft mod that makes you godlike.",
 	"authors": [
@@ -50,7 +50,11 @@
 		"java": ">=17",
 		"fabric-api": "*",
 		"fabric-language-kotlin": "*",
-		"fabric-key-binding-api-v1": "*"
+		"fabric-key-binding-api-v1": "*",
+		"valkyrienskies": ">=1.20.1-fabric-2.3.0-beta.5",
+		"owo-lib": "*",
+		"lodestone": "*",
+		"trinkets": "*"
 	},
 	"suggests": {
 		"another-mod": "*"
