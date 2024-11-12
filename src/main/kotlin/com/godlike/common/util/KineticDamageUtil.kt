@@ -30,7 +30,7 @@ fun LivingEntity.kineticDamageShipCollision(other: ServerShip) : Float {
     if (this.immuneToKineticDamage()) {
         return 0.0F
     }
-    return velocityToKineticDamage(other.velocity.toVec3().length()/20.0).toFloat()
+    return velocityToKineticDamage(other.velocity.toVec3().length()/10.0).toFloat()
 }
 
 fun velocityToKineticDamage(velocity: Double) : Double {
@@ -50,7 +50,7 @@ fun Entity.findCollidingEntities() : List<Entity> {
  */
 fun Entity.getCollidingServerShips() : List<LoadedServerShip> {
     return if (!this.level().isClientSide) {
-        val bb = this.boundingBox.inflate(0.5, 0.5, 0.5)
+        val bb = this.boundingBox.inflate(2.0, 2.0, 2.0)
         Vs2Util.getServerShipWorld(this.level() as ServerLevel).loadedShips.getIntersecting(AABBd(
             Vector3d(bb.minX, bb.minY, bb.minZ),
             Vector3d(bb.maxX, bb.maxY, bb.maxZ)

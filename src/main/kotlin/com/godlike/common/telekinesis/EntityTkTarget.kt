@@ -1,5 +1,6 @@
 package com.godlike.common.telekinesis
 
+import com.godlike.common.components.telekinesis
 import com.godlike.common.util.negate
 import com.godlike.common.util.toVector3d
 import net.minecraft.nbt.CompoundTag
@@ -18,7 +19,8 @@ class EntityTkTarget(
     override val player: Player,
     private val entityId: Int,
     override var hoverPos: Vec3? = null,
-    override var chargingLaunch: Boolean = false
+    override var chargingLaunch: Boolean = false,
+    override var isLaunching: Boolean = false
 ) : TkTarget {
     val entity : Entity
         get() {
@@ -31,10 +33,6 @@ class EntityTkTarget(
 
     private fun addForce(force: Vec3) {
         entity.push(force.x, force.y, force.z)
-    }
-
-    fun Entity.mass(): Double {
-        return entity.boundingBox.size
     }
 
     override fun moveToward(pos: Vec3) {
@@ -88,7 +86,36 @@ class EntityTkTarget(
             tag.putDouble("hoverPos.z", it.z)
         }
         tag.putBoolean("chargingLaunch", chargingLaunch)
+        tag.putBoolean("isLaunching", isLaunching)
         return tag
+    }
+
+    override fun mass(): Double {
+        return entity.boundingBox.ysize * entity.boundingBox.xsize * entity.boundingBox.zsize
+    }
+
+    /**
+     * Called every tick on the server side to update telekinesis targets.
+     * Note that player TK controls are handled separately; this is for things that should happen every tick regardless
+     * of controlling player.
+     */
+    override fun tick() {
+        if (isLaunching) {
+            launchingTick()
+        }
+    }
+
+    private fun launchingTick() {
+
+    }
+
+    override fun exists(): Boolean {
+        return try {
+            entity
+            true
+        } catch (e: NullPointerException) {
+            false
+        }
     }
 
     override fun equals(other: Any?): Boolean {

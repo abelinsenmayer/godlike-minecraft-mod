@@ -4,6 +4,7 @@ import com.godlike.common.Godlike.logger
 import com.godlike.common.telekinesis.EntityTkTarget
 import com.godlike.common.telekinesis.ShipTkTarget
 import com.godlike.common.telekinesis.TkTarget
+import com.godlike.common.telekinesis.TkTicker
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.nbt.CompoundTag
@@ -84,8 +85,13 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
 
     /**
      * Adds a target to the player's telekinesis targets and promotes it to the active target.
+     * Also adds the target TkTicker's tickingTargets set.
      */
     fun addTarget(target: TkTarget) {
+        if (target is ShipTkTarget) {
+            // Set ship TK target to place as block after a delay
+            target.disassemblyTickCountdown = -1
+        }
         val existing = tkTargets.find { it == target }
         if (existing != null) {
             target.hoverPos = null
@@ -96,6 +102,10 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
     }
 
     fun removeTarget(target: TkTarget) {
+        if (target is ShipTkTarget) {
+            // Set ship TK target to place as block after a delay
+            target.disassemblyTickCountdown = 200
+        }
         if (activeTkTarget == target) {
             activeTkTarget = null
         }
@@ -109,6 +119,7 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
 
     fun addShipIdAsTarget(id: Long) {
         val existing = tkTargets.find { it is ShipTkTarget && it.ship.id == id }
+            ?: TkTicker.tickingTargets.find { it is ShipTkTarget && it.ship.id == id }
         if (existing != null) {
             addTarget(existing)
         } else {

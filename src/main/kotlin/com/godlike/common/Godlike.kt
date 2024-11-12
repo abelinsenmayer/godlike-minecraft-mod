@@ -27,5 +27,7 @@ object Godlike : ModInitializer {
 
 		// Initialize networking
 		ModNetworking.register()
+
+		ServerTickHandler.start()
 	}
 }

@@ -11,6 +11,7 @@ interface TkTarget {
     val player : Player
     var hoverPos : Vec3?
     var chargingLaunch : Boolean
+    var isLaunching : Boolean
 
     companion object {
         fun fromNbtAndPlayer(tag: CompoundTag, player: Player) : TkTarget {
@@ -29,6 +30,7 @@ interface TkTarget {
                 )
             }
             target.chargingLaunch = tag.getBoolean("chargingLaunch")
+            target.isLaunching = tag.getBoolean("isLaunching")
             return target
         }
     }
@@ -48,4 +50,15 @@ interface TkTarget {
     fun launchToward(pos: Vec3)
 
     fun toNbt() : CompoundTag
+
+    fun mass() : Double
+
+    /**
+     * Called every tick on the server side to update telekinesis targets.
+     * Note that player TK controls are handled separately; this is for things that should happen every tick regardless
+     * of controlling player.
+     */
+    fun tick()
+
+    fun exists() : Boolean
 }

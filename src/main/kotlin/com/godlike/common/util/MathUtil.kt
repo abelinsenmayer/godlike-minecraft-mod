@@ -3,13 +3,20 @@ package com.godlike.common.util
 import net.minecraft.core.Vec3i
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.Tag
+import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3d
 import org.joml.Vector3dc
+import org.joml.primitives.AABBi
+import org.joml.primitives.AABBic
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 const val MAX_RAYCAST_DISTANCE = 40.0
+
+fun AABBic.toAABB(): AABB {
+    return AABB(minX().toDouble(), minY().toDouble(), minZ().toDouble(), maxX().toDouble(), maxY().toDouble(), maxZ().toDouble())
+}
 
 fun Vec3.toVector3d(): Vector3d {
     return Vector3d(x, y, z)

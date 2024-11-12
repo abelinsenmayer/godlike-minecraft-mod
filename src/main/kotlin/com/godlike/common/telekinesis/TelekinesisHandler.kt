@@ -16,6 +16,7 @@ import net.minecraft.world.phys.Vec3
 import org.valkyrienskies.core.api.ships.ServerShip
 
 const val LAUNCH_POINTER_DISTANCE = 100.0
+const val LAUNCH_DAMAGE = 4.0F
 
 /**
  * Turn the block at the given position into a ship and add it to the player's telekinesis targets.
@@ -96,6 +97,7 @@ fun launchTk(player: ServerPlayer, targetedPosition: Vec3) {
         target.hoverPos = null
         target.launchToward(targetedPosition)
         player.telekinesis().removeTarget(target)
+        target.isLaunching = true
     }
 }
 
@@ -123,6 +125,9 @@ fun serverTelekinesisTick(telekinesisControls: TelekinesisControlsPacket, player
     player.telekinesis().pointerDistance += telekinesisControls.pointerDistanceDelta
 
     player.telekinesis().getTkTargets().forEach { target ->
+        // If not registered with ticker, add it
+        TkTicker.tickingTargets.add(target)
+
         val pointer = getPointer(player, telekinesisControls.playerLookDirection, target)
         if (player.telekinesis().activeTkTarget != null) {
             ModNetworking.CHANNEL.serverHandle(player).send(TracerParticlePacket(pointer))
@@ -144,22 +149,8 @@ fun serverTelekinesisTick(telekinesisControls: TelekinesisControlsPacket, player
 
 fun ServerPlayer.clearNonexistentTargets() {
     this.telekinesis().getTkTargets().forEach { target ->
-        if (target is ShipTkTarget) {
-            // If the target's ship doesn't exist (e.g. because it was broken or unloaded), remove it from the list
-            try {
-                target.ship
-            } catch (e: NullPointerException) {
-                this.telekinesis().removeShipIdAsTarget(target.shipId)
-                return@forEach
-            }
-        } else if (target is EntityTkTarget) {
-            // If the target's entity doesn't exist (e.g. because it was killed or unloaded), remove it from the list
-            try {
-                target.entity
-            } catch (e: NullPointerException) {
-                this.telekinesis().removeTarget(target)
-                return@forEach
-            }
+        if (!target.exists()) {
+            this.telekinesis().removeTarget(target)
         }
     }
 }

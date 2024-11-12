@@ -1,15 +1,14 @@
 package com.godlike.common.telekinesis
 
 import com.godlike.common.Godlike.logger
-import com.godlike.common.util.disassemble
-import com.godlike.common.util.negate
-import com.godlike.common.util.toVec3
-import com.godlike.common.util.toVector3d
+import com.godlike.common.components.telekinesis
+import com.godlike.common.util.*
 import com.godlike.common.vs2.Vs2Util
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3d
@@ -26,7 +25,8 @@ class ShipTkTarget(
     val shipId : Long,
     override val player: Player,
     override var hoverPos: Vec3? = null,
-    override var chargingLaunch: Boolean = false
+    override var chargingLaunch: Boolean = false,
+    override var isLaunching: Boolean = false
 ) : TkTarget {
     val ship : ServerShip
         get() {
@@ -35,6 +35,7 @@ class ShipTkTarget(
             }
             return Vs2Util.getServerShipWorld((player as ServerPlayer).serverLevel()).loadedShips.getById(shipId)!!
         }
+    var disassemblyTickCountdown : Int = -1
 
     override fun toNbt() : CompoundTag {
         val tag = CompoundTag()
@@ -45,7 +46,58 @@ class ShipTkTarget(
             tag.putDouble("hoverPos.z", it.z)
         }
         tag.putBoolean("chargingLaunch", chargingLaunch)
+        tag.putBoolean("isLaunching", isLaunching)
         return tag
+    }
+
+    override fun mass(): Double {
+        return ship.inertiaData.mass
+    }
+
+    /**
+     * Called every tick on the server side to update telekinesis targets.
+     * Note that player TK controls are handled separately; this is for things that should happen every tick regardless
+     * of controlling player.
+     */
+    override fun tick() {
+        if (isLaunching) {
+            launchingTick()
+        }
+        // Disassemble the ship once the TTL has expired, if there is one
+        if (disassemblyTickCountdown > 0) {
+            disassemblyTickCountdown--
+            if (disassemblyTickCountdown == 0) {
+                disassemble(ship, player.level() as ServerLevel)
+            }
+        }
+    }
+
+    private fun launchingTick() {
+        // Stop "launching" if the ship's velocity has dropped sufficiently
+        if (this.ship.velocity.length() < 0.1) {
+            this.isLaunching = false
+        }
+
+        // Damage entities in the ship's path
+        val hitBox = this.ship.shipAABB ?: return
+        this.player.level().getEntities(null, hitBox.toAABB()).forEach { entity ->
+            entity.hurt(entity.damageSources().flyIntoWall(), LAUNCH_DAMAGE)
+            entity.playSound(
+                if (LAUNCH_DAMAGE > 4) SoundEvents.GENERIC_BIG_FALL else SoundEvents.GENERIC_SMALL_FALL,
+                1.0f,
+                1.0f
+            )
+            logger.info("Hit for $LAUNCH_DAMAGE damage at velocity ${this.ship.velocity.length()}.")
+        }
+    }
+
+    override fun exists(): Boolean {
+        return try {
+            ship
+            true
+        } catch (e: NullPointerException) {
+            false
+        }
     }
 
     private fun forceApplier() : GameTickForceApplier {
