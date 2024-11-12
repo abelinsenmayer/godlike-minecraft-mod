@@ -20,13 +20,13 @@ import kotlin.math.max
 const val SHIP_FORCE_SCALAR = 40.0
 const val SHIP_BRAKE_SCALAR = 5.0
 const val SHIP_LAUNCH_SCALAR = 60.0
+const val SHIP_LAUNCH_VELOCITY_THRESHOLD = 10.0
 
 class ShipTkTarget(
     val shipId : Long,
     override val player: Player,
     override var hoverPos: Vec3? = null,
     override var chargingLaunch: Boolean = false,
-    override var isLaunching: Boolean = false
 ) : TkTarget {
     val ship : ServerShip
         get() {
@@ -36,6 +36,12 @@ class ShipTkTarget(
             return Vs2Util.getServerShipWorld((player as ServerPlayer).serverLevel()).loadedShips.getById(shipId)!!
         }
     var disassemblyTickCountdown : Int = -1
+    private var launchStillnessTicks = 0
+    override var isLaunching: Boolean = false
+        set(value) {
+            field = value
+            launchStillnessTicks = 0
+        }
 
     override fun toNbt() : CompoundTag {
         val tag = CompoundTag()
@@ -73,14 +79,20 @@ class ShipTkTarget(
     }
 
     private fun launchingTick() {
-        // Stop "launching" if the ship's velocity has dropped sufficiently
-        if (this.ship.velocity.length() < 0.1) {
-            this.isLaunching = false
+        // Stop "launching" if the ship's velocity has dropped sufficiently for the enough consecutive ticks
+        if (this.ship.velocity.length() < SHIP_LAUNCH_VELOCITY_THRESHOLD) {
+            launchStillnessTicks++
+            if (launchStillnessTicks > 5) {
+                logger.info("stopping launch, v=${this.ship.velocity.length()}")
+                this.isLaunching = false
+            }
+        } else {
+            launchStillnessTicks = 0
         }
 
         // Damage entities in the ship's path
         val hitBox = this.ship.shipAABB ?: return
-        this.player.level().getEntities(null, hitBox.toAABB()).forEach { entity ->
+        this.player.level().getEntities(null, hitBox.toAABB().inflate(1.0)).forEach { entity ->
             entity.hurt(entity.damageSources().flyIntoWall(), LAUNCH_DAMAGE)
             entity.playSound(
                 if (LAUNCH_DAMAGE > 4) SoundEvents.GENERIC_BIG_FALL else SoundEvents.GENERIC_SMALL_FALL,

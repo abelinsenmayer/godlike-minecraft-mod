@@ -94,6 +94,7 @@ fun setChargingLaunch(player: ServerPlayer, isCharging: Boolean) {
 fun launchTk(player: ServerPlayer, targetedPosition: Vec3) {
     val toLaunch = player.telekinesis().getTkTargets().filter { it.chargingLaunch }
     toLaunch.forEach { target ->
+        target.chargingLaunch = false
         target.hoverPos = null
         target.launchToward(targetedPosition)
         player.telekinesis().removeTarget(target)
