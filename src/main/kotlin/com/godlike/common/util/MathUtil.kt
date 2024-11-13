@@ -7,6 +7,7 @@ import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3d
 import org.joml.Vector3dc
+import org.joml.primitives.AABBdc
 import org.joml.primitives.AABBi
 import org.joml.primitives.AABBic
 import kotlin.math.pow
@@ -16,6 +17,10 @@ const val MAX_RAYCAST_DISTANCE = 40.0
 
 fun AABBic.toAABB(): AABB {
     return AABB(minX().toDouble(), minY().toDouble(), minZ().toDouble(), maxX().toDouble(), maxY().toDouble(), maxZ().toDouble())
+}
+
+fun AABBdc.toAABB(): AABB {
+    return AABB(minX(), minY(), minZ(), maxX(), maxY(), maxZ())
 }
 
 fun Vec3.toVector3d(): Vector3d {

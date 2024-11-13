@@ -1,15 +1,18 @@
 package com.godlike.common.telekinesis
 
 import com.godlike.common.Godlike.logger
-import com.godlike.common.components.telekinesis
 import com.godlike.common.util.*
 import com.godlike.common.vs2.Vs2Util
 import net.minecraft.client.player.LocalPlayer
+import net.minecraft.core.BlockPos
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.level.ExplosionDamageCalculator
+import net.minecraft.world.level.Level
+import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3d
 import org.valkyrienskies.core.api.ships.ServerShip
@@ -75,31 +78,6 @@ class ShipTkTarget(
             if (disassemblyTickCountdown == 0) {
                 disassemble(ship, player.level() as ServerLevel)
             }
-        }
-    }
-
-    private fun launchingTick() {
-        // Stop "launching" if the ship's velocity has dropped sufficiently for the enough consecutive ticks
-        if (this.ship.velocity.length() < SHIP_LAUNCH_VELOCITY_THRESHOLD) {
-            launchStillnessTicks++
-            if (launchStillnessTicks > 5) {
-                logger.info("stopping launch, v=${this.ship.velocity.length()}")
-                this.isLaunching = false
-            }
-        } else {
-            launchStillnessTicks = 0
-        }
-
-        // Damage entities in the ship's path
-        val hitBox = this.ship.shipAABB ?: return
-        this.player.level().getEntities(null, hitBox.toAABB().inflate(1.0)).forEach { entity ->
-            entity.hurt(entity.damageSources().flyIntoWall(), LAUNCH_DAMAGE)
-            entity.playSound(
-                if (LAUNCH_DAMAGE > 4) SoundEvents.GENERIC_BIG_FALL else SoundEvents.GENERIC_SMALL_FALL,
-                1.0f,
-                1.0f
-            )
-            logger.info("Hit for $LAUNCH_DAMAGE damage at velocity ${this.ship.velocity.length()}.")
         }
     }
 
@@ -176,6 +154,59 @@ class ShipTkTarget(
         val dragAxis = ship.inertiaData.momentOfInertiaTensor.transform(ship.omega.toVec3().toVector3d()).toVec3()
         val dragTorque = dragAxis.scale(-ship.omega.length()).scale(6.0)
         torqueApplier().applyInvariantTorque(dragTorque.toVector3d())
+    }
+
+    private fun launchingTick() {
+        // Stop "launching" if the ship's velocity has dropped sufficiently for the enough consecutive ticks
+        if (this.ship.velocity.length() < SHIP_LAUNCH_VELOCITY_THRESHOLD) {
+            launchStillnessTicks++
+            if (launchStillnessTicks > 5) {
+                logger.info("stopping launch, v=${this.ship.velocity.length()}")
+                this.isLaunching = false
+            }
+        } else {
+            launchStillnessTicks = 0
+        }
+
+        // Damage entities in the ship's path
+        val hitBox = this.ship.worldAABB.toAABB().inflate(1.0)
+        this.player.level().getEntities(null, hitBox).forEach { entity ->
+            entity.hurt(entity.damageSources().flyIntoWall(), LAUNCH_DAMAGE)
+            entity.playSound(
+                if (LAUNCH_DAMAGE > 4) SoundEvents.GENERIC_BIG_FALL else SoundEvents.GENERIC_SMALL_FALL,
+                1.0f,
+                1.0f
+            )
+            logger.info("Hit for $LAUNCH_DAMAGE damage at velocity ${this.ship.velocity.length()}.")
+        }
+
+        // TODO explosions are commented out until we can do more work to make them work properly
+//        // Create explosions for block collisions
+//        val level = this.player.level()
+//        val collidedPositions = BlockPos.betweenClosedStream(hitBox)
+//        collidedPositions.forEach { pos ->
+//            // Don't collide with air
+//            val state = level.getBlockState(pos)
+//            if (state.isAir) {
+//                return@forEach
+//            }
+//            // Don't collide with itself
+//            val shipForPos = Vs2Util.getServerShipManagingPos((player as ServerPlayer).serverLevel(), pos)
+//            if (shipForPos == this.ship) {
+//                logger.info("Ignoring self-collision at $pos")
+//                return@forEach
+//            }
+//
+//            this.player.level().explode(
+//                this.player,
+//                this.player.damageSources().flyIntoWall(),
+//                ExplosionDamageCalculator(),
+//                pos.toVec3(),
+//                0.5f,
+//                false,
+//                Level.ExplosionInteraction.BLOCK
+//            )
+//        }
     }
 
     override fun equals(other: Any?): Boolean {

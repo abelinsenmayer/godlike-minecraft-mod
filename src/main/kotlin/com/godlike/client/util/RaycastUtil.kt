@@ -15,11 +15,4 @@ fun blockRaycastFromPlayer(): BlockPos {
         // TODO we don't want to return BlockPos.ZERO, but we need to handle this case
         BlockPos.ZERO
     }
-
-//    // if the position is air, we need to offset it in the direction we're looking to get the solid block
-//    if (client.level!!.getBlockState(blockPos).isAir) {
-//        val step = hitResult.direction.opposite.step()
-//        blockPos = blockPos.offset(Vec3i(step.x.toInt(), step.y.toInt(), step.z.toInt()))
-//    }
-//    return blockPos;
 }
