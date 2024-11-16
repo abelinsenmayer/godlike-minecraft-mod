@@ -1,6 +1,7 @@
 package com.godlike.common
 
-import com.godlike.common.components.ModComponents
+import com.godlike.common.components.ModEntityComponents
+import com.godlike.common.components.ModWorldComponents
 import com.godlike.common.items.ModItems
 import com.godlike.common.networking.ModNetworking
 import net.fabricmc.api.ModInitializer
@@ -23,11 +24,10 @@ object Godlike : ModInitializer {
 		ModItems()
 
 		// Register components
-		ModComponents()
+		ModEntityComponents()
+		ModWorldComponents()
 
 		// Initialize networking
 		ModNetworking.register()
-
-		ServerTickHandler.start()
 	}
 }

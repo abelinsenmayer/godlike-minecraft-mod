@@ -1,5 +1,6 @@
 package com.godlike.common.components
 
+import com.godlike.common.Godlike.logger
 import com.godlike.common.MOD_ID
 import dev.onyxstudios.cca.api.v3.component.ComponentKey
 import dev.onyxstudios.cca.api.v3.component.ComponentRegistry
@@ -7,14 +8,10 @@ import dev.onyxstudios.cca.api.v3.entity.EntityComponentFactoryRegistry
 import dev.onyxstudios.cca.api.v3.entity.EntityComponentInitializer
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.resources.ResourceLocation
-import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.player.Player
-import org.slf4j.LoggerFactory
 
-class ModComponents : EntityComponentInitializer {
+class ModEntityComponents : EntityComponentInitializer {
     companion object {
-        private val logger = LoggerFactory.getLogger("godlike")
-
         @JvmField
         val CURSORS: ComponentKey<BlockPosListComponent> = ComponentRegistry.getOrCreate(ResourceLocation.tryBuild(
             MOD_ID, "cursors")!!, BlockPosListComponent::class.java)

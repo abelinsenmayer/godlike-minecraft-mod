@@ -2,13 +2,11 @@ package com.godlike.common.components
 
 import com.godlike.client.keybind.ModKeybinds
 import com.godlike.client.mixin.KeyBindingMixin
-import com.godlike.common.Godlike.logger
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.core.BlockPos
 import net.minecraft.nbt.CompoundTag
-import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.player.Player
 
@@ -23,14 +21,14 @@ class ModeComponent(private val player : Player) : AutoSyncedComponent {
         get() = _mode
         set(value) {
             _mode = value
-            ModComponents.MODE.sync(player)
+            ModEntityComponents.MODE.sync(player)
             if (player is LocalPlayer) {
                 // player.sendSystemMessage(Component.literal("Mode set to $value"))
                 this.mode.setKeybindsForMode()
             }
             if (value != Mode.SELECTING) {
-                ModComponents.CURSOR_PREVIEWS.get(player).clearPositions()
-                ModComponents.TARGET_POSITION.get(player).setPos(BlockPos(0, -3000, 0))
+                ModEntityComponents.CURSOR_PREVIEWS.get(player).clearPositions()
+                ModEntityComponents.TARGET_POSITION.get(player).setPos(BlockPos(0, -3000, 0))
                 if (player is LocalPlayer) {
                     player.selection().clear()
                 }
@@ -53,11 +51,11 @@ class ModeComponent(private val player : Player) : AutoSyncedComponent {
 }
 
 fun Player.setMode(mode: Mode) {
-    ModComponents.MODE.get(this).mode = mode
+    ModEntityComponents.MODE.get(this).mode = mode
 }
 
 fun Player.getMode(): Mode {
-    return ModComponents.MODE.get(this).mode
+    return ModEntityComponents.MODE.get(this).mode
 }
 
 enum class Mode(private val keybinds: List<KeyMapping>) {

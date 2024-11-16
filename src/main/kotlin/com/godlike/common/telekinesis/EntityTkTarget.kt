@@ -1,15 +1,16 @@
 package com.godlike.common.telekinesis
 
 import com.godlike.common.Godlike
-import com.godlike.common.components.telekinesis
 import com.godlike.common.util.negate
-import com.godlike.common.util.toAABB
 import com.godlike.common.util.toVector3d
+import net.minecraft.client.Minecraft
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import kotlin.math.log
 import kotlin.math.max
@@ -20,14 +21,15 @@ const val ENTITY_LAUNCH_SCALAR = 45.0
 const val ENTITY_LAUNCH_VELOCITY_THRESHOLD = 0.4
 
 class EntityTkTarget(
-    override val player: Player,
+    override val level: Level,
+    override var player: Player?,
     private val entityId: Int,
     override var hoverPos: Vec3? = null,
     override var chargingLaunch: Boolean = false
 ) : TkTarget {
     val entity : Entity
         get() {
-            return player.level().getEntity(entityId)!!
+            return level.getEntity(entityId)!!
         }
     private var launchStillnessTicks = 0
     override var isLaunching: Boolean = false
@@ -128,24 +130,23 @@ class EntityTkTarget(
 
         // Damage entities in the target's path
         val hitBox = this.entity.boundingBox.inflate(0.5) ?: return
-        this.player.level().getEntities(this.entity, hitBox).forEach { hitEntity ->
+        this.level.getEntities(this.entity, hitBox).forEach { hitEntity ->
+            // Damage the entity hit
             hitEntity.hurt(hitEntity.damageSources().flyIntoWall(), LAUNCH_DAMAGE)
             hitEntity.playSound(
                 if (LAUNCH_DAMAGE > 4) SoundEvents.GENERIC_BIG_FALL else SoundEvents.GENERIC_SMALL_FALL,
                 1.0f,
                 1.0f
             )
+            // Damage the entity itself
+            entity.hurt(entity.damageSources().flyIntoWall(), LAUNCH_DAMAGE)
+            entity.playSound(
+                if (LAUNCH_DAMAGE > 4) SoundEvents.GENERIC_BIG_FALL else SoundEvents.GENERIC_SMALL_FALL,
+                1.0f,
+                1.0f
+            )
             Godlike.logger.info("Hit for $LAUNCH_DAMAGE damage at velocity ${this.entity.deltaMovement.length()}.")
         }
-
-        // Damage the target (only once per tick)
-        entity.hurt(entity.damageSources().flyIntoWall(), LAUNCH_DAMAGE)
-        entity.playSound(
-            if (LAUNCH_DAMAGE > 4) SoundEvents.GENERIC_BIG_FALL else SoundEvents.GENERIC_SMALL_FALL,
-            1.0f,
-            1.0f
-        )
-        Godlike.logger.info("Hit for $LAUNCH_DAMAGE damage at velocity ${this.entity.deltaMovement.length()}.")
     }
 
     override fun exists(): Boolean {

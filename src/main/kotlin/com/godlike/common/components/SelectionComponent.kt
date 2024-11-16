@@ -5,7 +5,6 @@ import com.godlike.common.util.toVec3
 import dev.onyxstudios.cca.api.v3.component.Component
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.core.BlockPos
-import net.minecraft.core.Vec3i
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
@@ -109,4 +108,4 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
     }
 }
 
-fun LocalPlayer.selection(): SelectionComponent = ModComponents.SELECTION_DATA.get(this)
+fun LocalPlayer.selection(): SelectionComponent = ModEntityComponents.SELECTION_DATA.get(this)

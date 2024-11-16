@@ -1,7 +1,7 @@
 package com.godlike.common.telekinesis
 
-import com.godlike.common.Godlike.logger
-import com.godlike.common.components.ModComponents
+import com.godlike.common.components.ModEntityComponents
+import com.godlike.common.components.getTkTicker
 import com.godlike.common.components.telekinesis
 import com.godlike.common.networking.ModNetworking
 import com.godlike.common.networking.TelekinesisControlsPacket
@@ -105,7 +105,7 @@ fun launchTk(player: ServerPlayer, targetedPosition: Vec3) {
 fun getPointer(player: ServerPlayer, lookDirection: Vec3, target: TkTarget) : Vec3 {
     // Find where the player is looking at on the sphere defined by the target's distance from them
     val eyePosition = player.position().add(0.0, 1.5, 0.0)
-    val pointerDistance = ModComponents.TELEKINESIS_DATA.get(player).pointerDistance
+    val pointerDistance = ModEntityComponents.TELEKINESIS_DATA.get(player).pointerDistance
     val pointer = findPointOnSphereAtRadius(eyePosition, pointerDistance, lookDirection)
         .subtract(target.pos().subtract(eyePosition).normalize().scale(0.03))
     return pointer
@@ -127,7 +127,7 @@ fun serverTelekinesisTick(telekinesisControls: TelekinesisControlsPacket, player
 
     player.telekinesis().getTkTargets().forEach { target ->
         // If not registered with ticker, add it
-        TkTicker.tickingTargets.add(target)
+        player.serverLevel().getTkTicker().tickingTargets.add(target)
 
         val pointer = getPointer(player, telekinesisControls.playerLookDirection, target)
         if (player.telekinesis().activeTkTarget != null) {

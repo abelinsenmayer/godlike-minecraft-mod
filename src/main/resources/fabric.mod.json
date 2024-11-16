@@ -34,7 +34,8 @@
 			}
 		],
 		"cardinal-components": [
-          "com.godlike.common.components.ModComponents"
+			"com.godlike.common.components.ModEntityComponents",
+			"com.godlike.common.components.ModWorldComponents"
 		]
 	},
 	"mixins": [
@@ -69,7 +70,8 @@
 			"godlike:selecting_far",
 			"godlike:telekinesis_data",
 			"godlike:mode",
-			"godlike:selection_data"
+			"godlike:selection_data",
+			"godlike:world_tk_ticker"
 		]
 	}
 }

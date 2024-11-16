@@ -27,7 +27,7 @@ class BlockPosComponent(private val provider : Any) : AutoSyncedComponent {
 
     fun setPos(pos: BlockPos) {
         this.pos.set(pos.asLong())
-        ModComponents.TARGET_POSITION.sync(provider)
+        ModEntityComponents.TARGET_POSITION.sync(provider)
     }
 
     fun getPos(): BlockPos {

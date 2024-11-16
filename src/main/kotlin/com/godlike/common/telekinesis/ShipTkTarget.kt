@@ -4,15 +4,12 @@ import com.godlike.common.Godlike.logger
 import com.godlike.common.util.*
 import com.godlike.common.vs2.Vs2Util
 import net.minecraft.client.player.LocalPlayer
-import net.minecraft.core.BlockPos
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.level.ExplosionDamageCalculator
 import net.minecraft.world.level.Level
-import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3d
 import org.valkyrienskies.core.api.ships.ServerShip
@@ -26,17 +23,18 @@ const val SHIP_LAUNCH_SCALAR = 60.0
 const val SHIP_LAUNCH_VELOCITY_THRESHOLD = 10.0
 
 class ShipTkTarget(
+    override val level: Level,
+    override var player: Player?,
     val shipId : Long,
-    override val player: Player,
     override var hoverPos: Vec3? = null,
     override var chargingLaunch: Boolean = false,
 ) : TkTarget {
     val ship : ServerShip
         get() {
-            if (player is LocalPlayer) {
+            if (level !is ServerLevel) {
                 throw IllegalStateException("Cannot get a ship on the client side")
             }
-            return Vs2Util.getServerShipWorld((player as ServerPlayer).serverLevel()).loadedShips.getById(shipId)!!
+            return Vs2Util.getServerShipWorld(level).loadedShips.getById(shipId)!!
         }
     var disassemblyTickCountdown : Int = -1
     private var launchStillnessTicks = 0
@@ -56,6 +54,7 @@ class ShipTkTarget(
         }
         tag.putBoolean("chargingLaunch", chargingLaunch)
         tag.putBoolean("isLaunching", isLaunching)
+        tag.putInt("disassemblyTickCountdown", disassemblyTickCountdown)
         return tag
     }
 
@@ -76,7 +75,7 @@ class ShipTkTarget(
         if (disassemblyTickCountdown > 0) {
             disassemblyTickCountdown--
             if (disassemblyTickCountdown == 0) {
-                disassemble(ship, player.level() as ServerLevel)
+                disassemble(ship, level as ServerLevel)
             }
         }
     }
@@ -170,7 +169,7 @@ class ShipTkTarget(
 
         // Damage entities in the ship's path
         val hitBox = this.ship.worldAABB.toAABB().inflate(1.0)
-        this.player.level().getEntities(null, hitBox).forEach { entity ->
+        this.level.getEntities(null, hitBox).forEach { entity ->
             entity.hurt(entity.damageSources().flyIntoWall(), LAUNCH_DAMAGE)
             entity.playSound(
                 if (LAUNCH_DAMAGE > 4) SoundEvents.GENERIC_BIG_FALL else SoundEvents.GENERIC_SMALL_FALL,
@@ -180,33 +179,33 @@ class ShipTkTarget(
             logger.info("Hit for $LAUNCH_DAMAGE damage at velocity ${this.ship.velocity.length()}.")
         }
 
-        // TODO explosions are commented out until we can do more work to make them work properly
-//        // Create explosions for block collisions
-//        val level = this.player.level()
-//        val collidedPositions = BlockPos.betweenClosedStream(hitBox)
-//        collidedPositions.forEach { pos ->
-//            // Don't collide with air
-//            val state = level.getBlockState(pos)
-//            if (state.isAir) {
-//                return@forEach
-//            }
-//            // Don't collide with itself
-//            val shipForPos = Vs2Util.getServerShipManagingPos((player as ServerPlayer).serverLevel(), pos)
-//            if (shipForPos == this.ship) {
-//                logger.info("Ignoring self-collision at $pos")
-//                return@forEach
-//            }
-//
-//            this.player.level().explode(
-//                this.player,
-//                this.player.damageSources().flyIntoWall(),
-//                ExplosionDamageCalculator(),
-//                pos.toVec3(),
-//                0.5f,
-//                false,
-//                Level.ExplosionInteraction.BLOCK
-//            )
-//        }
+        /* TODO explosions are commented out until we can do more work to make them work properly
+        // Create explosions for block collisions
+        val level = this.level
+        val collidedPositions = BlockPos.betweenClosedStream(hitBox)
+        collidedPositions.forEach { pos ->
+            // Don't collide with air
+            val state = level.getBlockState(pos)
+            if (state.isAir) {
+                return@forEach
+            }
+            // Don't collide with itself
+            val shipForPos = Vs2Util.getServerShipManagingPos((player as ServerPlayer).serverLevel(), pos)
+            if (shipForPos == this.ship) {
+                logger.info("Ignoring self-collision at $pos")
+                return@forEach
+            }
+
+            this.level.explode(
+                this.player,
+                this.player.damageSources().flyIntoWall(),
+                ExplosionDamageCalculator(),
+                pos.toVec3(),
+                0.5f,
+                false,
+                Level.ExplosionInteraction.BLOCK
+            )
+        }*/
     }
 
     override fun equals(other: Any?): Boolean {

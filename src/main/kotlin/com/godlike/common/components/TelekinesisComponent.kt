@@ -1,6 +1,5 @@
 package com.godlike.common.components
 
-import com.godlike.common.Godlike.logger
 import com.godlike.common.telekinesis.EntityTkTarget
 import com.godlike.common.telekinesis.ShipTkTarget
 import com.godlike.common.telekinesis.TkTarget
@@ -75,7 +74,7 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
 
     private fun sync() {
         if (player is ServerPlayer) {
-            ModComponents.TELEKINESIS_DATA.sync(player)
+            ModEntityComponents.TELEKINESIS_DATA.sync(player)
         }
     }
 
@@ -119,11 +118,12 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
 
     fun addShipIdAsTarget(id: Long) {
         val existing = tkTargets.find { it is ShipTkTarget && it.ship.id == id }
-            ?: TkTicker.tickingTargets.find { it is ShipTkTarget && it.ship.id == id }
+            ?: player.level().getTkTicker().tickingTargets.find { it is ShipTkTarget && it.ship.id == id }
         if (existing != null) {
+            existing.player = player
             addTarget(existing)
         } else {
-            addTarget(ShipTkTarget(id, player))
+            addTarget(ShipTkTarget(player.level(), player, id))
         }
     }
 
@@ -132,7 +132,7 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
         if (existing != null) {
             addTarget(existing)
         } else {
-            addTarget(EntityTkTarget(player, entity.id))
+            addTarget(EntityTkTarget(player.level(), player, entity.id))
         }
     }
 
@@ -143,5 +143,5 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
 }
 
 fun Player.telekinesis(): TelekinesisComponent {
-    return ModComponents.TELEKINESIS_DATA.get(this)
+    return ModEntityComponents.TELEKINESIS_DATA.get(this)
 }

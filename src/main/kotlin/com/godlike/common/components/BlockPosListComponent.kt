@@ -37,14 +37,14 @@ class BlockPosListComponent(private val provider : Any) : AutoSyncedComponent {
     fun addPosition(pos: BlockPos) {
         synchronized(positions) {
             positions.add(pos)
-            ModComponents.CURSOR_COMPONENT_TYPES.forEach { it.sync(provider) }
+            ModEntityComponents.CURSOR_COMPONENT_TYPES.forEach { it.sync(provider) }
         }
     }
 
     fun addAllPositions(posList: List<BlockPos>) {
         synchronized(positions) {
             positions.addAll(posList)
-            ModComponents.CURSOR_COMPONENT_TYPES.forEach { it.sync(provider) }
+            ModEntityComponents.CURSOR_COMPONENT_TYPES.forEach { it.sync(provider) }
         }
     }
 
@@ -57,14 +57,14 @@ class BlockPosListComponent(private val provider : Any) : AutoSyncedComponent {
     fun clearPositions() {
         synchronized(positions) {
             positions.clear()
-            ModComponents.CURSOR_COMPONENT_TYPES.forEach { it.sync(provider) }
+            ModEntityComponents.CURSOR_COMPONENT_TYPES.forEach { it.sync(provider) }
         }
     }
 
     fun removePosition(pos: BlockPos) {
         synchronized(positions) {
             positions.remove(pos)
-            ModComponents.CURSOR_COMPONENT_TYPES.forEach { it.sync(provider) }
+            ModEntityComponents.CURSOR_COMPONENT_TYPES.forEach { it.sync(provider) }
         }
     }
 }
