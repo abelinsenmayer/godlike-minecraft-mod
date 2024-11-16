@@ -24,20 +24,13 @@ class TkTicker(private val level : Level) : ServerTickingComponent {
     override fun serverTick() {
         if (level !is ServerLevel) return
         if (initialized) {
-            for (tickingTarget in tickingTargets) {
-                if (!tickingTarget.exists()) {
-                    logger.info("Removing target $tickingTarget")
-                }
-            }
             tickingTargets.removeIf { !it.exists() }
             tickingTargets.forEach { it.tick() }
         } else {
-            // We don't want to start ticking before all of our TK targets are loaded
-            val entitiesInitialized =
-                tickingTargets.filterIsInstance<EntityTkTarget>().all { level.allEntities.contains(it.entity) }
+            // We don't want to start ticking before all of our TK target ships are loaded
             val loadedShips = Vs2Util.getServerShipWorld(level).loadedShips
             val shipsInitialized = tickingTargets.filterIsInstance<ShipTkTarget>().all { loadedShips.getById(it.shipId) != null }
-            if (entitiesInitialized && shipsInitialized) {
+            if (shipsInitialized) {
                 initialized = true
             } else {
                 uninitializedTicks++
@@ -62,8 +55,14 @@ class TkTicker(private val level : Level) : ServerTickingComponent {
         }
     }
 
+    /**
+     * Writes the ticking targets to NBT. Entity targets are NOT saved to NBT, as it's not necessary for them to persist
+     * across world reloads, and it's impractical to get the same entity in a new world.
+     */
     override fun writeToNbt(tag: CompoundTag) {
         level !is ServerLevel && return
+        // REMOVE entity targets; they are not persisted across world save/load
+        tickingTargets.removeIf { it is EntityTkTarget }
         val listTag = ListTag()
         tickingTargets.forEach {
             listTag.add(it.toNbt())
