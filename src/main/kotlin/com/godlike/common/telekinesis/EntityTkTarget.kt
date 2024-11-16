@@ -3,9 +3,7 @@ package com.godlike.common.telekinesis
 import com.godlike.common.Godlike
 import com.godlike.common.util.negate
 import com.godlike.common.util.toVector3d
-import net.minecraft.client.Minecraft
 import net.minecraft.nbt.CompoundTag
-import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.entity.Entity

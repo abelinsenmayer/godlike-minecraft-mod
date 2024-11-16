@@ -7,13 +7,16 @@ import com.godlike.client.keybind.ModKeybinds.POINTER_PULL
 import com.godlike.client.keybind.ModKeybinds.POINTER_PUSH
 import com.godlike.client.keybind.ModKeybinds.SET_TK_HOVERING
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
+import com.godlike.common.Godlike.logger
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
 import com.godlike.common.components.selection
 import com.godlike.common.components.telekinesis
 import com.godlike.common.networking.*
 import com.godlike.common.networking.ModNetworking.CHANNEL
+import com.godlike.common.telekinesis.EntityTkTarget
 import com.godlike.common.telekinesis.LAUNCH_POINTER_DISTANCE
+import com.godlike.common.telekinesis.ShipTkTarget
 import com.godlike.common.telekinesis.getPointerAtDistance
 import net.minecraft.client.Minecraft
 import net.minecraft.world.phys.Vec3
@@ -111,8 +114,23 @@ fun handleModInputEvents() {
         CHANNEL.clientHandle().send(SetChargingLaunchPacket(true))
         player.selection().clientChargingLaunch = true
     } else if (!LAUNCH_TK.isDown && player.selection().clientChargingLaunch) {
-        val launchTargetPos: Vec3 = player.selection().getSelectionPosition() ?:
+        val aimingAtPosition = player.selection().getSelectionPosition()
+        val aimingAtTarget = player.telekinesis().getTkTargets().find { target ->
+            when(target) {
+                is ShipTkTarget -> player.selection().cursorTargetShip?.id == target.shipId
+                is EntityTkTarget -> player.selection().cursorTargetEntity?.id == target.entity.id
+                else -> false
+            }
+        }
+        val targetChargingLaunch = aimingAtTarget?.chargingLaunch ?: false
+
+        // If the player is aiming at nothing or at a target charging launch, use pointer to aim
+        val launchTargetPos: Vec3 = if (aimingAtPosition == null || targetChargingLaunch) {
             getPointerAtDistance(player, Minecraft.getInstance().cameraEntity!!.lookAngle, LAUNCH_POINTER_DISTANCE)
+        } else {
+            aimingAtPosition
+        }
+
         CHANNEL.clientHandle().send(LaunchTkPacket(launchTargetPos))
         player.selection().clientChargingLaunch = false
     }
