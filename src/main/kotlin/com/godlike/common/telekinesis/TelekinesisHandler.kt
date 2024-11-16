@@ -102,6 +102,17 @@ fun launchTk(player: ServerPlayer, targetedPosition: Vec3) {
     }
 }
 
+/**
+ * Attempt to dislodge the player's currently-active telekinesis target from where it's stuck.
+ * Only applies to ship targets.
+ */
+fun unstickTk(player: ServerPlayer) {
+    player.telekinesis().activeTkTarget?.let { target ->
+        target !is ShipTkTarget && return
+        (target as ShipTkTarget).unstick(getPointer(player, player.lookAngle, target))
+    }
+}
+
 fun getPointer(player: ServerPlayer, lookDirection: Vec3, target: TkTarget) : Vec3 {
     // Find where the player is looking at on the sphere defined by the target's distance from them
     val eyePosition = player.position().add(0.0, 1.5, 0.0)

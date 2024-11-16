@@ -1,14 +1,11 @@
 package com.godlike.common.util
 
 import net.minecraft.core.Vec3i
-import net.minecraft.nbt.CompoundTag
-import net.minecraft.nbt.Tag
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.joml.primitives.AABBdc
-import org.joml.primitives.AABBi
 import org.joml.primitives.AABBic
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -133,6 +130,14 @@ fun vecIntersectWithXOrZ(origin: Vec3, direction: Vec3, intersection: Vec3, useM
     }
 }
 
+/**
+ * Finds all positions in the volume which touches all anchor positions and the target position. The volume is always a
+ * cuboid.
+ *
+ * @param anchors the positions which the volume must touch
+ * @param target the position which the volume must extend to
+ * @return a list of all positions in the volume
+ */
 fun getVolumeBetween(anchors: List<Vec3i>, target: Vec3i): List<Vec3i> {
     // find the bounds of the volume created by the target and the anchors
     val sortedByX = anchors.sortedBy { it.x }

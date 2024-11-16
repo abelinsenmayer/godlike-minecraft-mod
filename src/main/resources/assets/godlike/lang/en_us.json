@@ -18,5 +18,6 @@
 
   "hud.godlike.hello-world": "Hello, World!",
   "hud.godlike.hold": "(Hold)",
-  "hud.godlike.release": "(Release)"
+  "hud.godlike.release": "(Release)",
+  "key.godlike.unstick_tk": "Dislodge (NOT YET IMPLEMENTED)"
 }

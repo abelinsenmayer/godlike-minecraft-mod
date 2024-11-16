@@ -16,6 +16,8 @@ import org.valkyrienskies.core.api.ships.ServerShip
 import org.valkyrienskies.mod.common.util.GameTickForceApplier
 import kotlin.math.log
 import kotlin.math.max
+import net.minecraft.core.Vec3i
+import org.joml.primitives.AABBd
 
 const val SHIP_FORCE_SCALAR = 40.0
 const val SHIP_BRAKE_SCALAR = 5.0
@@ -206,6 +208,18 @@ class ShipTkTarget(
                 Level.ExplosionInteraction.BLOCK
             )
         }*/
+    }
+
+    /**
+     * Attempt to dislodge the ship from a place it's trapped. Searches for an axis direction where the ship can move
+     * unobstructed, and adds a force in that direction. If multiple directions are unobstructed, the ship will move in
+     * the direction closest to the controlling player's pointer.
+     * TODO not yet implemented
+     * @return true if the ship could successfully move in any direction to try and dislodge itself.
+     */
+    fun unstick(pointer: Vec3) : Boolean {
+        logger.warn("Unstick not yet implemented")
+        return false
     }
 
     override fun equals(other: Any?): Boolean {

@@ -7,6 +7,7 @@ import com.godlike.client.keybind.ModKeybinds.POINTER_PULL
 import com.godlike.client.keybind.ModKeybinds.POINTER_PUSH
 import com.godlike.client.keybind.ModKeybinds.SET_TK_HOVERING
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
+import com.godlike.client.keybind.ModKeybinds.UNSTICK_TK
 import com.godlike.common.Godlike.logger
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
@@ -95,6 +96,12 @@ fun handleModInputEvents() {
             } else {
                 CHANNEL.clientHandle().send(DropTkPacket())
             }
+        }
+    }
+
+    while (UNSTICK_TK.consumeClick() && !player.selection().clientChargingLaunch) {
+        if (player.getMode() == Mode.TELEKINESIS) {
+            CHANNEL.clientHandle().send(UnstickTkPacket())
         }
     }
 

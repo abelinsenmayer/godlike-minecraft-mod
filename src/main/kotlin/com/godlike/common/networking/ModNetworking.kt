@@ -72,5 +72,9 @@ object ModNetworking {
         CHANNEL.registerServerbound(LaunchTkPacket::class.java) { packet, ctx ->
             launchTk(ctx.player, packet.targetedPosition)
         }
+
+        CHANNEL.registerServerbound(UnstickTkPacket::class.java) { packet, ctx ->
+            unstickTk(ctx.player)
+        }
     }
 }
