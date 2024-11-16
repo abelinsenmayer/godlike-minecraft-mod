@@ -107,36 +107,6 @@ fun handleModInputEvents() {
         }
     }
 
-//    while (TOGGLE_SELECTION_MODE.consumeClick()) {
-//        val currentMode = player.getMode()
-//        if (currentMode == Mode.SELECTING) {
-//            player.setMode(Mode.TELEKINESIS)
-//            player.selection().dfsDepth = 0
-//        } else if (currentMode == Mode.TELEKINESIS) {
-//            player.setMode(Mode.SELECTING)
-//        }
-//    }
-
-//    while (DO_SELECT.consumeClick()) {
-//        if (player.getMode() == Mode.SELECTING && player.selection().selectionIsContiguous) {
-//            player.selection().cursorTargetBlock?.let {
-//                player.selection().selectedPositions.add(it)
-//            }
-//            player.selection().selectedPositions.addAll(player.selection().previewPositions)
-//            player.selection().dfsDepth = 0
-//        }
-//    }
-
-//    while (TK_SELECTION.consumeClick()) {
-//        // send a packet to the server to create a physics object from the cursor selection
-//        if (player.getMode() == Mode.SELECTING && player.selection().selectedPositions.isNotEmpty()) {
-//            CHANNEL.clientHandle().send(
-//                TkPositionsPacket(player.selection().previewPositions.toList())
-//            )
-//        }
-//        player.selection().dfsDepth = 0
-//    }
-
     if (LAUNCH_TK.isDown && !player.selection().clientChargingLaunch) {
         CHANNEL.clientHandle().send(SetChargingLaunchPacket(true))
         player.selection().clientChargingLaunch = true

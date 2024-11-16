@@ -19,17 +19,8 @@ class ModEntityComponents : EntityComponentInitializer {
         val CURSOR_PREVIEWS: ComponentKey<BlockPosListComponent> = ComponentRegistry.getOrCreate(ResourceLocation.tryBuild(
             MOD_ID, "cursor_previews")!!, BlockPosListComponent::class.java)
         @JvmField
-        val CURSOR_ANCHORS: ComponentKey<BlockPosListComponent> = ComponentRegistry.getOrCreate(ResourceLocation.tryBuild(
-            MOD_ID, "cursor_anchors")!!, BlockPosListComponent::class.java)
-        @JvmField
         val TARGET_POSITION: ComponentKey<BlockPosComponent> = ComponentRegistry.getOrCreate(ResourceLocation.tryBuild(
             MOD_ID, "target_pos")!!, BlockPosComponent::class.java)
-        @JvmField
-        val SELECTING_VERTICAL: ComponentKey<BooleanComponent> = ComponentRegistry.getOrCreate(ResourceLocation.tryBuild(
-            MOD_ID, "selecting_vertical")!!, BooleanComponent::class.java)
-        @JvmField
-        val SELECTING_FAR: ComponentKey<BooleanComponent> = ComponentRegistry.getOrCreate(ResourceLocation.tryBuild(
-            MOD_ID, "selecting_far")!!, BooleanComponent::class.java)
 
         @JvmField
         val TELEKINESIS_DATA: ComponentKey<TelekinesisComponent> = ComponentRegistry.getOrCreate(ResourceLocation.tryBuild(
@@ -42,7 +33,7 @@ class ModEntityComponents : EntityComponentInitializer {
         val SELECTION_DATA: ComponentKey<SelectionComponent> = ComponentRegistry.getOrCreate(ResourceLocation.tryBuild(
             MOD_ID, "selection_data")!!, SelectionComponent::class.java)
 
-        val CURSOR_COMPONENT_TYPES = listOf(CURSORS, CURSOR_PREVIEWS, CURSOR_ANCHORS)
+        val CURSOR_COMPONENT_TYPES = listOf(CURSORS, CURSOR_PREVIEWS)
     }
 
     override fun registerEntityComponentFactories(registry: EntityComponentFactoryRegistry) {
@@ -50,11 +41,8 @@ class ModEntityComponents : EntityComponentInitializer {
 
         // Common components
         registry.registerFor(Player::class.java, CURSORS) { e: Player -> BlockPosListComponent(e) }
-        registry.registerFor(Player::class.java, CURSOR_ANCHORS) { e: Player -> BlockPosListComponent(e) }
         registry.registerFor(Player::class.java, TARGET_POSITION) { e: Player -> BlockPosComponent(e) }
         registry.registerFor(Player::class.java, CURSOR_PREVIEWS) { e: Player -> BlockPosListComponent(e) }
-        registry.registerFor(Player::class.java, SELECTING_VERTICAL) { e: Player -> BooleanComponent(e) }
-        registry.registerFor(Player::class.java, SELECTING_FAR) { e: Player -> BooleanComponent(e) }
         registry.registerFor(Player::class.java, MODE) { e: Player -> ModeComponent(e) }
         registry.registerFor(Player::class.java, TELEKINESIS_DATA) { e: Player -> TelekinesisComponent(e) }
 
