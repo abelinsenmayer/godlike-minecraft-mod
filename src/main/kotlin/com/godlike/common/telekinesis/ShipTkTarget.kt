@@ -3,34 +3,28 @@ package com.godlike.common.telekinesis
 import com.godlike.common.Godlike.logger
 import com.godlike.common.util.*
 import com.godlike.common.vs2.Vs2Util
-import net.minecraft.client.player.LocalPlayer
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
-import net.minecraft.server.level.ServerPlayer
-import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
+import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3d
 import org.valkyrienskies.core.api.ships.ServerShip
 import org.valkyrienskies.mod.common.util.GameTickForceApplier
 import kotlin.math.log
 import kotlin.math.max
-import net.minecraft.core.Vec3i
-import org.joml.primitives.AABBd
 
 const val SHIP_FORCE_SCALAR = 40.0
 const val SHIP_BRAKE_SCALAR = 5.0
 const val SHIP_LAUNCH_SCALAR = 60.0
-const val SHIP_LAUNCH_VELOCITY_THRESHOLD = 10.0
+const val LAUNCH_VELOCITY_THRESHOLD = 10.0
 
 class ShipTkTarget(
     override val level: Level,
     override var player: Player?,
     val shipId : Long,
-    override var hoverPos: Vec3? = null,
-    override var chargingLaunch: Boolean = false,
-) : TkTarget {
+) : TkTarget(level, player) {
     val ship : ServerShip
         get() {
             if (level !is ServerLevel) {
@@ -39,12 +33,6 @@ class ShipTkTarget(
             return Vs2Util.getServerShipWorld(level).loadedShips.getById(shipId)!!
         }
     var disassemblyTickCountdown : Int = -1
-    private var launchStillnessTicks = 0
-    override var isLaunching: Boolean = false
-        set(value) {
-            field = value
-            launchStillnessTicks = 0
-        }
 
     override fun toNbt() : CompoundTag {
         val tag = CompoundTag()
@@ -60,9 +48,10 @@ class ShipTkTarget(
         return tag
     }
 
-    override fun mass(): Double {
-        return ship.inertiaData.mass
-    }
+    override fun mass(): Double = ship.inertiaData.mass
+
+    override fun velocity(): Vec3 = ship.velocity.toVec3()
+    override fun aabb(): AABB = this.ship.worldAABB.toAABB()
 
     /**
      * Called every tick on the server side to update telekinesis targets.
@@ -70,9 +59,7 @@ class ShipTkTarget(
      * of controlling player.
      */
     override fun tick() {
-        if (isLaunching) {
-            launchingTick()
-        }
+        super.tick()
         // Disassemble the ship once the TTL has expired, if there is one
         if (disassemblyTickCountdown > 0) {
             disassemblyTickCountdown--
@@ -157,67 +144,8 @@ class ShipTkTarget(
         torqueApplier().applyInvariantTorque(dragTorque.toVector3d())
     }
 
-    private fun launchingTick() {
-        // Stop "launching" if the ship's velocity has dropped sufficiently for the enough consecutive ticks
-        if (this.ship.velocity.length() < SHIP_LAUNCH_VELOCITY_THRESHOLD) {
-            launchStillnessTicks++
-            if (launchStillnessTicks > 5) {
-                logger.info("stopping launch, v=${this.ship.velocity.length()}")
-                this.isLaunching = false
-            }
-        } else {
-            launchStillnessTicks = 0
-        }
-
-        // Damage entities in the ship's path
-        val hitBox = this.ship.worldAABB.toAABB().inflate(1.0)
-        this.level.getEntities(null, hitBox).forEach { entity ->
-            entity.hurt(entity.damageSources().flyIntoWall(), LAUNCH_DAMAGE)
-            entity.playSound(
-                if (LAUNCH_DAMAGE > 4) SoundEvents.GENERIC_BIG_FALL else SoundEvents.GENERIC_SMALL_FALL,
-                1.0f,
-                1.0f
-            )
-            logger.info("Hit for $LAUNCH_DAMAGE damage at velocity ${this.ship.velocity.length()}.")
-        }
-
-        /* TODO explosions are commented out until we can do more work to make them work properly
-        // Create explosions for block collisions
-        val level = this.level
-        val collidedPositions = BlockPos.betweenClosedStream(hitBox)
-        collidedPositions.forEach { pos ->
-            // Don't collide with air
-            val state = level.getBlockState(pos)
-            if (state.isAir) {
-                return@forEach
-            }
-            // Don't collide with itself
-            val shipForPos = Vs2Util.getServerShipManagingPos((player as ServerPlayer).serverLevel(), pos)
-            if (shipForPos == this.ship) {
-                logger.info("Ignoring self-collision at $pos")
-                return@forEach
-            }
-
-            this.level.explode(
-                this.player,
-                this.player.damageSources().flyIntoWall(),
-                ExplosionDamageCalculator(),
-                pos.toVec3(),
-                0.5f,
-                false,
-                Level.ExplosionInteraction.BLOCK
-            )
-        }*/
-    }
-
-    /**
-     * Attempt to dislodge the ship from a place it's trapped. Searches for an axis direction where the ship can move
-     * unobstructed, and adds a force in that direction. If multiple directions are unobstructed, the ship will move in
-     * the direction closest to the controlling player's pointer.
-     * TODO not yet implemented
-     * @return true if the ship could successfully move in any direction to try and dislodge itself.
-     */
     fun unstick(pointer: Vec3) : Boolean {
+        // TODO implement
         logger.warn("Unstick not yet implemented")
         return false
     }

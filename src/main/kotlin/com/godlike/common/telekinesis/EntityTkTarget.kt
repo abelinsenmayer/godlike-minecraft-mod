@@ -1,14 +1,17 @@
 package com.godlike.common.telekinesis
 
 import com.godlike.common.Godlike
+import com.godlike.common.Godlike.logger
 import com.godlike.common.util.negate
 import com.godlike.common.util.toVector3d
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
+import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import kotlin.math.log
 import kotlin.math.max
@@ -17,23 +20,17 @@ const val ENTITY_FORCE_SCALAR = 0.1
 const val ENTITY_BRAKE_SCALAR = 5.0
 const val ENTITY_LAUNCH_SCALAR = 45.0
 const val ENTITY_LAUNCH_VELOCITY_THRESHOLD = 0.4
+const val DELTA_MOVEMENT_TO_VELOCITY_SCALAR = 20.0
+const val DIRT_MASS = 1220.0
 
 class EntityTkTarget(
     override val level: Level,
     override var player: Player?,
-    private val entityId: Int,
-    override var hoverPos: Vec3? = null,
-    override var chargingLaunch: Boolean = false
-) : TkTarget {
+    val entityId: Int
+) : TkTarget(level, player) {
     val entity : Entity
         get() {
             return level.getEntity(entityId)!!
-        }
-    private var launchStillnessTicks = 0
-    override var isLaunching: Boolean = false
-        set(value) {
-            field = value
-            launchStillnessTicks = 0
         }
 
     override fun pos(): Vec3 {
@@ -69,15 +66,15 @@ class EntityTkTarget(
     }
 
     override fun rotateTowardPointer(pointer: Vec3, playerEyePos: Vec3) {
-        // TODO
+        // NOOP for entity
     }
 
     override fun addRotationDrag() {
-        // TODO
+        // NOOP for entity
     }
 
     override fun place(level: ServerLevel) {
-        // TODO: set riding entity!!
+        // NOOP for entity
     }
 
     override fun launchToward(pos: Vec3) {
@@ -100,8 +97,15 @@ class EntityTkTarget(
     }
 
     override fun mass(): Double {
-        return entity.boundingBox.ysize * entity.boundingBox.xsize * entity.boundingBox.zsize
+        return if (entity is LivingEntity) {
+            ((entity as LivingEntity).maxHealth / 10) * DIRT_MASS
+        } else {
+            DIRT_MASS
+        }
     }
+
+    override fun velocity(): Vec3  = entity.deltaMovement.scale(DELTA_MOVEMENT_TO_VELOCITY_SCALAR)
+    override fun aabb(): AABB = entity.boundingBox
 
     /**
      * Called every tick on the server side to update telekinesis targets.
@@ -111,39 +115,6 @@ class EntityTkTarget(
     override fun tick() {
         if (isLaunching) {
             launchingTick()
-        }
-    }
-
-    private fun launchingTick() {
-        // Stop "launching" if the ship's velocity has dropped sufficiently for the enough consecutive ticks
-        if (this.entity.deltaMovement.length() < ENTITY_LAUNCH_VELOCITY_THRESHOLD) {
-            launchStillnessTicks++
-            if (launchStillnessTicks > 5) {
-                Godlike.logger.info("stopping launch, v=${this.entity.deltaMovement.length()}")
-                this.isLaunching = false
-            }
-        } else {
-            launchStillnessTicks = 0
-        }
-
-        // Damage entities in the target's path
-        val hitBox = this.entity.boundingBox.inflate(0.5) ?: return
-        this.level.getEntities(this.entity, hitBox).forEach { hitEntity ->
-            // Damage the entity hit
-            hitEntity.hurt(hitEntity.damageSources().flyIntoWall(), LAUNCH_DAMAGE)
-            hitEntity.playSound(
-                if (LAUNCH_DAMAGE > 4) SoundEvents.GENERIC_BIG_FALL else SoundEvents.GENERIC_SMALL_FALL,
-                1.0f,
-                1.0f
-            )
-            // Damage the entity itself
-            entity.hurt(entity.damageSources().flyIntoWall(), LAUNCH_DAMAGE)
-            entity.playSound(
-                if (LAUNCH_DAMAGE > 4) SoundEvents.GENERIC_BIG_FALL else SoundEvents.GENERIC_SMALL_FALL,
-                1.0f,
-                1.0f
-            )
-            Godlike.logger.info("Hit for $LAUNCH_DAMAGE damage at velocity ${this.entity.deltaMovement.length()}.")
         }
     }
 

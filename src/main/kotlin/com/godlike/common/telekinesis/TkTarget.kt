@@ -1,19 +1,28 @@
 package com.godlike.common.telekinesis
 
-import com.godlike.common.Godlike.logger
+import com.godlike.common.Godlike
+import com.godlike.common.util.toAABB
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
-import net.minecraft.world.entity.EntityType
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
+import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 
-interface TkTarget {
-    val level: Level
-    var player : Player?
-    var hoverPos : Vec3?
-    var chargingLaunch : Boolean
-    var isLaunching : Boolean
+abstract class TkTarget(
+    open val level: Level,
+    open var player : Player?
+) {
+    var hoverPos : Vec3? = null
+    var chargingLaunch : Boolean = false
+    private var launchStillnessTicks = 0
+    var isLaunching: Boolean = false
+        set(value) {
+            field = value
+            launchStillnessTicks = 0
+        }
 
     companion object {
         fun fromNbtAndPlayer(tag: CompoundTag, player: Player) : TkTarget {
@@ -56,30 +65,67 @@ interface TkTarget {
         }
     }
 
-    fun pos() : Vec3
+    abstract fun pos() : Vec3
 
-    fun moveToward(pos: Vec3)
+    abstract fun moveToward(pos: Vec3)
 
-    fun addLiftForce()
+    abstract fun addLiftForce()
 
-    fun rotateTowardPointer(pointer: Vec3, playerEyePos: Vec3)
+    abstract fun rotateTowardPointer(pointer: Vec3, playerEyePos: Vec3)
 
-    fun addRotationDrag()
+    abstract fun addRotationDrag()
 
-    fun place(level : ServerLevel)
+    abstract fun place(level : ServerLevel)
 
-    fun launchToward(pos: Vec3)
+    abstract fun launchToward(pos: Vec3)
 
-    fun toNbt() : CompoundTag
+    abstract fun toNbt() : CompoundTag
 
-    fun mass() : Double
+    abstract fun mass() : Double
+
+    abstract fun velocity() : Vec3
+
+    abstract fun aabb() : AABB
 
     /**
      * Called every tick on the server side to update telekinesis targets.
      * Note that player TK controls are handled separately; this is for things that should happen every tick regardless
      * of controlling player.
      */
-    fun tick()
+    open fun tick() {
+        if (isLaunching) {
+            launchingTick()
+        }
+    }
 
-    fun exists() : Boolean
+    abstract fun exists() : Boolean
+
+    open fun launchingTick() {
+        // Stop "launching" if the ship's velocity has dropped sufficiently for the enough consecutive ticks
+        if (velocity().length() < LAUNCH_VELOCITY_THRESHOLD) {
+            launchStillnessTicks++
+            if (launchStillnessTicks > 5) {
+                Godlike.logger.info("stopping launch, v=${velocity().length()}")
+                this.isLaunching = false
+            }
+        } else {
+            launchStillnessTicks = 0
+        }
+
+        // Damage entities in the ship's path
+        val hitBox = aabb().inflate(1.0)
+        val damage = mass() / DIRT_MASS * LAUNCH_BASE_DAMAGE
+        this.level.getEntities(null, hitBox).forEach { entity ->
+            entity.hurt(entity.damageSources().flyIntoWall(), damage.toFloat())
+            entity.playSound(
+                SoundEvents.ANVIL_LAND,
+                1.0f,
+                0.0f
+            )
+            Godlike.logger.info("Hit for $damage damage with mass ${mass()}.")
+            if (entity is LivingEntity) {
+                entity.knockback(0.5, entity.position().x - pos().x, entity.position().z - pos().z)
+            }
+        }
+    }
 }

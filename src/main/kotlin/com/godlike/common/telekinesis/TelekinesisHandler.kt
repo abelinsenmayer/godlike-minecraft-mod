@@ -16,7 +16,7 @@ import net.minecraft.world.phys.Vec3
 import org.valkyrienskies.core.api.ships.ServerShip
 
 const val LAUNCH_POINTER_DISTANCE = 100.0
-const val LAUNCH_DAMAGE = 4.0F
+const val LAUNCH_BASE_DAMAGE = 2.0F
 
 /**
  * Turn the block at the given position into a ship and add it to the player's telekinesis targets.
