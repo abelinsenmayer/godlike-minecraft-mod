@@ -5,6 +5,7 @@ import com.godlike.common.util.toAABB
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
@@ -17,10 +18,12 @@ abstract class TkTarget(
 ) {
     var hoverPos : Vec3? = null
     var chargingLaunch : Boolean = false
+    private val entitiesHitThisLaunch = mutableSetOf<Entity>()
     private var launchStillnessTicks = 0
     var isLaunching: Boolean = false
         set(value) {
             field = value
+            entitiesHitThisLaunch.clear()
             launchStillnessTicks = 0
         }
 
@@ -115,7 +118,8 @@ abstract class TkTarget(
         // Damage entities in the ship's path
         val hitBox = aabb().inflate(1.0)
         val damage = mass() / DIRT_MASS * LAUNCH_BASE_DAMAGE
-        this.level.getEntities(null, hitBox).forEach { entity ->
+        this.level.getEntities(null, hitBox).filter { !entitiesHitThisLaunch.contains(it) }.forEach { entity ->
+            entitiesHitThisLaunch.add(entity)
             entity.hurt(entity.damageSources().flyIntoWall(), damage.toFloat())
             entity.playSound(
                 SoundEvents.ANVIL_LAND,
