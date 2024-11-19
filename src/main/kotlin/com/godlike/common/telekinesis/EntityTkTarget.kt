@@ -8,6 +8,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
@@ -62,7 +63,12 @@ class EntityTkTarget(
 
     override fun addLiftForce() {
         entity.fallDistance = entity.deltaMovement.length().toFloat() * 4
-        addForce(Vec3(0.0, 0.08, 0.0))
+        val antiGravForce = if (entity.type == EntityType.ITEM) {
+            Vec3(0.0, 0.04, 0.0)
+        } else {
+            Vec3(0.0, 0.08, 0.0)
+        }
+        addForce(antiGravForce)
     }
 
     override fun rotateTowardPointer(pointer: Vec3, playerEyePos: Vec3) {
