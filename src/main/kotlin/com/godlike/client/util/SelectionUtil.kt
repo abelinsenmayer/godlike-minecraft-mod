@@ -1,6 +1,6 @@
 package com.godlike.client.util
 
-import com.godlike.common.components.ModEntityComponents
+import com.godlike.common.Godlike.logger
 import com.godlike.common.components.selection
 import com.godlike.common.util.*
 import com.godlike.common.vs2.Vs2Util
@@ -9,7 +9,11 @@ import net.minecraft.client.player.LocalPlayer
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Vec3i
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.entity.projectile.ProjectileUtil
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
@@ -65,7 +69,6 @@ fun LocalPlayer.isTargetContiguousWithSelection() : Boolean {
 
 /**
  * Returns true if the given position is contiguous with any of the positions in the given set.
- * TODO consider implementing this using dfs.
  */
 fun isPosContiguousWith(pos: BlockPos, set: Set<BlockPos>) : Boolean {
     set.forEach { selectedPos ->
@@ -102,3 +105,26 @@ fun dfs(pos: Vec3i, origin: Vec3i, range: Int, manhattan: Boolean, visited: Muta
     return visited
 }
 
+fun BlockPos.isValidTkTargetFor(player: Player) : Boolean {
+    val state = player.level().getBlockState(this)
+    return !(state.isAir
+            || state.block == Blocks.BEDROCK
+            || state.block == Blocks.BARRIER
+            || state.block == Blocks.END_PORTAL_FRAME
+            || state.block == Blocks.END_PORTAL
+            || state.block == Blocks.END_GATEWAY
+            || state.block == Blocks.COMMAND_BLOCK
+            || state.block == Blocks.STRUCTURE_BLOCK
+            || state.block == Blocks.JIGSAW
+            || state.block == Blocks.REPEATING_COMMAND_BLOCK
+            || state.block == Blocks.CHAIN_COMMAND_BLOCK
+            || state.block == Blocks.NETHER_PORTAL)
+}
+
+fun Entity.isValidTkTargetFor(): Boolean {
+    return !(this.isSpectator
+            || this.type == EntityType.WITHER
+            || this.type == EntityType.ENDER_DRAGON
+            || this.type == EntityType.END_CRYSTAL
+            || this.type == EntityType.TEXT_DISPLAY)
+}

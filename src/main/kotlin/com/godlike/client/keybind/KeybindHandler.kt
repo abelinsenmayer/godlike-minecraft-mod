@@ -8,7 +8,7 @@ import com.godlike.client.keybind.ModKeybinds.POINTER_PUSH
 import com.godlike.client.keybind.ModKeybinds.SET_TK_HOVERING
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
 import com.godlike.client.keybind.ModKeybinds.UNSTICK_TK
-import com.godlike.common.Godlike.logger
+import com.godlike.client.util.isValidTkTargetFor
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
 import com.godlike.common.components.selection
@@ -79,12 +79,17 @@ fun handleModInputEvents() {
                 selection.cursorTargetBlock?.let {
                     val toTk = mutableListOf(it)
                     toTk.addAll(selection.previewPositions)
-                    CHANNEL.clientHandle().send(TkPositionsPacket(toTk))
-                    didPick = true
+                    toTk.removeIf { pos -> !pos.isValidTkTargetFor(player) }
+                    if (toTk.isNotEmpty()) {
+                        CHANNEL.clientHandle().send(TkPositionsPacket(toTk))
+                        didPick = true
+                    }
                 }
                 selection.cursorTargetEntity?.let {
-                    CHANNEL.clientHandle().send(PickEntityToTkPacket(it.id))
-                    didPick = true
+                    if (it.isValidTkTargetFor()) {
+                        CHANNEL.clientHandle().send(PickEntityToTkPacket(it.id))
+                        didPick = true
+                    }
                 }
                 selection.cursorTargetShip?.let {
                     CHANNEL.clientHandle().send(PickShipToTkPacket(it.id))
