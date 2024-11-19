@@ -17,10 +17,9 @@ import net.minecraft.world.phys.Vec3
 import kotlin.math.log
 import kotlin.math.max
 
-const val ENTITY_FORCE_SCALAR = 0.1
-const val ENTITY_BRAKE_SCALAR = 5.0
+const val ENTITY_FORCE_SCALAR = 0.15
+const val ENTITY_BRAKE_SCALAR = 6.0
 const val ENTITY_LAUNCH_SCALAR = 45.0
-const val ENTITY_LAUNCH_VELOCITY_THRESHOLD = 0.4
 const val DELTA_MOVEMENT_TO_VELOCITY_SCALAR = 20.0
 const val DIRT_MASS = 1220.0
 
