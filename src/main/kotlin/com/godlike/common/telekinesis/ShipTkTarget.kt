@@ -15,7 +15,7 @@ import org.valkyrienskies.mod.common.util.GameTickForceApplier
 import kotlin.math.log
 import kotlin.math.max
 
-const val SHIP_FORCE_SCALAR = 40.0
+const val SHIP_FORCE_SCALAR = 60.0
 const val SHIP_BRAKE_SCALAR = 5.0
 const val SHIP_LAUNCH_SCALAR = 60.0
 const val LAUNCH_VELOCITY_THRESHOLD = 10.0

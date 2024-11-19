@@ -120,6 +120,9 @@ abstract class TkTarget(
         val damage = mass() / DIRT_MASS * LAUNCH_BASE_DAMAGE
         this.level.getEntities(null, hitBox).filter { !entitiesHitThisLaunch.contains(it) }.forEach { entity ->
             entitiesHitThisLaunch.add(entity)
+            if (entity is LivingEntity) {
+                entity.knockback(0.5, entity.position().x - pos().x, entity.position().z - pos().z)
+            }
             entity.hurt(entity.damageSources().flyIntoWall(), damage.toFloat())
             entity.playSound(
                 SoundEvents.ANVIL_LAND,
@@ -127,9 +130,6 @@ abstract class TkTarget(
                 0.0f
             )
             Godlike.logger.info("Hit for $damage damage with mass ${mass()}.")
-            if (entity is LivingEntity) {
-                entity.knockback(0.5, entity.position().x - pos().x, entity.position().z - pos().z)
-            }
         }
     }
 }
