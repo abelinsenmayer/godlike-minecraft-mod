@@ -14,6 +14,7 @@ import org.valkyrienskies.core.api.ships.ServerShip
 import org.valkyrienskies.mod.common.util.GameTickForceApplier
 import kotlin.math.log
 import kotlin.math.max
+import kotlin.math.pow
 
 const val SHIP_FORCE_SCALAR = 80.0
 const val SHIP_BRAKE_SCALAR = 6.0
@@ -102,16 +103,19 @@ class ShipTkTarget(
     }
 
     override fun moveToward(pos: Vec3) {
+        // More massive objects should move more sluggishly
+        val massScalar = 2 / (1 + (2 * (mass() / (DIRT_MASS * 2.5))).pow(0.3))
+
         val shipPos = ship.transform.positionInWorld.toVec3()
 
         // Apply a force to the ship to move it towards the pointer
-        val force = shipPos.subtract(pos).normalize().negate().scale(ship.inertiaData.mass * SHIP_FORCE_SCALAR)
+        val force = shipPos.subtract(pos).normalize().negate().scale(ship.inertiaData.mass * SHIP_FORCE_SCALAR * massScalar)
 
         // "Brake" to slow down the ship based on how aligned its velocity vector is to the direction of the pointer
         val angle = Math.toDegrees(ship.velocity.angle(force.toVector3d()))
         val brakeAngleScalar = angle / 180 * SHIP_BRAKE_SCALAR
         val brakeVelocityScalar = max(log(ship.velocity.length() + 1, 10.0), 0.0)
-        val brakeForce = ship.velocity.toVec3().negate().normalize().scale(ship.inertiaData.mass * SHIP_FORCE_SCALAR * brakeAngleScalar * brakeVelocityScalar)
+        val brakeForce = ship.velocity.toVec3().negate().normalize().scale(ship.inertiaData.mass * SHIP_FORCE_SCALAR * brakeAngleScalar * brakeVelocityScalar * massScalar)
 
         // Reduce the force when we're very near the pointer to stop the ship from oscillating
         val distance = shipPos.distanceTo(pos)

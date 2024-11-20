@@ -16,6 +16,7 @@ import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import kotlin.math.log
 import kotlin.math.max
+import kotlin.math.pow
 
 const val ENTITY_FORCE_SCALAR = 0.15
 const val ENTITY_BRAKE_SCALAR = 6.0
@@ -42,15 +43,17 @@ class EntityTkTarget(
     }
 
     override fun moveToward(pos: Vec3) {
+        // More massive objects should move more sluggishly
+        val massScalar = 2 / (1 + (2 * (mass() / (DIRT_MASS * 2.5))).pow(0.3))
 
         // Apply a force to the entity to move it towards the pointer
-        val force = pos().subtract(pos).normalize().negate().scale(ENTITY_FORCE_SCALAR)
+        val force = pos().subtract(pos).normalize().negate().scale(ENTITY_FORCE_SCALAR * massScalar)
 
         // "Brake" to slow down the entity based on how aligned its velocity vector is to the direction of the pointer
         val angle = Math.toDegrees(entity.deltaMovement.toVector3d().angle(force.toVector3d()))
         val brakeAngleScalar = angle / 180 * ENTITY_BRAKE_SCALAR
         val brakeVelocityScalar = max(log(entity.deltaMovement.length() + 1, 10.0), 0.0)
-        val brakeForce = entity.deltaMovement.negate().normalize().scale(ENTITY_FORCE_SCALAR * brakeAngleScalar * brakeVelocityScalar)
+        val brakeForce = entity.deltaMovement.negate().normalize().scale(ENTITY_FORCE_SCALAR * brakeAngleScalar * brakeVelocityScalar * massScalar)
 
         // Reduce the force when we're very near the pointer to stop the entity from oscillating
         val distance = pos().distanceTo(pos)
