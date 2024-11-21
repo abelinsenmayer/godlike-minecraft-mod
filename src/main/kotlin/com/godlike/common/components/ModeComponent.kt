@@ -61,9 +61,6 @@ fun Player.getMode(): Mode {
 enum class Mode(private val keybinds: List<KeyMapping>) {
     NONE(emptyList()),
     SELECTING(listOf(
-//        ModKeybinds.DO_SELECT,
-//        ModKeybinds.TK_SELECTION,
-//        ModKeybinds.TOGGLE_SELECTION_MODE,
         ModKeybinds.POINTER_PULL,
         ModKeybinds.POINTER_PUSH,
     )),
@@ -74,6 +71,7 @@ enum class Mode(private val keybinds: List<KeyMapping>) {
         ModKeybinds.ROTATE_TK,
         ModKeybinds.SET_TK_HOVERING,
         ModKeybinds.LAUNCH_TK,
+        ModKeybinds.CHANGE_DFS_DISTANCE_TYPE,
     ));
 
     /**

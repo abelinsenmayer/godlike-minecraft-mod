@@ -1,6 +1,7 @@
 package com.godlike.client.render
 
 import com.godlike.client.keybind.ModKeybinds
+import com.godlike.client.keybind.ModKeybinds.CHANGE_DFS_DISTANCE_TYPE
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
@@ -69,6 +70,11 @@ class ControlsHudOverlay : HudRenderCallback {
                     val placeText = keyText(ModKeybinds.PLACE_TK, hold = false).append(" ").append(text("key.godlike.place_tk"))
                     drawContext.drawCenteredString(font, placeText, pw(80), ph(55), 0xeeeeee)
                 }
+            } else {
+                val dfsModeText = keyText(CHANGE_DFS_DISTANCE_TYPE, hold = false)
+                    .append(" ").append(text("key.godlike.change_dfs_distance_type"))
+                    .append(" ").append(player.selection().dfsDistanceType.name)
+                drawContext.drawString(font, dfsModeText, pw(4), ph(85), 0xeeeeee)
             }
         }
     }

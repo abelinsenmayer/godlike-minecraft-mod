@@ -1,5 +1,6 @@
 package com.godlike.client.keybind
 
+import com.godlike.client.keybind.ModKeybinds.CHANGE_DFS_DISTANCE_TYPE
 import com.godlike.client.keybind.ModKeybinds.LAUNCH_TK
 import com.godlike.client.keybind.ModKeybinds.PICK_TO_TK
 import com.godlike.client.keybind.ModKeybinds.PLACE_TK
@@ -7,7 +8,7 @@ import com.godlike.client.keybind.ModKeybinds.POINTER_PULL
 import com.godlike.client.keybind.ModKeybinds.POINTER_PUSH
 import com.godlike.client.keybind.ModKeybinds.SET_TK_HOVERING
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
-import com.godlike.client.keybind.ModKeybinds.UNSTICK_TK
+import com.godlike.client.util.DfsDistanceType
 import com.godlike.client.util.isValidTkTargetFor
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
@@ -104,9 +105,20 @@ fun handleModInputEvents() {
         }
     }
 
-    while (UNSTICK_TK.consumeClick() && !player.selection().clientChargingLaunch) {
+//    while (UNSTICK_TK.consumeClick() && !player.selection().clientChargingLaunch) {
+//        if (player.getMode() == Mode.TELEKINESIS) {
+//            CHANNEL.clientHandle().send(UnstickTkPacket())
+//        }
+//    }
+
+    while (CHANGE_DFS_DISTANCE_TYPE.consumeClick() && !player.selection().clientChargingLaunch) {
         if (player.getMode() == Mode.TELEKINESIS) {
-            CHANNEL.clientHandle().send(UnstickTkPacket())
+            val newType = when(player.selection().dfsDistanceType) {
+                DfsDistanceType.CUBE -> DfsDistanceType.SPHERE
+                DfsDistanceType.SPHERE -> DfsDistanceType.MANHATTAN
+                DfsDistanceType.MANHATTAN -> DfsDistanceType.CUBE
+            }
+            player.selection().dfsDistanceType = newType
         }
     }
 

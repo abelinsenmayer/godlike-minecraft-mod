@@ -63,14 +63,14 @@ object ModKeybinds {
         )
     )
 
-    val UNSTICK_TK: KeyMapping = KeyBindingHelper.registerKeyBinding(
-        KeyMapping(
-            "key.godlike.unstick_tk",
-            InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_B,
-            "category.godlike"
-        )
-    )
+//    val UNSTICK_TK: KeyMapping = KeyBindingHelper.registerKeyBinding(
+//        KeyMapping(
+//            "key.godlike.unstick_tk",
+//            InputConstants.Type.KEYSYM,
+//            GLFW.GLFW_KEY_B,
+//            "category.godlike"
+//        )
+//    )
 
     val POINTER_PUSH: KeyMapping = KeyBindingHelper.registerKeyBinding(
         KeyMapping(
@@ -86,6 +86,15 @@ object ModKeybinds {
             "key.godlike.pointer_towards",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_Q,
+            "category.godlike"
+        )
+    )
+
+    val CHANGE_DFS_DISTANCE_TYPE: KeyMapping = KeyBindingHelper.registerKeyBinding(
+        KeyMapping(
+            "key.godlike.change_dfs_distance_type",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_V,
             "category.godlike"
         )
     )

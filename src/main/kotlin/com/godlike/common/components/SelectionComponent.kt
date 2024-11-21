@@ -1,6 +1,7 @@
 package com.godlike.common.components
 
 import com.godlike.client.render.setEntityGlowing
+import com.godlike.client.util.DfsDistanceType
 import com.godlike.common.util.toVec3
 import dev.onyxstudios.cca.api.v3.component.Component
 import net.minecraft.client.player.LocalPlayer
@@ -35,6 +36,7 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
     var selectedPositions: MutableSet<BlockPos> = mutableSetOf()
     var previewPositions: MutableSet<BlockPos> = mutableSetOf()
     var selectionIsContiguous: Boolean = false
+    var dfsDistanceType: DfsDistanceType = DfsDistanceType.CUBE
     var dfsDepth: Int = 0
         set(value) {
             if (value <= MAX_DFS_DEPTH) {
@@ -54,6 +56,7 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
         previewPositions = tag.getLongArray("previewPositions").map { BlockPos.of(it) }.toMutableSet()
         selectionIsContiguous = tag.getBoolean("selectionIsContiguous")
         dfsDepth = tag.getInt("dfsDepth")
+        dfsDistanceType = tag.getString("dfsDistanceType").let { DfsDistanceType.valueOf(it) }
     }
 
     override fun writeToNbt(tag: CompoundTag) {
@@ -68,6 +71,7 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
         tag.putLongArray("previewPositions", previewPositions.map { it.asLong() }.toLongArray())
         tag.putBoolean("selectionIsContiguous", selectionIsContiguous)
         tag.putInt("dfsDepth", dfsDepth)
+        tag.putString("dfsDistanceType", dfsDistanceType.name)
     }
 
     fun clear() {

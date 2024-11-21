@@ -1,6 +1,5 @@
 package com.godlike.client.util
 
-import com.godlike.common.Godlike.logger
 import com.godlike.common.components.selection
 import com.godlike.common.util.*
 import com.godlike.common.vs2.Vs2Util
@@ -12,11 +11,11 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.entity.projectile.ProjectileUtil
-import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
+import kotlin.math.abs
 
 /**
  * Selects the block, entity, or ship the player is looking at.
@@ -82,26 +81,55 @@ fun isPosContiguousWith(pos: BlockPos, set: Set<BlockPos>) : Boolean {
 fun LocalPlayer.updatePreviewsFromPosition(pos: Vec3i) {
     val searchCondition = { position: Vec3i -> !this.clientLevel.getBlockState(BlockPos(position)).isAir &&
             !this.selection().selectedPositions.contains(position) }
-    val found = blockPosDfs(pos, this.selection().dfsDepth, false, searchCondition)
+    val found = blockPosDfs(pos, this.selection().dfsDepth, this.selection().dfsDistanceType, searchCondition)
     this.selection().previewPositions.clear()
     this.selection().previewPositions.addAll(found)
 }
 
-fun blockPosDfs(startPos: Vec3i, range: Int, manhattan: Boolean, condition: (Vec3i) -> Boolean) : Set<BlockPos> {
-    return dfs(startPos, startPos, range, manhattan, mutableSetOf(), condition).map { BlockPos(it) }.toSet()
+fun Vec3i.distCube(other: Vec3i) : Double {
+    return abs(this.x - other.x).coerceAtLeast(abs(this.y - other.y).coerceAtLeast(abs(this.z - other.z))).toDouble()
 }
 
-fun dfs(pos: Vec3i, origin: Vec3i, range: Int, manhattan: Boolean, visited: MutableSet<Vec3i>, condition: (Vec3i) -> Boolean) : Set<Vec3i> {
-    val distance = if (manhattan) pos.distManhattan(origin).toDouble() else pos.distSqr(origin)
-    if (distance >= range) {
-        return visited
+fun blockPosDfs(startPos: Vec3i, range: Int, distanceType: DfsDistanceType, condition: (Vec3i) -> Boolean) : Set<BlockPos> {
+    return dfs(startPos, startPos, range, distanceType, mutableSetOf(), condition).map { BlockPos(it) }.toSet()
+}
+
+fun dfs(
+    pos: Vec3i,
+    origin: Vec3i,
+    range: Int,
+    distanceType: DfsDistanceType,
+    visited: MutableSet<Vec3i>,
+    condition: (Vec3i) -> Boolean
+): Set<Vec3i> {
+    val stack = ArrayDeque<Vec3i>() // Use a stack to emulate recursion
+    stack.add(pos)
+
+    while (stack.isNotEmpty()) {
+        val current = stack.removeLast()
+        // Skip if already visited
+        if (current in visited) continue
+
+        val distance: Double = when (distanceType) {
+            DfsDistanceType.MANHATTAN -> current.distManhattan(origin).toDouble()
+            DfsDistanceType.SPHERE -> current.distSqr(origin)
+            DfsDistanceType.CUBE -> current.distCube(origin)
+        }
+
+        // Skip if outside range
+        if (distance >= range) continue
+
+        // Process current position if it satisfies the condition
+        if (condition(current)) {
+            visited.add(current)
+        }
+
+        // Add unvisited neighbors that satisfy the condition to the stack
+        current.getNeighbors()
+            .filter { it !in visited && condition(it) }
+            .forEach { stack.add(it) }
     }
-    if (condition(pos)) {
-        visited.add(pos)
-    }
-    pos.getNeighbors().filter { !visited.contains(it) }.filter { condition(it) }.forEach {
-        dfs(it, origin, range, manhattan, visited, condition)
-    }
+
     return visited
 }
 

@@ -19,5 +19,6 @@
   "hud.godlike.hello-world": "Hello, World!",
   "hud.godlike.hold": "(Hold)",
   "hud.godlike.release": "(Release)",
-  "key.godlike.unstick_tk": "Dislodge (NOT YET IMPLEMENTED)"
+  "key.godlike.unstick_tk": "Dislodge (NOT YET IMPLEMENTED)",
+  "key.godlike.change_dfs_distance_type": "Cycle Selection Type"
 }
