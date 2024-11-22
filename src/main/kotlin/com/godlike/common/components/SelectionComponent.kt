@@ -38,10 +38,19 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
     var dfsDistanceType: DfsDistanceType = DfsDistanceType.CUBE
     var dfsDepth: Int = 0
         set(value) {
+            if (value <= 0) {
+                field = 1
+                return
+            }
             if (value <= dfsDistanceType.maxDistance) {
                 field = value
             }
         }
+    fun dfsDelta() : Int = if (dfsDistanceType == DfsDistanceType.SPHERE && dfsDepth > 2) {
+        2
+    } else {
+        1
+    }
     val hasRaycastTarget
         get() = cursorTargetBlock != null || cursorTargetEntity != null || cursorTargetShip != null
 

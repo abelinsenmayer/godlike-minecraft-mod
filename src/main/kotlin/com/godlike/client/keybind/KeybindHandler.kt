@@ -9,7 +9,9 @@ import com.godlike.client.keybind.ModKeybinds.POINTER_PUSH
 import com.godlike.client.keybind.ModKeybinds.SET_TK_HOVERING
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
 import com.godlike.client.util.DfsDistanceType
+import com.godlike.client.util.dfs
 import com.godlike.client.util.isValidTkTargetFor
+import com.godlike.common.Godlike.logger
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
 import com.godlike.common.components.selection
@@ -154,9 +156,9 @@ fun handleModInputEvents() {
     }
 
     while (player.telekinesis().activeTkTarget == null && POINTER_PUSH.consumeClick()) {
-        player.selection().dfsDepth += 1
+        player.selection().dfsDepth += player.selection().dfsDelta()
     }
     while (player.telekinesis().activeTkTarget == null && POINTER_PULL.consumeClick()) {
-        player.selection().dfsDepth -= 1
+        player.selection().dfsDepth -= player.selection().dfsDelta()
     }
 }
