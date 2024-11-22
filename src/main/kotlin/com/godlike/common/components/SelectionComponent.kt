@@ -15,7 +15,6 @@ import org.valkyrienskies.core.api.ships.ClientShip
 const val CURSOR_TARGET_BLOCK = "cursor_target_block"
 const val CURSOR_TARGET_ENTITY = "cursor_target_entity"
 
-const val MAX_DFS_DEPTH = 15
 
 /**
  * This component is used to store the player's current selection data.
@@ -39,7 +38,7 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
     var dfsDistanceType: DfsDistanceType = DfsDistanceType.CUBE
     var dfsDepth: Int = 0
         set(value) {
-            if (value <= MAX_DFS_DEPTH) {
+            if (value <= dfsDistanceType.maxDistance) {
                 field = value
             }
         }

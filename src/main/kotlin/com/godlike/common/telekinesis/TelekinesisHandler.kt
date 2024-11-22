@@ -1,5 +1,6 @@
 package com.godlike.common.telekinesis
 
+import com.godlike.common.Godlike.logger
 import com.godlike.common.components.ModEntityComponents
 import com.godlike.common.components.getTkTicker
 import com.godlike.common.components.telekinesis
@@ -102,17 +103,6 @@ fun launchTk(player: ServerPlayer, targetedPosition: Vec3) {
     }
 }
 
-/**
- * Attempt to dislodge the player's currently-active telekinesis target from where it's stuck.
- * Only applies to ship targets.
- */
-fun unstickTk(player: ServerPlayer) {
-    player.telekinesis().activeTkTarget?.let { target ->
-        target !is ShipTkTarget && return
-        (target as ShipTkTarget).unstick(getPointer(player, player.lookAngle, target))
-    }
-}
-
 fun getPointer(player: ServerPlayer, lookDirection: Vec3, target: TkTarget) : Vec3 {
     // Find where the player is looking at on the sphere defined by the target's distance from them
     val eyePosition = player.position().add(0.0, 1.5, 0.0)
@@ -140,7 +130,7 @@ fun serverTelekinesisTick(telekinesisControls: TelekinesisControlsPacket, player
         // If not registered with ticker, add it
         player.serverLevel().getTkTicker().tickingTargets.add(target)
 
-        val pointer = getPointer(player, telekinesisControls.playerLookDirection, target)
+        var pointer = getPointer(player, telekinesisControls.playerLookDirection, target)
         if (player.telekinesis().activeTkTarget != null) {
             ModNetworking.CHANNEL.serverHandle(player).send(TracerParticlePacket(pointer))
         }
@@ -153,6 +143,18 @@ fun serverTelekinesisTick(telekinesisControls: TelekinesisControlsPacket, player
             if (target.hoverPos != null) {
                 target.moveToward(target.hoverPos!!)
             } else {
+                // If we're moving a ship that's "stuck", try to unstick it by gradually snapping the pointer to an axis
+                if (target is ShipTkTarget) {
+                    target.updateStuckTicks(pointer)
+                    val snapDistance = target.stuckTicks / 2
+                    logger.info("stuck ticks: ${target.stuckTicks}, snap distance: $snapDistance")
+                    val snapTo = target.getAxisPointers(target.pos().distanceTo(pointer))
+                        .filter { it.distanceTo(pointer) < snapDistance }
+                        .minByOrNull { it.distanceTo(pointer) }
+                    if (snapTo != null) {
+                        pointer = snapTo
+                    }
+                }
                 target.moveToward(pointer)
             }
         }

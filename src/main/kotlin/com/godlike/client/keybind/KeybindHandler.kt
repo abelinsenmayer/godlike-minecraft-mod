@@ -105,18 +105,12 @@ fun handleModInputEvents() {
         }
     }
 
-//    while (UNSTICK_TK.consumeClick() && !player.selection().clientChargingLaunch) {
-//        if (player.getMode() == Mode.TELEKINESIS) {
-//            CHANNEL.clientHandle().send(UnstickTkPacket())
-//        }
-//    }
-
     while (CHANGE_DFS_DISTANCE_TYPE.consumeClick() && !player.selection().clientChargingLaunch) {
         if (player.getMode() == Mode.TELEKINESIS) {
             val newType = when(player.selection().dfsDistanceType) {
                 DfsDistanceType.CUBE -> DfsDistanceType.SPHERE
-                DfsDistanceType.SPHERE -> DfsDistanceType.MANHATTAN
-                DfsDistanceType.MANHATTAN -> DfsDistanceType.CUBE
+                DfsDistanceType.SPHERE -> DfsDistanceType.DIAMOND
+                DfsDistanceType.DIAMOND -> DfsDistanceType.CUBE
             }
             player.selection().dfsDistanceType = newType
         }
@@ -159,10 +153,10 @@ fun handleModInputEvents() {
         player.selection().clientChargingLaunch = false
     }
 
-    if (player.telekinesis().activeTkTarget == null && POINTER_PUSH.isDown) {
-        player.selection().dfsDepth++
+    while (player.telekinesis().activeTkTarget == null && POINTER_PUSH.consumeClick()) {
+        player.selection().dfsDepth += 1
     }
-    if (player.telekinesis().activeTkTarget == null && POINTER_PULL.isDown) {
-        player.selection().dfsDepth--
+    while (player.telekinesis().activeTkTarget == null && POINTER_PULL.consumeClick()) {
+        player.selection().dfsDepth -= 1
     }
 }

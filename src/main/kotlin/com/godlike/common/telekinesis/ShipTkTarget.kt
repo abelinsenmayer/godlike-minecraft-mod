@@ -14,6 +14,7 @@ import org.valkyrienskies.core.api.ships.ServerShip
 import org.valkyrienskies.mod.common.util.GameTickForceApplier
 import kotlin.math.log
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.pow
 
 const val SHIP_FORCE_SCALAR = 80.0
@@ -34,6 +35,7 @@ class ShipTkTarget(
             return Vs2Util.getServerShipWorld(level).loadedShips.getById(shipId)!!
         }
     var disassemblyTickCountdown : Int = -1
+    var stuckTicks : Int = 0
 
     override fun toNbt() : CompoundTag {
         val tag = CompoundTag()
@@ -54,11 +56,6 @@ class ShipTkTarget(
     override fun velocity(): Vec3 = ship.velocity.toVec3()
     override fun aabb(): AABB = this.ship.worldAABB.toAABB()
 
-    /**
-     * Called every tick on the server side to update telekinesis targets.
-     * Note that player TK controls are handled separately; this is for things that should happen every tick regardless
-     * of controlling player.
-     */
     override fun tick() {
         super.tick()
         // Disassemble the ship once the TTL has expired, if there is one
@@ -68,6 +65,11 @@ class ShipTkTarget(
                 disassemble(ship, level as ServerLevel)
             }
         }
+    }
+
+    fun updateStuckTicks(pointer: Vec3) {
+        val stuck = (!aabb().contains(pointer) && velocity().length() < 1.0)
+        stuckTicks = max(0, if (stuck) stuckTicks + 1 else stuckTicks - velocity().length().toInt())
     }
 
     override fun exists(): Boolean {
@@ -103,13 +105,16 @@ class ShipTkTarget(
     }
 
     override fun moveToward(pos: Vec3) {
+        // Apply more force if we have been stuck to overcome friction
+        val stuckScalar = 1 + (stuckTicks / 20.0)
+
         // More massive objects should move more sluggishly
         val massScalar = 2 / (1 + (2 * (mass() / (DIRT_MASS * 2.5))).pow(0.3))
 
         val shipPos = ship.transform.positionInWorld.toVec3()
 
         // Apply a force to the ship to move it towards the pointer
-        val force = shipPos.subtract(pos).normalize().negate().scale(ship.inertiaData.mass * SHIP_FORCE_SCALAR * massScalar)
+        val force = shipPos.subtract(pos).normalize().negate().scale(ship.inertiaData.mass * SHIP_FORCE_SCALAR * massScalar * stuckScalar)
 
         // "Brake" to slow down the ship based on how aligned its velocity vector is to the direction of the pointer
         val angle = Math.toDegrees(ship.velocity.angle(force.toVector3d()))
@@ -146,12 +151,6 @@ class ShipTkTarget(
         val dragAxis = ship.inertiaData.momentOfInertiaTensor.transform(ship.omega.toVec3().toVector3d()).toVec3()
         val dragTorque = dragAxis.scale(-ship.omega.length()).scale(6.0)
         torqueApplier().applyInvariantTorque(dragTorque.toVector3d())
-    }
-
-    fun unstick(pointer: Vec3) : Boolean {
-        // TODO implement
-        logger.warn("Unstick not yet implemented")
-        return false
     }
 
     override fun equals(other: Any?): Boolean {

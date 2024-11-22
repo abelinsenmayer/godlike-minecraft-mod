@@ -115,17 +115,6 @@ class EntityTkTarget(
     override fun velocity(): Vec3  = entity.deltaMovement.scale(DELTA_MOVEMENT_TO_VELOCITY_SCALAR)
     override fun aabb(): AABB = entity.boundingBox
 
-    /**
-     * Called every tick on the server side to update telekinesis targets.
-     * Note that player TK controls are handled separately; this is for things that should happen every tick regardless
-     * of controlling player.
-     */
-    override fun tick() {
-        if (isLaunching) {
-            launchingTick()
-        }
-    }
-
     override fun exists(): Boolean {
         return try {
             entity

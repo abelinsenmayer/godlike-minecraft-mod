@@ -90,11 +90,6 @@ abstract class TkTarget(
 
     abstract fun aabb() : AABB
 
-    /**
-     * Called every tick on the server side to update telekinesis targets.
-     * Note that player TK controls are handled separately; this is for things that should happen every tick regardless
-     * of controlling player.
-     */
     open fun tick() {
         if (isLaunching) {
             launchingTick()
@@ -131,5 +126,21 @@ abstract class TkTarget(
             )
             Godlike.logger.info("Hit for $damage damage with mass ${mass()}.")
         }
+    }
+
+    /**
+     * Get the set of pointers that are dist blocks away in every axis direction (up, down, +x, -x, +z, -z).
+     * Directions are based on world axis; the target's rotation is irrelevant.
+     */
+    fun getAxisPointers(dist : Double) : Set<Vec3> {
+        val pos = pos()
+        return setOf(
+            pos.add(0.0, aabb().ysize / 2 + dist, 0.0),
+            pos.add(0.0, -aabb().ysize / 2 - dist, 0.0),
+            pos.add(aabb().xsize / 2 + dist, 0.0, 0.0),
+            pos.add(-aabb().xsize / 2 - dist, 0.0, 0.0),
+            pos.add(0.0, 0.0, aabb().zsize / 2 + dist),
+            pos.add(0.0, 0.0, -aabb().zsize / 2 - dist)
+        )
     }
 }
