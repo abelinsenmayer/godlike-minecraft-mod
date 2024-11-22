@@ -10,7 +10,7 @@ import org.joml.primitives.AABBic
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-const val MAX_RAYCAST_DISTANCE = 40.0
+const val MAX_RAYCAST_DISTANCE = 80.0
 
 fun AABBic.toAABB(): AABB {
     return AABB(minX().toDouble(), minY().toDouble(), minZ().toDouble(), maxX().toDouble(), maxY().toDouble(), maxZ().toDouble())

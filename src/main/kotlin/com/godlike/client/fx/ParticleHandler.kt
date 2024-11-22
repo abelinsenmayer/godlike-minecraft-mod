@@ -26,11 +26,11 @@ fun spawnTracerAtPoint(pos: Vec3, level: Level) {
 }
 
 fun spawnTracerParticle(pos: Vec3, level: Level) {
-    val startingColor = Color(100, 0, 100)
-    val endingColor = Color(0, 100, 200)
+    val startingColor = Color(255, 255, 255)
+    val endingColor = Color(193, 189, 191)
     WorldParticleBuilder.create(LodestoneParticleRegistry.WISP_PARTICLE)
-        .setScaleData(GenericParticleData.create(0.5f, 0f).build())
-        .setTransparencyData(GenericParticleData.create(0.75f, 0.25f).build())
+        .setScaleData(GenericParticleData.create(0.5f, 0.5f).build())
+        .setTransparencyData(GenericParticleData.create(0.7f, 0.2f).build())
         .setColorData(
             ColorParticleData.create(startingColor, endingColor).setCoefficient(1.4f).setEasing(Easing.BOUNCE_IN_OUT)
                 .build()
@@ -39,8 +39,8 @@ fun spawnTracerParticle(pos: Vec3, level: Level) {
             SpinParticleData.create(0.2f, 0.4f).setSpinOffset((level.gameTime * 0.2f) % 6.28f)
                 .setEasing(Easing.QUARTIC_IN).build()
         )
-        .setLifetime(40)
-        .addMotion(0.0, 0.01, 0.0)
+        .setLifetime(5)
+//        .addMotion(0.0, 0.01, 0.0)
         .enableNoClip()
         .spawn(level, pos.x, pos.y, pos.z)
 
