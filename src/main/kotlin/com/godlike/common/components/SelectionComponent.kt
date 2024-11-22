@@ -15,7 +15,7 @@ import org.valkyrienskies.core.api.ships.ClientShip
 const val CURSOR_TARGET_BLOCK = "cursor_target_block"
 const val CURSOR_TARGET_ENTITY = "cursor_target_entity"
 
-const val MAX_DFS_DEPTH = 200
+const val MAX_DFS_DEPTH = 20
 
 /**
  * This component is used to store the player's current selection data.
