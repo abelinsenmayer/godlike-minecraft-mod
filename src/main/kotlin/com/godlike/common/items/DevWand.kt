@@ -11,7 +11,7 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 
-class DevWand : Item(OwoItemSettings().group(ModItems.GODLIKE_GROUP)) {
+class DevWand : Item(OwoItemSettings()) {
     override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
 //        if (world.isClientSide) {
 //            user.push(0.0, 10.0, 0.0)

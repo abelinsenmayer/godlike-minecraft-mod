@@ -1,6 +1,9 @@
 {
   "item.godlike.dev_wand": "Dev Wand",
+  "item.godlike.essential_tk_focus": "Essential Telekinetic Focus",
+
   "itemGroup.godlike.godlike_group": "Godlike",
+
   "category.godlike": "Godlike",
   "key.godlike.set_tk_hovering": "Hover",
   "key.godlike.pointer_away": "Push Pointer/Expand Selection",

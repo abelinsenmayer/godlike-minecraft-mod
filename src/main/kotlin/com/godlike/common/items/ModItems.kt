@@ -3,11 +3,9 @@ package com.godlike.common.items
 import com.godlike.common.MOD_ID
 import io.wispforest.owo.itemgroup.Icon
 import io.wispforest.owo.itemgroup.OwoItemGroup
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.Items
-import net.minecraft.world.level.ItemLike
 import org.slf4j.LoggerFactory
 import java.util.function.Supplier
 
@@ -31,6 +29,7 @@ object ModItems {
 
     // All items should be registered here
     val DEV_WAND = register(DevWand(), "dev_wand")
+    val ESSENTIAL_TK_FOCUS = register(TkFocusItem(TkFocusTier.ESSENTIAL), "essential_tk_focus")
 
     init {
         GODLIKE_GROUP.initialize()
