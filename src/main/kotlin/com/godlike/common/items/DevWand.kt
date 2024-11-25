@@ -1,6 +1,7 @@
 package com.godlike.common.items
 
 import com.godlike.common.Godlike.logger
+import io.wispforest.owo.itemgroup.OwoItemSettings
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.InteractionResultHolder
@@ -10,7 +11,7 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 
-class DevWand : Item(Properties()) {
+class DevWand : Item(OwoItemSettings().group(ModItems.GODLIKE_GROUP)) {
     override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
 //        if (world.isClientSide) {
 //            user.push(0.0, 10.0, 0.0)

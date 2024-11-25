@@ -21,7 +21,7 @@ object Godlike : ModInitializer {
 		logger.info("Hello Fabric world!")
 
 		// Register items
-		ModItems()
+		ModItems
 
 		// Register components
 		ModEntityComponents()
