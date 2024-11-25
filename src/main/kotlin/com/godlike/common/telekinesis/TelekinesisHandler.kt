@@ -136,7 +136,7 @@ fun serverTelekinesisTick(telekinesisControls: TelekinesisControlsPacket, player
         }
 
         target.addLiftForce()
-        if (telekinesisControls.rotating()) {
+        if (telekinesisControls.rotating() && target.hoverPos == null) {
             target.rotateTowardPointer(pointer, player.position().add(0.0, 1.5, 0.0))
         } else {
             target.addRotationDrag()
@@ -147,7 +147,6 @@ fun serverTelekinesisTick(telekinesisControls: TelekinesisControlsPacket, player
                 if (target is ShipTkTarget) {
                     target.updateStuckTicks(pointer)
                     val snapDistance = target.stuckTicks / 2
-                    logger.info("stuck ticks: ${target.stuckTicks}, snap distance: $snapDistance")
                     val snapTo = target.getAxisPointers(target.pos().distanceTo(pointer))
                         .filter { it.distanceTo(pointer) < snapDistance }
                         .minByOrNull { it.distanceTo(pointer) }
