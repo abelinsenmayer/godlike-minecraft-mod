@@ -2,6 +2,7 @@ package com.godlike.common.components
 
 import com.godlike.client.keybind.ModKeybinds
 import com.godlike.client.mixin.KeyBindingMixin
+import com.godlike.common.telekinesis.dropTk
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.player.LocalPlayer
@@ -32,6 +33,9 @@ class ModeComponent(private val player : Player) : AutoSyncedComponent {
                 if (player is LocalPlayer) {
                     player.selection().clear()
                 }
+            }
+            if (value != Mode.TELEKINESIS && player is ServerPlayer) {
+                dropTk(player)
             }
         }
 

@@ -12,10 +12,6 @@ import java.util.function.Supplier
 object ModItems {
     private val logger = LoggerFactory.getLogger("godlike")
 
-    init {
-        logger.info("Registering items")
-    }
-
     private fun register(item: Item, id: String) : Item {
         val itemID = ResourceLocation.tryBuild(MOD_ID, id)!!
         return Items.registerItem(itemID, item)
@@ -32,6 +28,7 @@ object ModItems {
     val BASIC_TK_FOCUS = register(TkFocusItem(TkFocusTier.BASIC), "basic_tk_focus")
 
     init {
+        logger.info("Registering items")
         GODLIKE_GROUP.initialize()
     }
 }

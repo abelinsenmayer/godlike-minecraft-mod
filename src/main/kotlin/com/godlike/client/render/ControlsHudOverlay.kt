@@ -29,8 +29,8 @@ class ControlsHudOverlay : HudRenderCallback {
         val font = Minecraft.getInstance().font
         val player = Minecraft.getInstance().player!!
 
-        val toggleTkText = keyText(TOGGLE_TK_MODE, hold = false).append(" ").append(text("key.godlike.tk_mode"))
-        drawContext.drawCenteredString(font, toggleTkText, pw(15), ph(90), 0xeeeeee)
+        // val toggleTkText = keyText(TOGGLE_TK_MODE, hold = false).append(" ").append(text("key.godlike.tk_mode"))
+        // drawContext.drawCenteredString(font, toggleTkText, pw(15), ph(90), 0xeeeeee)
 
         if (player.getMode() == Mode.TELEKINESIS) {
             if (!player.selection().clientChargingLaunch && player.selection().hasRaycastTarget) {

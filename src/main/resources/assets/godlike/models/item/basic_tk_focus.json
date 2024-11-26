@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:item/handheld_rod",
+  "textures": {
+    "layer0": "minecraft:item/stick"
+  },
+  "overrides": [
+    { "predicate": { "godlike:has_active_target": 1 }, "model": "godlike:item/basic_tk_focus_pointed" }
+  ]
+}

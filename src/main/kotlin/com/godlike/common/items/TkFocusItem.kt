@@ -34,9 +34,7 @@ class TkFocusItem(
 fun ServerPlayer.updateTkStateByItem(item: ItemStack) {
     if (item.item is TkFocusItem && this.getMode() != Mode.TELEKINESIS) {
         this.setMode(Mode.TELEKINESIS)
-        logger.info("Switching to TK mode")
     } else if (item.item !is TkFocusItem && this.getMode() == Mode.TELEKINESIS) {
         this.setMode(Mode.NONE)
-        logger.info("Switching to normal mode")
     }
 }
