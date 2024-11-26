@@ -29,7 +29,7 @@ object ModItems {
 
     // All items should be registered here
     val DEV_WAND = register(DevWand(), "dev_wand")
-    val ESSENTIAL_TK_FOCUS = register(TkFocusItem(TkFocusTier.ESSENTIAL), "essential_tk_focus")
+    val BASIC_TK_FOCUS = register(TkFocusItem(TkFocusTier.BASIC), "basic_tk_focus")
 
     init {
         GODLIKE_GROUP.initialize()

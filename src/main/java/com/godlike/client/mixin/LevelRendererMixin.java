@@ -34,21 +34,5 @@ public abstract class LevelRendererMixin {
 
         // highlight target position or entity, plus selections and previews
         highlightSelections(poseStack, camera, this.renderBuffers.outlineBufferSource());
-
-//        // highlight the block the player is targeting
-//        BlockPos targetPos = ModComponents.TARGET_POSITION.get(player).getPos();
-//        outlineBlockPos(targetPos, poseStack, camera, 30f, 254f, 245f, 0.5f);
-//
-//        // highlight selection previews
-//        List<BlockPos> previews = ModComponents.CURSOR_PREVIEWS.get(player).getPositions();
-//        for (BlockPos preview : previews) {
-//            outlineBlockPos(preview, poseStack, camera, 245f, 40f, 145f, 0.3f);
-//        }
-//
-//        // highlight cursors
-//        List<BlockPos> cursors = ModComponents.CURSORS.get(player).getPositions();
-//        for (BlockPos cursor : cursors) {
-//            outlineBlockPos(cursor, poseStack, camera, 93f, 245f, 148f, 0.5f);
-//        }
     }
 }
