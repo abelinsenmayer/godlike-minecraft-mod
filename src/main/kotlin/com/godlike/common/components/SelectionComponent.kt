@@ -2,6 +2,7 @@ package com.godlike.common.components
 
 import com.godlike.client.render.setEntityGlowing
 import com.godlike.client.util.DfsDistanceType
+import com.godlike.common.Godlike.logger
 import com.godlike.common.util.toVec3
 import dev.onyxstudios.cca.api.v3.component.Component
 import net.minecraft.client.player.LocalPlayer
@@ -11,6 +12,8 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.phys.Vec3
 import org.valkyrienskies.core.api.ships.ClientShip
+import org.valkyrienskies.mod.common.DefaultBlockStateInfoProvider
+import org.valkyrienskies.mod.common.config.MassDatapackResolver
 
 const val CURSOR_TARGET_BLOCK = "cursor_target_block"
 const val CURSOR_TARGET_ENTITY = "cursor_target_entity"
@@ -34,6 +37,7 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
     var clientChargingLaunch : Boolean = false  // TODO move this out of this component
     var selectedPositions: MutableSet<BlockPos> = mutableSetOf()
     var previewPositions: MutableSet<BlockPos> = mutableSetOf()
+    var previewedMass : Double = 0.0
     var selectionIsContiguous: Boolean = false
     var dfsDistanceType: DfsDistanceType = DfsDistanceType.CUBE
     var dfsDepth: Int = 0
@@ -88,6 +92,7 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
         cursorTargetShip = null
         selectedPositions.clear()
         previewPositions.clear()
+        previewedMass = 0.0
         dfsDepth = 0
     }
 
@@ -117,6 +122,16 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
         player.selection().cursorTargetShip!!.transform.positionInWorld.toVec3()
     } else {
         null
+    }
+
+    fun updatePreviewMass() {
+        var mass = previewPositions.sumOf {
+            MassDatapackResolver.getBlockStateMass(this.player.clientLevel.getBlockState(BlockPos(it))) ?: 1000.0
+        }
+        if (cursorTargetBlock != null) {
+            mass += MassDatapackResolver.getBlockStateMass(this.player.clientLevel.getBlockState(BlockPos(cursorTargetBlock!!))) ?: 1000.0
+        }
+        previewedMass = mass
     }
 }
 

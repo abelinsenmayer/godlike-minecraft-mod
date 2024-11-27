@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
+import org.valkyrienskies.mod.common.DefaultBlockStateInfoProvider
 import kotlin.math.abs
 
 /**
@@ -84,6 +85,7 @@ fun LocalPlayer.updatePreviewsFromPosition(pos: Vec3i) {
     val found = blockPosDfs(pos, this.selection().dfsDepth, this.selection().dfsDistanceType, searchCondition)
     this.selection().previewPositions.clear()
     this.selection().previewPositions.addAll(found)
+    this.selection().updatePreviewMass()
 }
 
 fun Vec3i.distCube(other: Vec3i) : Double {

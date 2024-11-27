@@ -49,7 +49,7 @@ public abstract class ItemInHandRendererMixin {
             long gameTime = this.minecraft.level.getGameTime();
             float animationTimer = (gameTime + partialTicks) / bobTime;
             double bobHeight = Math.sin(animationTimer * Math.PI * 2) * bobAmplitude;
-            poseStack.translate(0, bobHeight, 0);
+            poseStack.translate(hasTarget ? bobHeight/2 : 0, hasTarget ? bobHeight : bobHeight + 1.0, hasTarget ? bobHeight/2 : 0);
         }
     }
 }
