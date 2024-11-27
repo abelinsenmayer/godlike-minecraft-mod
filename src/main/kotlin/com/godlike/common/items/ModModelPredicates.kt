@@ -4,10 +4,7 @@ import com.godlike.common.Godlike.logger
 import com.godlike.common.MOD_ID
 import com.godlike.common.components.telekinesis
 import net.fabricmc.fabric.api.`object`.builder.v1.client.model.FabricModelPredicateProviderRegistry
-import net.fabricmc.fabric.mixin.`object`.builder.client.ModelPredicateProviderRegistryAccessor
-import net.fabricmc.fabric.mixin.`object`.builder.client.ModelPredicateProviderRegistrySpecificAccessor
 import net.minecraft.resources.ResourceLocation
-import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.player.Player
 
 object ModModelPredicates {
