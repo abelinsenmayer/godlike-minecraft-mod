@@ -3,16 +3,17 @@
   "package": "com.godlike.client.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
+    "EntityInvoker",
     "ExampleClientMixin",
+    "ItemInHandRendererMixin",
     "KeyBindingMixin",
-    "WorldRendererAccessor",
     "LevelRendererMixin",
-    "EntityInvoker"
+    "PlayerRendererMixin",
+    "WorldRendererAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "mixins": [
-
   ]
 }

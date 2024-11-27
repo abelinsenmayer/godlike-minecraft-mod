@@ -4,8 +4,10 @@ import com.godlike.common.Godlike.logger
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
 import com.godlike.common.components.setMode
+import com.godlike.common.components.telekinesis
 import io.wispforest.owo.itemgroup.OwoItemSettings
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.UseAnim
@@ -18,13 +20,15 @@ class TkFocusItem(
         .fireResistant()
         .stacksTo(1)
 ) {
-    override fun getUseAnimation(stack: ItemStack): UseAnim {
-         return UseAnim.BOW
-    }
 
-    override fun canBeDepleted(): Boolean {
-        return false
-    }
+}
+
+/**
+ * Returns true if the player should animate as though they are controlling a TK object.
+ */
+fun Player.shouldAnimateTk(): Boolean {
+    return this.getMode() == Mode.TELEKINESIS && (this.telekinesis().activeTkTarget != null
+            || this.telekinesis().getTkTargets().any { it.chargingLaunch })
 }
 
 /**

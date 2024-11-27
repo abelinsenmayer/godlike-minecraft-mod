@@ -15,7 +15,7 @@ object ModModelPredicates {
             ResourceLocation(MOD_ID, "has_active_target")
         ) { stack, world, entity, seed ->
             if (entity is Player) {
-                if (entity.telekinesis().activeTkTarget != null) {
+                if (entity.shouldAnimateTk()) {
                     1.0f
                 } else {
                     0.0f
