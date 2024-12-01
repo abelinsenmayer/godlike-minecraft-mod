@@ -23,6 +23,6 @@
     }
   },
   "textures": {
-    "layer0": "godlike:item/basic_tk_focus"
+    "layer0": "godlike:item/tk_focus"
   }
 }

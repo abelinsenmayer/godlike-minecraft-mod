@@ -1,11 +1,12 @@
 package com.godlike.common.items
 
-import com.godlike.common.telekinesis.DIRT_MASS
-
 enum class TkFocusTier(
-    val massMax: Double,
-    val selectionRadiusMax: Int,
+    val selectionRadius: Int,
     val range: Double,
 ) {
-    BASIC(DIRT_MASS * 2, 1,15.0);
+    SIMPLE(1,8.0),
+    ELEVATED(5, 24.0),
+    MAGNIFICENT(15, 48.0),
+    SUPREME(30, 128.0),
+    GODLIKE(1000, 256.0)
 }

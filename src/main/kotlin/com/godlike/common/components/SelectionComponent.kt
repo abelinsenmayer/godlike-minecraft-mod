@@ -46,15 +46,10 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
                 field = 1
                 return
             }
-            if (value <= dfsDistanceType.maxDistance) {
+            if (value <= player.telekinesis().tier.selectionRadius) {
                 field = value
             }
         }
-    fun dfsDelta() : Int = if (dfsDistanceType == DfsDistanceType.SPHERE && dfsDepth > 2) {
-        2
-    } else {
-        1
-    }
     val hasRaycastTarget
         get() = cursorTargetBlock != null || cursorTargetEntity != null || cursorTargetShip != null
 

@@ -23,9 +23,9 @@
     }
   },
   "textures": {
-    "layer0": "godlike:item/basic_tk_focus"
+    "layer0": "godlike:item/tk_focus"
   },
   "overrides": [
-    { "predicate": { "godlike:has_active_target": 1 }, "model": "godlike:item/basic_tk_focus_pointed" }
+    { "predicate": { "godlike:has_active_target": 1 }, "model": "godlike:item/tk_focus_pointed" }
   ]
 }

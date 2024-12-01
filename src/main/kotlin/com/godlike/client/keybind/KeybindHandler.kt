@@ -156,9 +156,9 @@ fun handleModInputEvents() {
     }
 
     while (player.telekinesis().activeTkTarget == null && POINTER_PUSH.consumeClick()) {
-        player.selection().dfsDepth += player.selection().dfsDelta()
+        player.selection().dfsDepth += 1
     }
     while (player.telekinesis().activeTkTarget == null && POINTER_PULL.consumeClick()) {
-        player.selection().dfsDepth -= player.selection().dfsDelta()
+        player.selection().dfsDepth -= 1
     }
 }

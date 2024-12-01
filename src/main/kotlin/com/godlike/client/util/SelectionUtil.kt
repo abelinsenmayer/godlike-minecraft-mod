@@ -1,6 +1,7 @@
 package com.godlike.client.util
 
 import com.godlike.common.components.selection
+import com.godlike.common.components.telekinesis
 import com.godlike.common.util.*
 import com.godlike.common.vs2.Vs2Util
 import net.minecraft.client.Minecraft
@@ -29,7 +30,7 @@ fun selectRaycastTarget() {
 
     val selection = player.selection()
 
-    val hit = ProjectileUtil.getHitResultOnViewVector(camera, { _: Entity -> true }, MAX_RAYCAST_DISTANCE)
+    val hit = ProjectileUtil.getHitResultOnViewVector(camera, { _: Entity -> true }, player.telekinesis().tier.range)
     when (hit.type) {
         HitResult.Type.BLOCK -> {
             // If this block is in a ship, we want to select the ship instead
@@ -114,7 +115,7 @@ fun dfs(
 
         val distance: Double = when (distanceType) {
             DfsDistanceType.DIAMOND -> current.distManhattan(origin).toDouble()
-            DfsDistanceType.SPHERE -> current.distSqr(origin)
+            DfsDistanceType.SPHERE -> abs(current.subtract(origin).toVec3().length())
             DfsDistanceType.CUBE -> current.distCube(origin)
         }
 

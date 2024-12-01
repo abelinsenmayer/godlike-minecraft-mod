@@ -124,7 +124,14 @@ fun getPointerAtDistance(player: Player, lookDirection: Vec3, distance: Double) 
 fun serverTelekinesisTick(telekinesisControls: TelekinesisControlsPacket, player: ServerPlayer) {
     player.clearNonexistentTargets()
 
-    player.telekinesis().pointerDistance += telekinesisControls.pointerDistanceDelta
+    val pointerDistance = player.telekinesis().pointerDistance
+    if (telekinesisControls.pointerDistanceDelta < 0) {
+        player.telekinesis().pointerDistance =
+            (pointerDistance + telekinesisControls.pointerDistanceDelta).coerceAtLeast(1.0)
+    } else {
+        player.telekinesis().pointerDistance =
+            (pointerDistance + telekinesisControls.pointerDistanceDelta).coerceAtMost(player.telekinesis().tier.range)
+    }
 
     player.telekinesis().getTkTargets().forEach { target ->
         // If not registered with ticker, add it

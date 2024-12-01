@@ -1,9 +1,10 @@
 package com.godlike.common.components
 
+import com.godlike.common.Godlike.logger
+import com.godlike.common.items.TkFocusTier
 import com.godlike.common.telekinesis.EntityTkTarget
 import com.godlike.common.telekinesis.ShipTkTarget
 import com.godlike.common.telekinesis.TkTarget
-import com.godlike.common.telekinesis.TkTicker
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.nbt.CompoundTag
@@ -36,6 +37,11 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
             field = value
             sync()
         }
+    var tier: TkFocusTier = TkFocusTier.SIMPLE
+        set(value) {
+            field = value
+            sync()
+        }
 
     override fun shouldSyncWith(player: ServerPlayer?): Boolean {
         // we only want to sync this data with the player that owns it
@@ -59,6 +65,12 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
         } else {
             activeTkTarget = null
         }
+        tier = tag.getString("tier").let {
+            if (it == null || it.isEmpty()) {
+                return@let TkFocusTier.SIMPLE
+            }
+            TkFocusTier.valueOf(it)
+        }
         sync()
     }
 
@@ -70,6 +82,7 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
         }
         tag.put(TK_TARGETS_KEY, listTag)
         activeTkTarget?.let { tag.put("activeTkTarget", it.toNbt()) }
+        tag.putString("tier", tier.name)
     }
 
     private fun sync() {

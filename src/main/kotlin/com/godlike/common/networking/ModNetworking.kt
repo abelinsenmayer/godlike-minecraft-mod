@@ -20,6 +20,8 @@ object ModNetworking {
         // Client-bound packets, deferred registration
         CHANNEL.registerClientboundDeferred(TracerParticlePacket::class.java)
 
+        CHANNEL.registerClientboundDeferred(ResetDfsDepthPacket::class.java)
+
         // Server-bound packets
         CHANNEL.registerServerbound(ServerBoundPacket::class.java) { packet, ctx ->
             logger.info("Received message on server: ${packet.message}")

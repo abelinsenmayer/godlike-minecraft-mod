@@ -19,13 +19,16 @@ object ModItems {
 
     // Item groups
     val GODLIKE_GROUP: OwoItemGroup = OwoItemGroup.builder(
-        ResourceLocation(MOD_ID, "godlike_group"),
-        Supplier<Icon> { Icon.of(Items.BOW.defaultInstance) }
-    ).build()
+        ResourceLocation(MOD_ID, "godlike_group")
+    ) { Icon.of(GODLIKE_TK_FOCUS.defaultInstance) }.build()
 
     // All items should be registered here
     val DEV_WAND = register(DevWand(), "dev_wand")
-    val BASIC_TK_FOCUS = register(TkFocusItem(TkFocusTier.BASIC), "basic_tk_focus")
+    val SIMPLE_TK_FOCUS = register(TkFocusItem(TkFocusTier.SIMPLE), "simple_tk_focus")
+    val ELEVATED_TK_FOCUS = register(TkFocusItem(TkFocusTier.ELEVATED), "elevated_tk_focus")
+    val MAGNIFICENT_TK_FOCUS = register(TkFocusItem(TkFocusTier.MAGNIFICENT), "magnificent_tk_focus")
+    val SUPREME_TK_FOCUS = register(TkFocusItem(TkFocusTier.SUPREME), "supreme_tk_focus")
+    val GODLIKE_TK_FOCUS = register(TkFocusItem(TkFocusTier.GODLIKE), "godlike_tk_focus")
 
     init {
         logger.info("Registering items")

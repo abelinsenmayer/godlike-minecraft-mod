@@ -1,16 +1,18 @@
 package com.godlike.common.items
 
-import com.godlike.common.Godlike.logger
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
 import com.godlike.common.components.setMode
 import com.godlike.common.components.telekinesis
+import com.godlike.common.networking.ModNetworking
+import com.godlike.common.networking.ModNetworking.CHANNEL
+import com.godlike.common.networking.ResetDfsDepthPacket
 import io.wispforest.owo.itemgroup.OwoItemSettings
+import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.UseAnim
 
 class TkFocusItem(
     val tier: TkFocusTier
@@ -20,7 +22,9 @@ class TkFocusItem(
         .fireResistant()
         .stacksTo(1)
 ) {
-
+    override fun getName(stack: ItemStack): Component {
+        return Component.literal("${tier.name.toLowerCase().capitalize()} Telekinetic Focus")
+    }
 }
 
 /**
@@ -40,5 +44,12 @@ fun ServerPlayer.updateTkStateByItem(item: ItemStack) {
         this.setMode(Mode.TELEKINESIS)
     } else if (item.item !is TkFocusItem && this.getMode() == Mode.TELEKINESIS) {
         this.setMode(Mode.NONE)
+    }
+
+    if (item.item is TkFocusItem && (item.item as TkFocusItem).tier != this.telekinesis().tier) {
+        // Apply item's constraints on player's TK abilities
+        val focusItem = item.item as TkFocusItem
+        this.telekinesis().tier = focusItem.tier
+        CHANNEL.serverHandle(this).send(ResetDfsDepthPacket())
     }
 }

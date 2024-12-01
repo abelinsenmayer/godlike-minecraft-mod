@@ -1,0 +1,6 @@
+{
+  "parent": "godlike:item/tk_focus",
+  "textures": {
+    "layer0": "godlike:item/tk_focus"
+  }
+}
