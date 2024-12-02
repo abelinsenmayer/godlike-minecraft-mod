@@ -47,6 +47,9 @@ fun ServerPlayer.updateTkStateByItem(item: ItemStack) {
     }
 
     if (item.item is TkFocusItem && (item.item as TkFocusItem).tier != this.telekinesis().tier) {
+        // Clear the player's current TK targets if they switch to a focus of a different tier
+        this.telekinesis().clearTargets()
+
         // Apply item's constraints on player's TK abilities
         val focusItem = item.item as TkFocusItem
         this.telekinesis().tier = focusItem.tier

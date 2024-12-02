@@ -121,6 +121,8 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
         if (activeTkTarget == target) {
             activeTkTarget = null
         }
+        target.hoverPos = null
+        target.player = null
         tkTargets.remove(target)
         sync()
     }
@@ -151,6 +153,13 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
 
     fun removeShipIdAsTarget(id: Long) {
         tkTargets.filter { it is ShipTkTarget && it.shipId == id }.forEach { removeTarget(it) }
+        sync()
+    }
+
+    fun clearTargets() {
+        val toRemove = tkTargets.toList()
+        toRemove.forEach { removeTarget(it) }
+        activeTkTarget?.let { removeTarget(it) }
         sync()
     }
 }
