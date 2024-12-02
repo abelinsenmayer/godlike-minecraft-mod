@@ -24,6 +24,7 @@ import com.godlike.common.telekinesis.ShipTkTarget
 import com.godlike.common.telekinesis.getPointerAtDistance
 import net.minecraft.client.Minecraft
 import net.minecraft.world.phys.Vec3
+import org.apache.commons.lang3.math.IEEE754rUtils
 
 const val POINTER_DELTA_INCREMENT = 0.5
 
@@ -95,8 +96,10 @@ fun handleModInputEvents() {
                     }
                 }
                 selection.cursorTargetShip?.let {
-                    CHANNEL.clientHandle().send(PickShipToTkPacket(it.id))
-                    didPick = true
+                    if (IEEE754rUtils.max(it.worldAABB.maxX(), it.worldAABB.maxY(), it.worldAABB.maxZ()) <= player.telekinesis().tier.selectionRadius * 2 + 1) {
+                        CHANNEL.clientHandle().send(PickShipToTkPacket(it.id))
+                        didPick = true
+                    }
                 }
                 if (didPick) {
                     player.selection().clear()

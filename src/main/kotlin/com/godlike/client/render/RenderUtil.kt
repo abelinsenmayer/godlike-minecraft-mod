@@ -3,9 +3,13 @@ package com.godlike.client.render
 import com.godlike.client.mixin.EntityInvoker
 import com.godlike.client.mixin.WorldRendererAccessor
 import com.godlike.client.util.isTargetContiguousWithSelection
+import com.godlike.common.Godlike.logger
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
 import com.godlike.common.components.selection
+import com.godlike.common.components.telekinesis
+import com.godlike.common.util.maxSize
+import com.google.common.primitives.Doubles.max
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.Camera
 import net.minecraft.client.Minecraft
@@ -32,7 +36,12 @@ fun highlightSelections(poseStack: PoseStack, camera: Camera, outlineBufferSourc
     val selection = player.selection()
 
     selection.cursorTargetShip?.let {
-        outlineShip(it, poseStack, camera, 100f, 100f, 100f, 1.0f)
+        // If the ship is too big for the player to TK, render the outline in red
+        if (it.worldAABB.maxSize() > (player.telekinesis().tier.selectionRadius * 2 + 1)) {
+            outlineShip(it, poseStack, camera, 1.0f, 0.0f, 0.0f, 1.0f)
+        } else {
+            outlineShip(it, poseStack, camera, 1.0f, 1.0f, 1.0f, 1.0f)
+        }
     }
     selection.cursorTargetBlock?.let {
         outlineBlockPos(it, poseStack, camera, Color(255, 255, 255))
@@ -79,7 +88,7 @@ fun outlineShip(
                 poseStack,
                 vertexConsumer,
                 shipVoxelAABBAfterOffset,
-                1.0f, 1.0f, 1.0f, 1.0f
+                red, green, blue, alpha
             )
         poseStack.popPose()
     }

@@ -5,12 +5,17 @@ import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3d
 import org.joml.Vector3dc
+import org.joml.primitives.AABBd
 import org.joml.primitives.AABBdc
 import org.joml.primitives.AABBic
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 const val MAX_RAYCAST_DISTANCE = 80.0
+
+fun AABBdc.maxSize() : Double {
+    return maxOf(maxX() - minX(), maxY() - minY(), maxZ() - minZ())
+}
 
 fun AABBic.toAABB(): AABB {
     return AABB(minX().toDouble(), minY().toDouble(), minZ().toDouble(), maxX().toDouble(), maxY().toDouble(), maxZ().toDouble())
