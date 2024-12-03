@@ -8,10 +8,7 @@ import com.godlike.client.keybind.ModKeybinds.POINTER_PULL
 import com.godlike.client.keybind.ModKeybinds.POINTER_PUSH
 import com.godlike.client.keybind.ModKeybinds.SET_TK_HOVERING
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
-import com.godlike.client.util.DfsDistanceType
-import com.godlike.client.util.dfs
-import com.godlike.client.util.isValidTkTargetFor
-import com.godlike.common.Godlike.logger
+import com.godlike.client.util.*
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
 import com.godlike.common.components.selection
@@ -90,13 +87,13 @@ fun handleModInputEvents() {
                     }
                 }
                 selection.cursorTargetEntity?.let {
-                    if (it.isValidTkTargetFor()) {
+                    if (player.canTkEntity(it)) {
                         CHANNEL.clientHandle().send(PickEntityToTkPacket(it.id))
                         didPick = true
                     }
                 }
                 selection.cursorTargetShip?.let {
-                    if (IEEE754rUtils.max(it.worldAABB.maxX(), it.worldAABB.maxY(), it.worldAABB.maxZ()) <= player.telekinesis().tier.selectionRadius * 2 + 1) {
+                    if (player.canTkShip(it)) {
                         CHANNEL.clientHandle().send(PickShipToTkPacket(it.id))
                         didPick = true
                     }

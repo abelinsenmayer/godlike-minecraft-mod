@@ -2,7 +2,7 @@ package com.godlike.common.components
 
 import com.godlike.client.render.setEntityGlowing
 import com.godlike.client.util.DfsDistanceType
-import com.godlike.common.Godlike.logger
+import com.godlike.client.util.canTkEntity
 import com.godlike.common.util.toVec3
 import dev.onyxstudios.cca.api.v3.component.Component
 import net.minecraft.client.player.LocalPlayer
@@ -12,7 +12,6 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.phys.Vec3
 import org.valkyrienskies.core.api.ships.ClientShip
-import org.valkyrienskies.mod.common.DefaultBlockStateInfoProvider
 import org.valkyrienskies.mod.common.config.MassDatapackResolver
 
 const val CURSOR_TARGET_BLOCK = "cursor_target_block"
@@ -31,7 +30,7 @@ class SelectionComponent(private val player : LocalPlayer) : Component {
             field?.let { old -> setEntityGlowing(old, false) }
             field = it
             // Set the entity as glowing to highlight it
-            field?.let { new -> setEntityGlowing(new, true) }
+            field?.let { new -> setEntityGlowing(new, true, if (player.canTkEntity(new)) "#ffffff" else "#ff0000") }
         }
     var cursorTargetShip : ClientShip? = null
     var clientChargingLaunch : Boolean = false  // TODO move this out of this component

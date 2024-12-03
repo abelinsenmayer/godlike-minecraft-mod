@@ -10,14 +10,27 @@ import net.minecraft.core.BlockPos
 import net.minecraft.core.Vec3i
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.entity.projectile.ProjectileUtil
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
-import org.valkyrienskies.mod.common.DefaultBlockStateInfoProvider
+import org.valkyrienskies.core.api.ships.ClientShip
 import kotlin.math.abs
+
+fun Player.canTkShip(ship: ClientShip): Boolean {
+    return ship.worldAABB.maxSize() <= this.telekinesis().tier.selectionRadius * 2 + 1
+}
+
+fun Player.canTkEntity(entity: Entity): Boolean {
+    return entity.isValidTkTarget() && if (entity is LivingEntity) {
+        this.telekinesis().tier.maxHealth >= entity.health.toInt()
+    } else {
+        true
+    }
+}
 
 /**
  * Selects the block, entity, or ship the player is looking at.
@@ -152,7 +165,7 @@ fun BlockPos.isValidTkTargetFor(player: Player) : Boolean {
             || state.block == Blocks.NETHER_PORTAL)
 }
 
-fun Entity.isValidTkTargetFor(): Boolean {
+fun Entity.isValidTkTarget(): Boolean {
     return !(this.isSpectator
             || this.type == EntityType.WITHER
             || this.type == EntityType.ENDER_DRAGON

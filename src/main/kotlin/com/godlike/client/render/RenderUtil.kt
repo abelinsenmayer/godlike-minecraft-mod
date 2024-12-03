@@ -2,6 +2,7 @@ package com.godlike.client.render
 
 import com.godlike.client.mixin.EntityInvoker
 import com.godlike.client.mixin.WorldRendererAccessor
+import com.godlike.client.util.canTkShip
 import com.godlike.client.util.isTargetContiguousWithSelection
 import com.godlike.common.Godlike.logger
 import com.godlike.common.components.Mode
@@ -11,6 +12,9 @@ import com.godlike.common.components.telekinesis
 import com.godlike.common.util.maxSize
 import com.google.common.primitives.Doubles.max
 import com.mojang.blaze3d.vertex.PoseStack
+
+import me.emafire003.dev.coloredglowlib.ColoredGlowLibAPI
+import me.emafire003.dev.coloredglowlib.ColoredGlowLibMod
 import net.minecraft.client.Camera
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.LevelRenderer
@@ -26,7 +30,21 @@ import org.valkyrienskies.core.api.ships.ClientShip
 import org.valkyrienskies.mod.common.VSClientGameUtils.transformRenderWithShip
 import java.awt.Color
 
-fun setEntityGlowing(entity: Entity, glowing: Boolean) {
+/**
+ * Makes an entity glow.
+ *
+ * @param entity The entity to make glow
+ * @param glowing Whether the entity should glow
+ * @param colorHex The color of the glow in hex format. If not provided, the entity will glow white.
+ */
+fun setEntityGlowing(entity: Entity, glowing: Boolean, colorHex: String? = null) {
+    val color = colorHex ?: "#ffffff"
+    val glowApi = ColoredGlowLibMod.getAPI()!!
+    if (glowing) {
+        glowApi.setColor(entity, color)
+    } else {
+        glowApi.clearColor(entity, true)
+    }
     (entity as EntityInvoker).invokeSetSharedFlag(6, glowing)
 }
 
@@ -37,7 +55,7 @@ fun highlightSelections(poseStack: PoseStack, camera: Camera, outlineBufferSourc
 
     selection.cursorTargetShip?.let {
         // If the ship is too big for the player to TK, render the outline in red
-        if (it.worldAABB.maxSize() > (player.telekinesis().tier.selectionRadius * 2 + 1)) {
+        if (!player.canTkShip(it)) {
             outlineShip(it, poseStack, camera, 1.0f, 0.0f, 0.0f, 1.0f)
         } else {
             outlineShip(it, poseStack, camera, 1.0f, 1.0f, 1.0f, 1.0f)
