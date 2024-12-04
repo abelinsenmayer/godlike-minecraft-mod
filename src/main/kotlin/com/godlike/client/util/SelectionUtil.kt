@@ -20,6 +20,8 @@ import net.minecraft.world.phys.HitResult
 import org.valkyrienskies.core.api.ships.ClientShip
 import kotlin.math.abs
 
+const val DFS_SIZE_PERFORMANCE_CUTOFF = 10
+
 fun Player.canTkShip(ship: ClientShip): Boolean {
     return ship.worldAABB.maxSize() <= this.telekinesis().tier.selectionRadius * 2 + 1
 }
@@ -52,8 +54,11 @@ fun selectRaycastTarget() {
                 selection.setSingleTarget(ship)
             } else {
                 selection.setSingleTarget(hit.blockPos)
-                if (selection.dfsDepth > 0) {
+                // Don't update previews if the selection is too large, because doing this every tick is not performant
+                if (selection.dfsDepth in 1..<DFS_SIZE_PERFORMANCE_CUTOFF) {
                     player.updatePreviewsFromPosition(hit.blockPos)
+                } else {
+                    player.selection().previewPositions.clear()
                 }
             }
         }

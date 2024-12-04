@@ -5,6 +5,7 @@ import com.godlike.client.mixin.WorldRendererAccessor
 import com.godlike.client.util.canTkShip
 import com.godlike.common.MOD_ID
 import com.godlike.common.components.selection
+import com.godlike.common.util.toVec3
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import me.emafire003.dev.coloredglowlib.ColoredGlowLibMod
@@ -43,23 +44,24 @@ fun renderCube(poseStack: PoseStack, center: Vec3, size: Float, texture: RenderT
     val renderPos = center.subtract(camera.position)
     poseStack.pushPose()
     poseStack.translate(renderPos.x, renderPos.y, renderPos.z)
+    val lwh = (size / 2).toDouble()
 
     val faces = mutableListOf(
-        Vec3(0.0, 0.0, 0.5) to Axis.YP.rotationDegrees(0f),
-        Vec3(0.0, 0.0, -0.5) to Axis.YP.rotationDegrees(180f),
-        Vec3(-0.5, 0.0, 0.0) to Axis.YP.rotationDegrees(-90f),
-        Vec3(0.5, 0.0, 0.0) to Axis.YP.rotationDegrees(90f),
-        Vec3(0.0, 0.5, 0.0) to Axis.XP.rotationDegrees(-90f),
-        Vec3(0.0, -0.5, 0.0) to Axis.XP.rotationDegrees(90f),
+        Vec3(0.0, 0.0, lwh) to Axis.YP.rotationDegrees(0f),
+        Vec3(0.0, 0.0, -lwh) to Axis.YP.rotationDegrees(180f),
+        Vec3(-lwh, 0.0, 0.0) to Axis.YP.rotationDegrees(-90f),
+        Vec3(lwh, 0.0, 0.0) to Axis.YP.rotationDegrees(90f),
+        Vec3(0.0, lwh, 0.0) to Axis.XP.rotationDegrees(-90f),
+        Vec3(0.0, -lwh, 0.0) to Axis.XP.rotationDegrees(90f),
     )
     if (renderInterior) {
         faces.addAll(listOf(
-            Vec3(0.0, 0.0, 0.5) to Axis.YP.rotationDegrees(180f),
-            Vec3(0.0, 0.0, -0.5) to Axis.YP.rotationDegrees(0f),
-            Vec3(-0.5, 0.0, 0.0) to Axis.YP.rotationDegrees(90f),
-            Vec3(0.5, 0.0, 0.0) to Axis.YP.rotationDegrees(-90f),
-            Vec3(0.0, 0.5, 0.0) to Axis.XP.rotationDegrees(90f),
-            Vec3(0.0, -0.5, 0.0) to Axis.XP.rotationDegrees(-90f),
+            Vec3(0.0, 0.0, lwh) to Axis.YP.rotationDegrees(180f),
+            Vec3(0.0, 0.0, -lwh) to Axis.YP.rotationDegrees(0f),
+            Vec3(-lwh, 0.0, 0.0) to Axis.YP.rotationDegrees(90f),
+            Vec3(lwh, 0.0, 0.0) to Axis.YP.rotationDegrees(-90f),
+            Vec3(0.0, lwh, 0.0) to Axis.XP.rotationDegrees(90f),
+            Vec3(0.0, -lwh, 0.0) to Axis.XP.rotationDegrees(-90f),
         ))
     }
 
@@ -69,7 +71,7 @@ fun renderCube(poseStack: PoseStack, center: Vec3, size: Float, texture: RenderT
         poseStack.mulPose(rotation)
         VFXBuilders.createWorld()
             .setRenderType(LodestoneRenderTypeRegistry.TRANSPARENT_TEXTURE.applyAndCache(texture))
-            .renderQuad(poseStack, size/2, size/2)
+            .renderQuad(poseStack, lwh.toFloat(), lwh.toFloat())
         poseStack.popPose()
     }
     poseStack.popPose()
@@ -113,7 +115,11 @@ fun highlightSelections(poseStack: PoseStack, camera: Camera) {
 }
 
 fun highlightSelectedArea(player: LocalPlayer, poseStack: PoseStack) {
-    renderCube(poseStack, player.position(), 1f, HIGHLIGHT_CUBE_TEXTURE,true)
+    player.selection().cursorTargetBlock ?: return
+    val highlightPosition = player.selection().cursorTargetBlock!!.toVec3().add(0.5, 0.5, 0.5)
+    val dfsDepth = player.selection().dfsDepth
+    val highlightSize = (if (dfsDepth <= 1) 1 else dfsDepth * 2 - 1).toFloat()
+    renderCube(poseStack, highlightPosition, highlightSize, HIGHLIGHT_CUBE_TEXTURE,true)
 }
 
 fun outlineShip(

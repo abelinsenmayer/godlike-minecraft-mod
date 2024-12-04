@@ -79,11 +79,13 @@ fun handleModInputEvents() {
                 var didPick = false
                 selection.cursorTargetBlock?.let {
                     val toTk = mutableListOf(it)
+                    player.updatePreviewsFromPosition(it)
                     toTk.addAll(selection.previewPositions)
                     toTk.removeIf { pos -> !pos.isValidTkTargetFor(player) }
                     if (toTk.isNotEmpty()) {
                         CHANNEL.clientHandle().send(TkPositionsPacket(toTk))
                         didPick = true
+                        player.selection().dfsDepth = 1
                     }
                 }
                 selection.cursorTargetEntity?.let {
