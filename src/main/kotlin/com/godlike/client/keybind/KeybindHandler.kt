@@ -113,8 +113,7 @@ fun handleModInputEvents() {
         if (player.getMode() == Mode.TELEKINESIS) {
             val newType = when(player.selection().dfsDistanceType) {
                 DfsDistanceType.CUBE -> DfsDistanceType.SPHERE
-                DfsDistanceType.SPHERE -> DfsDistanceType.DIAMOND
-                DfsDistanceType.DIAMOND -> DfsDistanceType.CUBE
+                DfsDistanceType.SPHERE -> DfsDistanceType.CUBE
             }
             player.selection().dfsDistanceType = newType
         }

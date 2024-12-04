@@ -124,12 +124,11 @@ abstract class TkTarget(
                 1.0f,
                 0.0f
             )
-            Godlike.logger.info("Hit for $damage damage with mass ${mass()}.")
         }
     }
 
     /**
-     * Get the set of pointers that are dist blocks away in every axis direction (up, down, +x, -x, +z, -z).
+     * Get the set of pointers that are dist blocks away in every axis direction (up, down, +x, -x, +z, -z).a
      * Directions are based on world axis; the target's rotation is irrelevant.
      */
     fun getAxisPointers(dist : Double) : Set<Vec3> {

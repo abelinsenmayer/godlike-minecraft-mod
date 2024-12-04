@@ -2,17 +2,21 @@ package com.godlike.client.render
 
 import com.godlike.client.mixin.EntityInvoker
 import com.godlike.client.mixin.WorldRendererAccessor
+import com.godlike.client.util.DfsDistanceType
 import com.godlike.client.util.canTkShip
 import com.godlike.common.MOD_ID
 import com.godlike.common.components.selection
 import com.godlike.common.util.toVec3
+import com.mojang.blaze3d.vertex.DefaultVertexFormat
 import com.mojang.blaze3d.vertex.PoseStack
+import com.mojang.blaze3d.vertex.VertexFormat
 import com.mojang.math.Axis
 import me.emafire003.dev.coloredglowlib.ColoredGlowLibMod
 import net.minecraft.client.Camera
 import net.minecraft.client.Minecraft
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.client.renderer.LevelRenderer
+import net.minecraft.client.renderer.RenderStateShard
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.core.BlockPos
 import net.minecraft.resources.ResourceLocation
@@ -25,10 +29,29 @@ import org.joml.Vector3dc
 import org.valkyrienskies.core.api.ships.ClientShip
 import org.valkyrienskies.mod.common.VSClientGameUtils.transformRenderWithShip
 import team.lodestar.lodestone.registry.client.LodestoneRenderTypeRegistry
+import team.lodestar.lodestone.registry.client.LodestoneShaderRegistry
+import team.lodestar.lodestone.systems.rendering.StateShards
+import team.lodestar.lodestone.systems.rendering.StateShards.NORMAL_TRANSPARENCY
 import team.lodestar.lodestone.systems.rendering.VFXBuilders
+import team.lodestar.lodestone.systems.rendering.rendeertype.RenderTypeProvider
 import team.lodestar.lodestone.systems.rendering.rendeertype.RenderTypeToken
 
 val HIGHLIGHT_CUBE_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation(MOD_ID, "textures/render/highlight_cube.png"))
+val TEST_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation(MOD_ID, "textures/render/uv_test.png"))
+
+val TRIANGLE_ADDITIVE_TEXTURE = RenderTypeProvider { token: RenderTypeToken ->
+    LodestoneRenderTypeRegistry.createGenericRenderType(
+        "triangle_additive_texture",
+        DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
+        VertexFormat.Mode.TRIANGLES,
+        LodestoneRenderTypeRegistry.builder()
+            .setShaderState(LodestoneShaderRegistry.LODESTONE_TEXTURE)
+            .setTransparencyState(NORMAL_TRANSPARENCY)
+            .setCullState(RenderStateShard.CULL)
+            .setLightmapState(RenderStateShard.LIGHTMAP)
+            .setTextureState(token.get())
+    )
+}
 
 /**
  * Renders a cube at the given position with the given size.
@@ -78,6 +101,25 @@ fun renderCube(poseStack: PoseStack, center: Vec3, size: Float, texture: RenderT
 }
 
 /**
+ * Renders a sphere at the given position with the given size.
+ *
+ * @param poseStack The PoseStack to render the sphere with
+ * @param center The center of the sphere
+ * @param size The size of the sphere
+ * @param texture The texture to render the sphere with
+ */
+fun renderSphere(poseStack: PoseStack, center: Vec3, size: Float, texture: RenderTypeToken) {
+    val camera = Minecraft.getInstance().gameRenderer.mainCamera
+    val renderPos = center.subtract(camera.position)
+    poseStack.pushPose()
+    poseStack.translate(renderPos.x, renderPos.y, renderPos.z)
+    VFXBuilders.createWorld()
+        .setRenderType(TRIANGLE_ADDITIVE_TEXTURE.applyAndCache(texture))
+        .renderSphere(poseStack, size / 2, 16, 16)
+    poseStack.popPose()
+}
+
+/**
  * Makes an entity glow.
  *
  * @param entity The entity to make glow
@@ -119,7 +161,13 @@ fun highlightSelectedArea(player: LocalPlayer, poseStack: PoseStack) {
     val highlightPosition = player.selection().cursorTargetBlock!!.toVec3().add(0.5, 0.5, 0.5)
     val dfsDepth = player.selection().dfsDepth
     val highlightSize = (if (dfsDepth <= 1) 1 else dfsDepth * 2 - 1).toFloat()
-    renderCube(poseStack, highlightPosition, highlightSize, HIGHLIGHT_CUBE_TEXTURE,true)
+
+    if (player.selection().dfsDistanceType == DfsDistanceType.CUBE) {
+        renderCube(poseStack, highlightPosition, highlightSize, HIGHLIGHT_CUBE_TEXTURE,true)
+    } else {
+        renderSphere(poseStack, highlightPosition, highlightSize, HIGHLIGHT_CUBE_TEXTURE)
+    }
+
 }
 
 fun outlineShip(

@@ -132,7 +132,6 @@ fun dfs(
         if (current in visited) continue
 
         val distance: Double = when (distanceType) {
-            DfsDistanceType.DIAMOND -> current.distManhattan(origin).toDouble()
             DfsDistanceType.SPHERE -> abs(current.subtract(origin).toVec3().length())
             DfsDistanceType.CUBE -> current.distCube(origin)
         }
