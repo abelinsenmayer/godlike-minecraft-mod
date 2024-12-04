@@ -2,6 +2,7 @@ package com.godlike.common.telekinesis
 
 import com.godlike.common.Godlike
 import com.godlike.common.Godlike.logger
+import com.godlike.common.components.telekinesis
 import com.godlike.common.util.negate
 import com.godlike.common.util.toVector3d
 import net.minecraft.nbt.CompoundTag
@@ -44,7 +45,12 @@ class EntityTkTarget(
 
     override fun moveToward(pos: Vec3) {
         // More massive objects should move more sluggishly
-        val massScalar = 2 / (1 + (2 * (mass() / (DIRT_MASS * 2.5))).pow(0.3))
+        val exponent = if (this.player != null) {
+            player!!.telekinesis().tier.massScalarExponent
+        } else {
+            1.0
+        }
+        val massScalar = 2 / (1 + (2 * (mass() / (DIRT_MASS * 2.5))).pow(exponent))
 
         // Apply a force to the entity to move it towards the pointer
         val force = pos().subtract(pos).normalize().negate().scale(ENTITY_FORCE_SCALAR * massScalar)

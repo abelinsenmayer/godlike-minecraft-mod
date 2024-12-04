@@ -1,6 +1,7 @@
 package com.godlike.common.telekinesis
 
 import com.godlike.common.Godlike.logger
+import com.godlike.common.components.telekinesis
 import com.godlike.common.util.*
 import com.godlike.common.vs2.Vs2Util
 import net.minecraft.nbt.CompoundTag
@@ -106,7 +107,12 @@ class ShipTkTarget(
         val stuckScalar = 1 + (stuckTicks / 20.0)
 
         // More massive objects should move more sluggishly
-        val massScalar = 2 / (1 + (2 * (mass() / (DIRT_MASS * 2.5))).pow(0.3))
+        val exponent = if (this.player != null) {
+            player!!.telekinesis().tier.massScalarExponent
+        } else {
+            1.0
+        }
+        val massScalar = 2 / (1 + (2 * (mass() / (DIRT_MASS * 2.5))).pow(exponent))
 
         val shipPos = ship.transform.positionInWorld.toVec3()
 
