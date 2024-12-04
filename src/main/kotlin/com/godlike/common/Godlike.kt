@@ -29,5 +29,8 @@ object Godlike : ModInitializer {
 
 		// Initialize networking
 		ModNetworking.register()
+
+		// Register events
+		ModEvents
 	}
 }
