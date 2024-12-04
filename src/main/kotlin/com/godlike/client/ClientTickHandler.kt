@@ -2,15 +2,15 @@ package com.godlike.client
 
 import com.godlike.client.keybind.handleModInputEvents
 import com.godlike.client.keybind.sendTelekinesisTick
-import com.godlike.client.util.isTargetContiguousWithSelection
+import com.godlike.client.render.highlightSelectedArea
 import com.godlike.client.util.selectRaycastTarget
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
-import com.godlike.common.components.selection
 import com.godlike.common.components.telekinesis
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
+import net.minecraft.client.Minecraft
 import net.minecraft.client.player.LocalPlayer
-import org.slf4j.LoggerFactory
 
 /**
  * This class is the mod's entrypoint for everything that has to happen every tick on the client side.
@@ -25,6 +25,13 @@ object ClientTickHandler {
                 }
 
                 handleModInputEvents()
+            }
+        })
+
+        WorldRenderEvents.AFTER_ENTITIES.register(WorldRenderEvents.AfterEntities { context ->
+            Minecraft.getInstance().player?.let{ player ->
+                context.consumers() ?: return@AfterEntities
+                highlightSelectedArea(player, context.matrixStack())
             }
         })
     }

@@ -33,6 +33,6 @@ public abstract class LevelRendererMixin {
         }
 
         // highlight target position or entity, plus selections and previews
-        highlightSelections(poseStack, camera, this.renderBuffers.outlineBufferSource());
+        highlightSelections(poseStack, camera);
     }
 }

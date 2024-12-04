@@ -3,32 +3,77 @@ package com.godlike.client.render
 import com.godlike.client.mixin.EntityInvoker
 import com.godlike.client.mixin.WorldRendererAccessor
 import com.godlike.client.util.canTkShip
-import com.godlike.client.util.isTargetContiguousWithSelection
-import com.godlike.common.Godlike.logger
-import com.godlike.common.components.Mode
-import com.godlike.common.components.getMode
+import com.godlike.common.MOD_ID
 import com.godlike.common.components.selection
-import com.godlike.common.components.telekinesis
-import com.godlike.common.util.maxSize
-import com.google.common.primitives.Doubles.max
 import com.mojang.blaze3d.vertex.PoseStack
-
-import me.emafire003.dev.coloredglowlib.ColoredGlowLibAPI
+import com.mojang.math.Axis
 import me.emafire003.dev.coloredglowlib.ColoredGlowLibMod
 import net.minecraft.client.Camera
 import net.minecraft.client.Minecraft
+import net.minecraft.client.player.LocalPlayer
 import net.minecraft.client.renderer.LevelRenderer
-import net.minecraft.client.renderer.OutlineBufferSource
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.core.BlockPos
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.phys.AABB
+import net.minecraft.world.phys.Vec3
 import net.minecraft.world.phys.shapes.Shapes
 import org.joml.Vector3d
 import org.joml.Vector3dc
 import org.valkyrienskies.core.api.ships.ClientShip
 import org.valkyrienskies.mod.common.VSClientGameUtils.transformRenderWithShip
-import java.awt.Color
+import team.lodestar.lodestone.registry.client.LodestoneRenderTypeRegistry
+import team.lodestar.lodestone.systems.rendering.VFXBuilders
+import team.lodestar.lodestone.systems.rendering.rendeertype.RenderTypeToken
+
+val HIGHLIGHT_CUBE_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation(MOD_ID, "textures/render/highlight_cube.png"))
+
+/**
+ * Renders a cube at the given position with the given size.
+ *
+ * @param poseStack The PoseStack to render the cube with
+ * @param center The center of the cube
+ * @param size The size of the cube
+ * @param texture The texture to render the cube with
+ * @param renderInterior Whether the cube should be visible from the inside
+ */
+fun renderCube(poseStack: PoseStack, center: Vec3, size: Float, texture: RenderTypeToken, renderInterior: Boolean = false) {
+    val camera = Minecraft.getInstance().gameRenderer.mainCamera
+    val renderPos = center.subtract(camera.position)
+    poseStack.pushPose()
+    poseStack.translate(renderPos.x, renderPos.y, renderPos.z)
+
+    val faces = mutableListOf(
+        Vec3(0.0, 0.0, 0.5) to Axis.YP.rotationDegrees(0f),
+        Vec3(0.0, 0.0, -0.5) to Axis.YP.rotationDegrees(180f),
+        Vec3(-0.5, 0.0, 0.0) to Axis.YP.rotationDegrees(-90f),
+        Vec3(0.5, 0.0, 0.0) to Axis.YP.rotationDegrees(90f),
+        Vec3(0.0, 0.5, 0.0) to Axis.XP.rotationDegrees(-90f),
+        Vec3(0.0, -0.5, 0.0) to Axis.XP.rotationDegrees(90f),
+    )
+    if (renderInterior) {
+        faces.addAll(listOf(
+            Vec3(0.0, 0.0, 0.5) to Axis.YP.rotationDegrees(180f),
+            Vec3(0.0, 0.0, -0.5) to Axis.YP.rotationDegrees(0f),
+            Vec3(-0.5, 0.0, 0.0) to Axis.YP.rotationDegrees(90f),
+            Vec3(0.5, 0.0, 0.0) to Axis.YP.rotationDegrees(-90f),
+            Vec3(0.0, 0.5, 0.0) to Axis.XP.rotationDegrees(90f),
+            Vec3(0.0, -0.5, 0.0) to Axis.XP.rotationDegrees(-90f),
+        ))
+    }
+
+    faces.forEach { (offset, rotation) ->
+        poseStack.pushPose()
+        poseStack.translate(offset.x, offset.y, offset.z)
+        poseStack.mulPose(rotation)
+        VFXBuilders.createWorld()
+            .setRenderType(LodestoneRenderTypeRegistry.TRANSPARENT_TEXTURE.applyAndCache(texture))
+            .renderQuad(poseStack, size/2, size/2)
+        poseStack.popPose()
+    }
+    poseStack.popPose()
+}
 
 /**
  * Makes an entity glow.
@@ -49,7 +94,7 @@ fun setEntityGlowing(entity: Entity, glowing: Boolean, colorHex: String? = null)
 }
 
 // Note: Entities are highlighted automatically because we set them glowing
-fun highlightSelections(poseStack: PoseStack, camera: Camera, outlineBufferSource: OutlineBufferSource) {
+fun highlightSelections(poseStack: PoseStack, camera: Camera) {
     val player = Minecraft.getInstance().player!!
     val selection = player.selection()
 
@@ -62,9 +107,13 @@ fun highlightSelections(poseStack: PoseStack, camera: Camera, outlineBufferSourc
         }
     }
     selection.cursorTargetBlock?.let {
-        outlineBlockPos(it, poseStack, camera, Color(255, 255, 255))
+        outlineBlockPos(it, poseStack, camera, 1f, 1f, 1f, 0.5f)
     }
     selection.previewPositions.forEach { outlineBlockPos(it, poseStack, camera, 1f, 1f, 1f, 0.5f) }
+}
+
+fun highlightSelectedArea(player: LocalPlayer, poseStack: PoseStack) {
+    renderCube(poseStack, player.position(), 1f, HIGHLIGHT_CUBE_TEXTURE,true)
 }
 
 fun outlineShip(
@@ -111,14 +160,6 @@ fun outlineShip(
         poseStack.popPose()
     }
 }
-
-fun outlineBlockPos(targetPos: BlockPos, poseStack: PoseStack, camera: Camera, color: Color) = outlineBlockPos(
-    targetPos, poseStack, camera,
-    color.red.toFloat() / 255f,
-    color.green.toFloat() / 255f,
-    color.blue.toFloat() / 255f,
-    color.alpha.toFloat() / 255f
-)
 
 fun outlineBlockPos(
     targetPos: BlockPos, poseStack: PoseStack, camera: Camera, red: Float, green: Float, blue: Float, alpha: Float
