@@ -2,6 +2,7 @@ plugins {
 	id 'fabric-loom' version '1.7-SNAPSHOT'
 	id 'maven-publish'
 	id "org.jetbrains.kotlin.jvm" version "2.0.0"
+	id "com.modrinth.minotaur" version "2.+"
 }
 
 version = project.mod_version
@@ -155,5 +156,23 @@ publishing {
 		// Notice: This block does NOT have the same function as the block in the top level.
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
+	}
+}
+
+modrinth {
+	token = System.getenv("MODRINTH_TOKEN") // Remember to have the MODRINTH_TOKEN environment variable set or else this will fail - just make sure it stays private!
+	projectId = "godlike" // This can be the project ID or the slug. Either will work!
+	versionNumber = "0.1" // You don't need to set this manually. Will fail if Modrinth has this version already
+	versionType = "alpha" // This is the default -- can also be `beta` or `alpha`
+	uploadFile = remapJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
+	gameVersions = ["1.20.1", "1.20.2", "1.20.3", "1.20.4", "1.20.5", "1.20.6"]
+	syncBodyFrom = rootProject.file("README.md").text
+	dependencies {
+		// scope.type
+		// The scope can be `required`, `optional`, `incompatible`, or `embedded`
+		// The type can either be `project` or `version`
+		required.project "fabric-api"
+		required.project "fabric-language-kotlin"
+		required.project "valkyrien-skies"
 	}
 }

@@ -1,19 +1,16 @@
 ## Description
 
 A Minecraft mod featuring telekinetic powers backed by the amazing Valkyrien Skies 2 physics engine.
-Pick up your house and throw it!
 
-## License
+Reshape the world with the power of your will!
 
-This mod is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+![floating-terrain.png](screenshots/floating-terrain.png)
 
-It makes use of the following third-party libraries:
-- Valkyrien Skies 2 (LGPL-3.0)
-- Lodestone (LGPL-3.0-only)
-- Colored Glow Lib (LGPL-3.0-only)
-- Cardinal Components API (MIT)
-- owo-lib (MIT)
-- Trinkets (MIT)
-- Entity Reach Attributes (MIT)
+Throw a zombie at another zombie. Or try an iron golem for more damage!
 
-These libraries are distributed under their respective licenses.
+![flying-zombies.png](screenshots/flying-zombies.png)
+
+## WIP
+
+This mod is very much a work in progress. At this time, telekinesis tools can only be obtained in Creative mode.
+Enjoy flinging stuff around!
