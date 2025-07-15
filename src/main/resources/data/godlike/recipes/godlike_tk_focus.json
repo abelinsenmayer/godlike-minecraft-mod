@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "TST",
+    "THT",
+    "NBN"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:nether_star"
+    },
+    "H": {
+      "item": "minecraft:dragon_head"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "B": {
+      "item": "minecraft:blaze_rod"
+    },
+    "T": {
+      "item": "minecraft:enchanting_table"
+    }
+  },
+  "result": {
+    "item": "godlike:godlike_tk_focus",
+    "count": 1
+  }
+}

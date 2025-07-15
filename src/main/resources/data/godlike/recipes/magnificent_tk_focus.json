@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "LSL",
+    "PDP",
+    "ABA"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "B": {
+      "item": "minecraft:blaze_rod"
+    },
+    "P": {
+      "item": "minecraft:ender_pearl"
+    },
+    "L": {
+      "item": "minecraft:lodestone"
+    },
+    "S": {
+      "item": "minecraft:echo_shard"
+    },
+    "A": {
+      "item": "minecraft:amethyst_shard"
+    }
+  },
+  "result": {
+    "item": "godlike:magnificent_tk_focus",
+    "count": 1
+  }
+}

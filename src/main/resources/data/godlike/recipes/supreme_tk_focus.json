@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BCB",
+    "MRM",
+    "SRS"
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:dragon_breath"
+    },
+    "C": {
+      "item": "minecraft:end_crystal"
+    },
+    "M": {
+      "item": "minecraft:phantom_membrane"
+    },
+    "S": {
+      "item": "minecraft:firework_star"
+    },
+    "R": {
+      "item": "minecraft:blaze_rod"
+    }
+  },
+  "result": {
+    "item": "godlike:supreme_tk_focus",
+    "count": 1
+  }
+}

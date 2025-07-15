@@ -1,14 +1,30 @@
 {
-  "type": "minecraft:crafting_shapeless",
-  "group": "tools",
-  "ingredients": [
-    {
-      "item": "minecraft:lapis_block"
-    },
-    {
-      "item": "minecraft:lapis_lazuli"
-    }
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GPG",
+    "CTC",
+    "LSL"
   ],
+  "key": {
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "L": {
+      "item": "minecraft:lapis_lazuli"
+    },
+    "T": {
+      "item": "minecraft:glass"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    }
+  },
   "result": {
     "item": "godlike:simple_tk_focus",
     "count": 1
