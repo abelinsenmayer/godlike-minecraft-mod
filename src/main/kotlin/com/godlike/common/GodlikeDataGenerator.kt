@@ -11,7 +11,7 @@ import net.minecraft.data.models.model.ModelTemplate
 import net.minecraft.resources.ResourceLocation
 import java.util.*
 
-// TODO NOT USED RIGHT NOW BECAUSE OF AN ISSUE LOADING STUFF ON THE SERVER SIDE
+// TODO NOT USED RIGHT NOW BECAUSE OF AN ISSUE LOADING STUFF ON THE SERVER SIDE RESULTING FROM PACKAGE STRUCTURE
 object GodlikeDataGenerator : DataGeneratorEntrypoint {
 	override fun onInitializeDataGenerator(fabricDataGenerator: FabricDataGenerator) {
 		fabricDataGenerator.createPack().addProvider(::ModModelProvider)
