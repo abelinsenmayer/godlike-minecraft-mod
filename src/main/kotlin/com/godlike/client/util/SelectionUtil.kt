@@ -23,7 +23,7 @@ import kotlin.math.abs
 const val DFS_SIZE_PERFORMANCE_CUTOFF = 10
 
 fun Player.canTkShip(ship: ClientShip): Boolean {
-    return ship.worldAABB.maxSize() <= this.telekinesis().tier.selectionRadius * 2 + 1
+    return ship.worldAABB.maxSize() <= (this.telekinesis().tier.selectionRadius * 2 + 1) * 1.5
 }
 
 fun Player.canTkEntity(entity: Entity): Boolean {
