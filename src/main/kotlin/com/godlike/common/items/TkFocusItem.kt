@@ -4,15 +4,17 @@ import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
 import com.godlike.common.components.setMode
 import com.godlike.common.components.telekinesis
-import com.godlike.common.networking.ModNetworking
 import com.godlike.common.networking.ModNetworking.CHANNEL
 import com.godlike.common.networking.ResetDfsDepthPacket
 import io.wispforest.owo.itemgroup.OwoItemSettings
+import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.TooltipFlag
+import net.minecraft.world.level.Level
 
 class TkFocusItem(
     val tier: TkFocusTier
@@ -23,7 +25,26 @@ class TkFocusItem(
         .stacksTo(1)
 ) {
     override fun getName(stack: ItemStack): Component {
-        return Component.literal("${tier.name.toLowerCase().capitalize()} Telekinetic Focus")
+        val color = when (tier) {
+            TkFocusTier.SIMPLE -> ChatFormatting.WHITE
+            TkFocusTier.ELEVATED -> ChatFormatting.DARK_GREEN
+            TkFocusTier.MAGNIFICENT -> ChatFormatting.AQUA
+            TkFocusTier.SUPREME -> ChatFormatting.LIGHT_PURPLE
+            TkFocusTier.GODLIKE -> ChatFormatting.DARK_PURPLE
+        }
+        return Component.literal("${tier.name.toLowerCase().capitalize()} Telekinetic Focus").withStyle(color, ChatFormatting.ITALIC)
+
+    }
+
+    override fun appendHoverText(
+        stack: ItemStack,
+        level: Level?,
+        tooltipComponents: MutableList<Component>,
+        isAdvanced: TooltipFlag
+    ) {
+        tooltipComponents.add(Component.literal("Max radius: ${tier.selectionRadius} blocks").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY))
+        tooltipComponents.add(Component.literal("Range: ${tier.range.toInt()} blocks").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY))
+        tooltipComponents.add(Component.literal("Target max health: ${tier.maxHealth}").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY))
     }
 }
 
