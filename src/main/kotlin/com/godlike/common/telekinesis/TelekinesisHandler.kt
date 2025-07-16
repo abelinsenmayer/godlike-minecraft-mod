@@ -138,9 +138,10 @@ fun serverTelekinesisTick(telekinesisControls: TelekinesisControlsPacket, player
         player.serverLevel().getTkTicker().tickingTargets.add(target)
 
         var pointer = getPointer(player, telekinesisControls.playerLookDirection, target)
-        if (player.telekinesis().activeTkTarget != null) {
-            ModNetworking.CHANNEL.serverHandle(player).send(TracerParticlePacket(pointer))
-        }
+        // ABE TODO remove
+//        if (player.telekinesis().activeTkTarget != null) {
+//            ModNetworking.CHANNEL.serverHandle(player).send(TracerParticlePacket(pointer))
+//        }
 
         target.addLiftForce()
         if (telekinesisControls.rotating() && target.hoverPos == null) {

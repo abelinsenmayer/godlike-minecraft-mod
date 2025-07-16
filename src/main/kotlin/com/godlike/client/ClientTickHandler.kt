@@ -3,6 +3,7 @@ package com.godlike.client
 import com.godlike.client.keybind.handleModInputEvents
 import com.godlike.client.keybind.sendTelekinesisTick
 import com.godlike.client.render.highlightSelectedArea
+import com.godlike.client.render.renderPointer
 import com.godlike.client.util.selectRaycastTarget
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
@@ -32,6 +33,9 @@ object ClientTickHandler {
             Minecraft.getInstance().player?.let{ player ->
                 context.consumers() ?: return@AfterEntities
                 highlightSelectedArea(player, context.matrixStack())
+                if (player.telekinesis().activeTkTarget != null) {
+                    renderPointer(player, context.matrixStack())
+                }
             }
         })
     }

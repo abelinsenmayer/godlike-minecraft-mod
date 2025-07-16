@@ -18,12 +18,16 @@ const val POINTER_DISTANCE_KEY = "pointer-distance"
 
 /**
  * A component that stores data about a player's telekinesis targets and settings.
- * Designed to be used exclusively on the server side. If a client-side action should be taken based on this data, the
- * server should send a packet.
+ * This component is used on the client and server side, but be mindful of what data you read/write on each side as some
+ * properties have assumptions about which side their accessed on.
  */
 class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
     private val tkTargets : MutableList<TkTarget> = mutableListOf()
     var pointerDistance : Double = 0.0
+        set(value) {
+            field = value
+            sync()
+        }
     var activeTkTarget : TkTarget? = null
         set(value) {
             if (!player.level().isClientSide) {

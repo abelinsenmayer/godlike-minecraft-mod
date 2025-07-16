@@ -21,10 +21,6 @@ fun traceVectorFromPoint(origin: Vec3, direction: Vec3, level: Level) {
     }
 }
 
-fun spawnTracerAtPoint(pos: Vec3, level: Level) {
-    spawnTracerParticle(pos, level)
-}
-
 fun spawnTracerParticle(pos: Vec3, level: Level) {
     val startingColor = Color(255, 255, 255)
     val endingColor = Color(193, 189, 191)
