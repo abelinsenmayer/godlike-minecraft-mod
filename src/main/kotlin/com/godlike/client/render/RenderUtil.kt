@@ -11,7 +11,6 @@ import com.godlike.common.telekinesis.EntityTkTarget
 import com.godlike.common.telekinesis.ShipTkTarget
 import com.godlike.common.util.toAABB
 import com.godlike.common.util.toVec3
-import com.godlike.common.vs2.Vs2Util
 import com.mojang.blaze3d.vertex.DefaultVertexFormat
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexFormat
@@ -31,6 +30,7 @@ import net.minecraft.world.phys.Vec3
 import net.minecraft.world.phys.shapes.Shapes
 import org.joml.Vector3d
 import org.joml.Vector3dc
+import org.joml.Vector3f
 import org.valkyrienskies.core.api.ships.ClientShip
 import org.valkyrienskies.mod.common.VSClientGameUtils.transformRenderWithShip
 import team.lodestar.lodestone.registry.client.LodestoneRenderTypeRegistry
@@ -39,6 +39,8 @@ import team.lodestar.lodestone.systems.rendering.StateShards.NORMAL_TRANSPARENCY
 import team.lodestar.lodestone.systems.rendering.VFXBuilders
 import team.lodestar.lodestone.systems.rendering.rendeertype.RenderTypeProvider
 import team.lodestar.lodestone.systems.rendering.rendeertype.RenderTypeToken
+import java.awt.Color
+import kotlin.math.sin
 
 val HIGHLIGHT_CUBE_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation(MOD_ID, "textures/render/highlight_cube.png"))
 val TEST_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation(MOD_ID, "textures/render/uv_test.png"))
@@ -65,13 +67,13 @@ fun LocalPlayer.getPointer() : Vec3 {
 }
 
 /**
- * Renders a pointer at the player's telekinesis aiming position
+ * Creates rendered effects for telekinesis that happen every tick for a specific player.
  */
-fun renderPointer(player: LocalPlayer, poseStack: PoseStack) {
+fun doTkFxRenderTick(player: LocalPlayer, poseStack: PoseStack) {
     val pointerPos = player.getPointer()
     val targetAabb: AABB? = player.telekinesis().activeTkTarget?.let {
         when (it) {
-            is ShipTkTarget -> Vs2Util.getClientShipWorld(player.clientLevel).loadedShips.getById(it.shipId)?.shipAABB?.toAABB()
+            is ShipTkTarget -> it.getClientShip(player)?.shipAABB?.toAABB()
             is EntityTkTarget -> player.clientLevel.getEntity(it.entityId)?.boundingBox
             else -> null
         }
@@ -81,7 +83,27 @@ fun renderPointer(player: LocalPlayer, poseStack: PoseStack) {
     } else {
         1.0f
     }
-    renderSpinningCubes(poseStack, pointerPos, targetSize)
+
+    val targetPos: Vec3 = player.telekinesis().activeTkTarget?.let {
+        when (it) {
+            is ShipTkTarget -> it.getClientShip(player)?.transform?.positionInWorld?.toVec3()
+            is EntityTkTarget -> it.pos()
+            else -> null
+        }
+    }  ?: Vec3.ZERO
+
+    val time = Minecraft.getInstance().level?.gameTime?.toFloat() ?: 0f
+
+    // Telekinesis pointer effect
+    val pointerRotationTime = 4.0f // seconds
+    val pointerFxRotation = (time / 20f) % pointerRotationTime / pointerRotationTime * 360f
+    renderCube(poseStack, pointerPos, targetSize * 0.75f, HIGHLIGHT_CUBE_TEXTURE,true, Vector3f(0f, 0f + pointerFxRotation, 0f), Color(0.2f, 0.2f, 0.2f, 0.5f))
+
+    // Effects on the target
+    val targetFxRotationTime = 3.0f
+    val targetFxRotation = (time / 20f) % targetFxRotationTime / targetFxRotationTime * 360f
+    renderCube(poseStack, targetPos, targetSize * 0.75f, HIGHLIGHT_CUBE_TEXTURE,true, Vector3f(40f, 60f + targetFxRotation, 40f), Color(1.0f, 1.0f, 1.0f, 1.0f))
+    renderCube(poseStack, targetPos, targetSize * 0.75f, HIGHLIGHT_CUBE_TEXTURE, true, Vector3f(50f, 0f + -targetFxRotation, 50f), Color(1.0f, 1.0f, 1.0f, 1.0f))
 }
 
 /**
@@ -102,17 +124,16 @@ fun renderCube(
     size: Float,
     texture: RenderTypeToken,
     renderInterior: Boolean = false,
-    rotateXDegrees: Float = 0f,
-    rotateYDegrees: Float = 0f,
-    rotateZDegrees: Float = 0f
+    rotation: Vector3f = Vector3f(0f, 0f, 0f),
+    color: Color = Color(1.0f, 1.0f, 1.0f, 1.0f)
 ) {
     val camera = Minecraft.getInstance().gameRenderer.mainCamera
     val renderPos = center.subtract(camera.position)
     poseStack.pushPose()
     poseStack.translate(renderPos.x, renderPos.y, renderPos.z)
-    poseStack.mulPose(Axis.XP.rotationDegrees(rotateXDegrees))
-    poseStack.mulPose(Axis.YP.rotationDegrees(rotateYDegrees))
-    poseStack.mulPose(Axis.ZP.rotationDegrees(rotateZDegrees))
+    poseStack.mulPose(Axis.XP.rotationDegrees(rotation.x))
+    poseStack.mulPose(Axis.YP.rotationDegrees(rotation.y))
+    poseStack.mulPose(Axis.ZP.rotationDegrees(rotation.z))
     val lwh = (size / 2).toDouble()
 
     val faces = mutableListOf(
@@ -139,22 +160,13 @@ fun renderCube(
         poseStack.translate(offset.x, offset.y, offset.z)
         poseStack.mulPose(rotation)
         VFXBuilders.createWorld()
+            .setColor(color)
+            .setAlpha(color.alpha * 255f)
             .setRenderType(LodestoneRenderTypeRegistry.TRANSPARENT_TEXTURE.applyAndCache(texture))
             .renderQuad(poseStack, lwh.toFloat(), lwh.toFloat())
         poseStack.popPose()
     }
     poseStack.popPose()
-}
-
-/**
- * Renders a pair of spinning cubes at the given position (similar to an End crystal).
- */
-fun renderSpinningCubes(poseStack: PoseStack, center: Vec3, size: Float = 1.0f) {
-    val timeForOneRotation = 2.0f // seconds
-    val time = Minecraft.getInstance().level?.gameTime?.toFloat() ?: 0f
-    val rotation = (time / 20f) % timeForOneRotation / timeForOneRotation * 360f
-    renderCube(poseStack, center, size, HIGHLIGHT_CUBE_TEXTURE,true, -45f, 45f + rotation, 0f)
-    renderCube(poseStack, center, size, HIGHLIGHT_CUBE_TEXTURE, true, 0f, 0f + rotation, 45f)
 }
 
 /**

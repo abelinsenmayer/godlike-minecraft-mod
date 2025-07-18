@@ -17,10 +17,6 @@ object ModNetworking {
     fun register() {
         logger.info("Registering network channel")
 
-        // Client-bound packets, deferred registration
-        // ABE TODO remove
-//        CHANNEL.registerClientboundDeferred(TracerParticlePacket::class.java)
-
         CHANNEL.registerClientboundDeferred(ResetDfsDepthPacket::class.java)
 
         // Server-bound packets

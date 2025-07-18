@@ -4,6 +4,7 @@ import com.godlike.common.Godlike.logger
 import com.godlike.common.components.telekinesis
 import com.godlike.common.util.*
 import com.godlike.common.vs2.Vs2Util
+import net.minecraft.client.player.LocalPlayer
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.player.Player
@@ -11,6 +12,7 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3d
+import org.valkyrienskies.core.api.ships.ClientShip
 import org.valkyrienskies.core.api.ships.ServerShip
 import org.valkyrienskies.mod.common.util.GameTickForceApplier
 import kotlin.math.*
@@ -34,6 +36,9 @@ class ShipTkTarget(
         }
     var disassemblyTickCountdown : Int = -1
     var stuckTicks : Int = 0
+
+    fun getClientShip(player: LocalPlayer): ClientShip? =
+        Vs2Util.getClientShipWorld(player.clientLevel).loadedShips.getById(this.shipId)
 
     override fun toNbt() : CompoundTag {
         val tag = CompoundTag()
