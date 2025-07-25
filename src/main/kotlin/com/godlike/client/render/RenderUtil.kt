@@ -11,6 +11,7 @@ import com.godlike.common.telekinesis.EntityTkTarget
 import com.godlike.common.telekinesis.ShipTkTarget
 import com.godlike.common.util.toAABB
 import com.godlike.common.util.toVec3
+import com.godlike.common.util.toVector3d
 import com.mojang.blaze3d.vertex.DefaultVertexFormat
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexFormat
@@ -28,9 +29,7 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.phys.shapes.Shapes
-import org.joml.Vector3d
-import org.joml.Vector3dc
-import org.joml.Vector3f
+import org.joml.*
 import org.valkyrienskies.core.api.ships.ClientShip
 import org.valkyrienskies.mod.common.VSClientGameUtils.transformRenderWithShip
 import team.lodestar.lodestone.registry.client.LodestoneRenderTypeRegistry
@@ -40,10 +39,12 @@ import team.lodestar.lodestone.systems.rendering.VFXBuilders
 import team.lodestar.lodestone.systems.rendering.rendeertype.RenderTypeProvider
 import team.lodestar.lodestone.systems.rendering.rendeertype.RenderTypeToken
 import java.awt.Color
-import kotlin.math.sin
+import java.lang.Math.toRadians
 
 val HIGHLIGHT_CUBE_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation(MOD_ID, "textures/render/highlight_cube.png"))
+val CRESCENT_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation(MOD_ID, "textures/render/crescent.png"))
 val TEST_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation(MOD_ID, "textures/render/uv_test.png"))
+val CIRCLE_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation(MOD_ID, "textures/render/circle.png"))
 
 val TRIANGLE_ADDITIVE_TEXTURE = RenderTypeProvider { token: RenderTypeToken ->
     LodestoneRenderTypeRegistry.createGenericRenderType(
@@ -87,7 +88,7 @@ fun doTkFxRenderTick(player: LocalPlayer, poseStack: PoseStack) {
     val targetPos: Vec3 = player.telekinesis().activeTkTarget?.let {
         when (it) {
             is ShipTkTarget -> it.getClientShip(player)?.transform?.positionInWorld?.toVec3()
-            is EntityTkTarget -> it.pos()
+            is EntityTkTarget -> it.pos().add(Vec3(0.0, 0.5, 0.0))
             else -> null
         }
     }  ?: Vec3.ZERO
@@ -97,13 +98,109 @@ fun doTkFxRenderTick(player: LocalPlayer, poseStack: PoseStack) {
     // Telekinesis pointer effect
     val pointerRotationTime = 4.0f // seconds
     val pointerFxRotation = (time / 20f) % pointerRotationTime / pointerRotationTime * 360f
-    renderCube(poseStack, pointerPos, targetSize * 0.75f, HIGHLIGHT_CUBE_TEXTURE,true, Vector3f(0f, 0f + pointerFxRotation, 0f), Color(0.2f, 0.2f, 0.2f, 0.5f))
+    val cameraToTargetVec: Vec3 = pointerPos.subtract(Minecraft.getInstance().gameRenderer.mainCamera.position).normalize().reverse()
 
-    // Effects on the target
-    val targetFxRotationTime = 3.0f
-    val targetFxRotation = (time / 20f) % targetFxRotationTime / targetFxRotationTime * 360f
-    renderCube(poseStack, targetPos, targetSize * 0.75f, HIGHLIGHT_CUBE_TEXTURE,true, Vector3f(40f, 60f + targetFxRotation, 40f), Color(1.0f, 1.0f, 1.0f, 1.0f))
-    renderCube(poseStack, targetPos, targetSize * 0.75f, HIGHLIGHT_CUBE_TEXTURE, true, Vector3f(50f, 0f + -targetFxRotation, 50f), Color(1.0f, 1.0f, 1.0f, 1.0f))
+    // TODO - maybe point it at the creature, make it more of a crosshairs?
+//    renderQuadFacingVector(
+//        poseStack, pointerPos, targetSize * 0.75f, Vec3(0.0, 1.0, 0.0),
+//        CIRCLE_TEXTURE,
+//        Color(1.0f, 1.0f, 1.0f, 1.0f),
+//        true
+//    )
+
+    // TODO effects on target
+}
+
+fun renderQuadFacingVector(
+    poseStack: PoseStack,
+    pos: Vec3,
+    size: Float,
+    facing: Vec3,
+    texture: RenderTypeToken,
+    color: Color = Color(1.0f, 1.0f, 1.0f, 1.0f),
+    doubleSided: Boolean = false,
+) {
+    val forward = facing.normalize().toVector3d()
+    val right = Vector3d(Minecraft.getInstance().gameRenderer.mainCamera.upVector).cross(forward).normalize()
+    val up = Vector3d(forward).cross(right).normalize()
+
+    val rotation = Matrix4f().identity()
+    rotation.m00(right.x.toFloat())
+    rotation.m01(right.y.toFloat())
+    rotation.m02(right.z.toFloat())
+
+    rotation.m10(up.x.toFloat())
+    rotation.m11(up.y.toFloat())
+    rotation.m12(up.z.toFloat())
+
+    rotation.m20(forward.x.toFloat())
+    rotation.m21(forward.y.toFloat())
+    rotation.m22(forward.z.toFloat())
+
+    val camera = Minecraft.getInstance().gameRenderer.mainCamera
+    val renderPos = pos.subtract(camera.position)
+    poseStack.pushPose()
+    poseStack.translate(renderPos.x, renderPos.y, renderPos.z)
+    poseStack.mulPoseMatrix(rotation)
+
+    VFXBuilders.createWorld()
+        .setColor(color)
+        .setAlpha(color.alpha * 255f)
+        .setRenderType(LodestoneRenderTypeRegistry.TRANSPARENT_TEXTURE.applyAndCache(texture))
+        .renderQuad(poseStack, size, size)
+
+    if (doubleSided) {
+        poseStack.pushPose()
+        poseStack.mulPose(Axis.YP.rotationDegrees(180f)) // Flip the quad to face the opposite direction
+        VFXBuilders.createWorld()
+            .setColor(color)
+            .setAlpha(color.alpha * 255f)
+            .setRenderType(LodestoneRenderTypeRegistry.TRANSPARENT_TEXTURE.applyAndCache(texture))
+            .renderQuad(poseStack, size, size)
+        poseStack.popPose()
+    }
+
+    poseStack.popPose()
+}
+
+fun renderQuadFacingCamera(
+    poseStack: PoseStack,
+    pos: Vec3,
+    size: Float,
+    texture: RenderTypeToken,
+    color: Color = Color(1.0f, 1.0f, 1.0f, 1.0f)
+) {
+    val cameraToTargetVec = pos.subtract(Minecraft.getInstance().gameRenderer.mainCamera.position).reverse()
+    val forward = cameraToTargetVec.normalize().toVector3d()
+    val right = Vector3d(Minecraft.getInstance().gameRenderer.mainCamera.upVector).cross(forward).normalize()
+    val up = Vector3d(forward).cross(right).normalize()
+
+    val rotation = Matrix4f().identity()
+    rotation.m00(right.x.toFloat())
+    rotation.m01(right.y.toFloat())
+    rotation.m02(right.z.toFloat())
+
+    rotation.m10(up.x.toFloat())
+    rotation.m11(up.y.toFloat())
+    rotation.m12(up.z.toFloat())
+
+    rotation.m20(forward.x.toFloat())
+    rotation.m21(forward.y.toFloat())
+    rotation.m22(forward.z.toFloat())
+
+    val camera = Minecraft.getInstance().gameRenderer.mainCamera
+    val renderPos = pos.subtract(camera.position)
+    poseStack.pushPose()
+    poseStack.translate(renderPos.x, renderPos.y, renderPos.z)
+    poseStack.mulPoseMatrix(rotation)
+
+    VFXBuilders.createWorld()
+        .setColor(color)
+        .setAlpha(color.alpha * 255f)
+        .setRenderType(LodestoneRenderTypeRegistry.TRANSPARENT_TEXTURE.applyAndCache(texture))
+        .renderQuad(poseStack, size, size)
+
+    poseStack.popPose()
 }
 
 /**
