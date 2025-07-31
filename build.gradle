@@ -77,28 +77,24 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
 
 	// Mod dependencies
-	modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cca_version}")
-	modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
-	modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-world:${project.cca_version}")
-	modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-scoreboard:${project.cca_version}")
-	include("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cca_version}")
-	include("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
-	include("dev.onyxstudios.cardinal-components-api:cardinal-components-world:${project.cca_version}")
-	include("dev.onyxstudios.cardinal-components-api:cardinal-components-scoreboard:${project.cca_version}")
+	modImplementation(include("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cca_version}"))
+	modImplementation(include("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}"))
+	modImplementation(include("dev.onyxstudios.cardinal-components-api:cardinal-components-world:${project.cca_version}"))
+	modImplementation(include("dev.onyxstudios.cardinal-components-api:cardinal-components-scoreboard:${project.cca_version}"))
 
-	modImplementation "io.wispforest:owo-lib:${project.owo_version}"
-	include "io.wispforest:owo-lib:${project.owo_version}"
+	modImplementation(include("io.wispforest:owo-lib:${project.owo_version}"))
 
-	modImplementation("team.lodestar.lodestone:lodestone:${project.minecraft_version}-${project.lodestone_version}-fabric")
-	include("team.lodestar.lodestone:lodestone:${project.minecraft_version}-${project.lodestone_version}-fabric")
+	modImplementation(include("team.lodestar.lodestone:lodestone:${project.minecraft_version}-${project.lodestone_version}-fabric"))
+	for (String module in port_lib_modules.split(",")) {
+		modImplementation(include("io.github.fabricators_of_create.Porting-Lib:$module:$port_lib_version"))
+	}
 
 	modImplementation("maven.modrinth:valkyrien-skies:${project.vs2_version}")
 
-	modImplementation("dev.emi:trinkets:${project.trinkets_version}")
-	include("dev.emi:trinkets:${project.trinkets_version}")
+	modImplementation(include("dev.emi:trinkets:${project.trinkets_version}"))
 	modImplementation("com.jamieswhiteshirt:reach-entity-attributes:${project.rea_version}")
 
-	modImplementation "maven.modrinth:coloredglowlib:${project.colored_glow_lib_version}+nocca"
+	modImplementation(include("maven.modrinth:coloredglowlib:${project.colored_glow_lib_version}+nocca"))
 }
 
 configurations.configureEach {
@@ -162,11 +158,12 @@ publishing {
 modrinth {
 	token = System.getenv("MODRINTH_TOKEN") // Remember to have the MODRINTH_TOKEN environment variable set or else this will fail - just make sure it stays private!
 	projectId = "godlike" // This can be the project ID or the slug. Either will work!
-	versionNumber = "0.1" // You don't need to set this manually. Will fail if Modrinth has this version already
+	versionNumber = project.mod_version // You don't need to set this manually. Will fail if Modrinth has this version already
 	versionType = "alpha" // This is the default -- can also be `beta` or `alpha`
 	uploadFile = remapJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
 	gameVersions = ["1.20.1", "1.20.2", "1.20.3", "1.20.4", "1.20.5", "1.20.6"]
 	syncBodyFrom = rootProject.file("README.md").text
+	changelog = rootProject.file("changelogs/${project.mod_version}.md").text
 	dependencies {
 		// scope.type
 		// The scope can be `required`, `optional`, `incompatible`, or `embedded`

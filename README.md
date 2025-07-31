@@ -12,5 +12,5 @@ Throw a zombie at another zombie. Or try an iron golem for more damage!
 
 ## WIP
 
-This mod is very much a work in progress. At this time, telekinesis tools can only be obtained in Creative mode.
+This mod is in very early alpha. All textures and crafting recipes are placeholders. Major bugs may exist.
 Enjoy flinging stuff around!
