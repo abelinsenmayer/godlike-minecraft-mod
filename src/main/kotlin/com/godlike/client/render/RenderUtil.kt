@@ -40,11 +40,13 @@ import team.lodestar.lodestone.systems.rendering.rendeertype.RenderTypeProvider
 import team.lodestar.lodestone.systems.rendering.rendeertype.RenderTypeToken
 import java.awt.Color
 import java.lang.Math.toRadians
+import kotlin.math.sin
 
 val HIGHLIGHT_CUBE_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation(MOD_ID, "textures/render/highlight_cube.png"))
 val CRESCENT_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation(MOD_ID, "textures/render/crescent.png"))
 val TEST_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation(MOD_ID, "textures/render/uv_test.png"))
 val CIRCLE_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation(MOD_ID, "textures/render/circle.png"))
+val NETHER_PORTAL_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation("minecraft", "textures/block/nether_portal.png"))
 
 val TRIANGLE_ADDITIVE_TEXTURE = RenderTypeProvider { token: RenderTypeToken ->
     LodestoneRenderTypeRegistry.createGenericRenderType(
@@ -93,22 +95,29 @@ fun doTkFxRenderTick(player: LocalPlayer, poseStack: PoseStack) {
         }
     }  ?: Vec3.ZERO
 
-    val time = Minecraft.getInstance().level?.gameTime?.toFloat() ?: 0f
-
     // Telekinesis pointer effect
-    val pointerRotationTime = 4.0f // seconds
-    val pointerFxRotation = (time / 20f) % pointerRotationTime / pointerRotationTime * 360f
-    val cameraToTargetVec: Vec3 = pointerPos.subtract(Minecraft.getInstance().gameRenderer.mainCamera.position).normalize().reverse()
+    // Circle positioned to receive the target
+    val time = Minecraft.getInstance().level?.gameTime ?: 0L
+    val pointerAnimCycleLength = 2.0f // seconds
+    val circleSize = sin(time / (pointerAnimCycleLength * 5f)) * (0.1f * targetSize) + targetSize
+    val pointerToTargetVec = targetPos.subtract(pointerPos)
+    val pointerDistanceToTarget = pointerToTargetVec.length().toFloat()
+    val circleOpacity = if (pointerDistanceToTarget > targetSize * 2) {
+        0.6f
+    } else {
+        val slope = 0.6f / (targetSize * 2)
+        pointerDistanceToTarget * slope
+    }
 
-    // TODO - maybe point it at the creature, make it more of a crosshairs?
-//    renderQuadFacingVector(
-//        poseStack, pointerPos, targetSize * 0.75f, Vec3(0.0, 1.0, 0.0),
-//        CIRCLE_TEXTURE,
-//        Color(1.0f, 1.0f, 1.0f, 1.0f),
-//        true
-//    )
-
-    // TODO effects on target
+    renderQuadFacingVector(
+        poseStack,
+        pointerPos,
+        circleSize,
+        pointerToTargetVec,
+        CIRCLE_TEXTURE,
+        Color(1.0f, 1.0f, 1.0f, circleOpacity),
+        doubleSided = true
+    )
 }
 
 fun renderQuadFacingVector(
@@ -274,13 +283,23 @@ fun renderCube(
  * @param size The size of the sphere
  * @param texture The texture to render the sphere with
  */
-fun renderSphere(poseStack: PoseStack, center: Vec3, size: Float, texture: RenderTypeToken) {
+fun renderSphere(
+    poseStack: PoseStack,
+    center: Vec3,
+    size: Float,
+    texture: RenderTypeToken,
+    color: Color = Color(1.0f, 1.0f, 1.0f, 1.0f),
+    spinDegrees: Float = 0f
+) {
     val camera = Minecraft.getInstance().gameRenderer.mainCamera
     val renderPos = center.subtract(camera.position)
     poseStack.pushPose()
     poseStack.translate(renderPos.x, renderPos.y, renderPos.z)
+    poseStack.mulPose(Axis.YP.rotationDegrees(spinDegrees))
     VFXBuilders.createWorld()
         .setRenderType(TRIANGLE_ADDITIVE_TEXTURE.applyAndCache(texture))
+        .setColor(color)
+        .setAlpha(color.alpha * 255f)
         .renderSphere(poseStack, size / 2, 16, 16)
     poseStack.popPose()
 }
