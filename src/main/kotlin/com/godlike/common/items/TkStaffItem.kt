@@ -1,5 +1,6 @@
 package com.godlike.common.items
 
+import com.godlike.common.Godlike
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
 import com.godlike.common.components.setMode
@@ -10,6 +11,8 @@ import io.wispforest.owo.itemgroup.OwoItemSettings
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResultHolder
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
@@ -39,12 +42,4 @@ class TkStaffItem (
         tooltipComponents.add(Component.literal("Range: ${tier.range.toInt()} blocks").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY))
         tooltipComponents.add(Component.literal("Target max health: ${tier.maxHealth}").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY))
     }
-}
-
-/**
- * Returns true if the player should animate as though they are controlling a TK object.
- */
-fun Player.shouldAnimateTk(): Boolean {
-    return this.getMode() == Mode.TELEKINESIS && (this.telekinesis().activeTkTarget != null
-            || this.telekinesis().getTkTargets().any { it.chargingLaunch })
 }

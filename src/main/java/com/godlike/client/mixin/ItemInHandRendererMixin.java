@@ -1,10 +1,13 @@
 package com.godlike.client.mixin;
 
+import com.godlike.common.components.SelectionComponentKt;
 import com.godlike.common.components.TelekinesisComponentKt;
-import com.godlike.common.items.TkStaffItemKt;
+import com.godlike.common.items.TkStaffItem;
+import com.godlike.common.telekinesis.TkUtilKt;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.InteractionHand;
@@ -40,14 +43,18 @@ public abstract class ItemInHandRendererMixin {
             CallbackInfo ci
     ) {
         // If the player has an active tk target, animate their hand
-        if (this.minecraft.player != null && this.minecraft.level != null && TkStaffItemKt.shouldAnimateTk(player)) {
-            boolean hasTarget = TelekinesisComponentKt.telekinesis(player).getActiveTkTarget() != null;
-            double bobAmplitude = hasTarget ? 0.04 : 0.005;
-            float bobTime = hasTarget ? 25.0f : 8.0f;
+        if (this.minecraft.player != null && this.minecraft.level != null && TkUtilKt.shouldAnimateTk(player) && player instanceof LocalPlayer) {
+            boolean chargingLaunch = SelectionComponentKt.selection((LocalPlayer)player).getClientChargingLaunch();
+            boolean holdingStaff = player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TkStaffItem;
+            double bobAmplitude = chargingLaunch ? 0.005 : 0.04;
+            float bobTime = chargingLaunch ? 8.0f : 25.0f;
             long gameTime = this.minecraft.level.getGameTime();
             float animationTimer = (gameTime + partialTicks) / bobTime;
             double bobHeight = Math.sin(animationTimer * Math.PI * 2) * bobAmplitude;
-            poseStack.translate(hasTarget ? bobHeight/2 : 0, hasTarget ? bobHeight : bobHeight + 1.0, hasTarget ? bobHeight/2 : 0);
+            poseStack.translate(chargingLaunch ? 0 : bobHeight/2, bobHeight, chargingLaunch ? 0 : bobHeight/2);
+            if (chargingLaunch) {
+                poseStack.translate(0, holdingStaff ? 1.0 : 0.3, 0);
+            }
         }
     }
 }

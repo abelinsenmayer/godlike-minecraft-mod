@@ -1,6 +1,6 @@
 package com.godlike.common.mixin;
 
-import com.godlike.common.components.TelekinesisComponentKt;
+import com.godlike.common.telekinesis.TkUtilKt;
 import io.github.fabricators_of_create.porting_lib.attributes.extensions.PlayerAttributesExtensions;
 import io.github.fabricators_of_create.porting_lib.entity.extensions.PlayerExtension;
 import net.minecraft.server.level.ServerPlayer;
@@ -31,6 +31,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerAttribut
             return;
         }
 
-        TelekinesisComponentKt.updateTkTierByInventory((ServerPlayer)(Object)this);
+        TkUtilKt.updateTkTierByInventory((ServerPlayer)(Object)this);
     }
 }
