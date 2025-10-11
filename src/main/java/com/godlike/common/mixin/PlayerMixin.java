@@ -1,7 +1,6 @@
 package com.godlike.common.mixin;
 
-import com.godlike.common.items.TkFocusItem;
-import com.godlike.common.items.TkFocusItemKt;
+import com.godlike.common.components.TelekinesisComponentKt;
 import io.github.fabricators_of_create.porting_lib.attributes.extensions.PlayerAttributesExtensions;
 import io.github.fabricators_of_create.porting_lib.entity.extensions.PlayerExtension;
 import net.minecraft.server.level.ServerPlayer;
@@ -32,6 +31,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerAttribut
             return;
         }
 
-        TkFocusItemKt.updateTkStateByItem((ServerPlayer)(Object)this, this.getItemBySlot(EquipmentSlot.MAINHAND));
+        TelekinesisComponentKt.updateTkTierByInventory((ServerPlayer)(Object)this);
     }
 }

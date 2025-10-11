@@ -7,6 +7,7 @@ import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
 import com.godlike.common.components.selection
 import com.godlike.common.components.telekinesis
+import com.godlike.common.items.TkFocusTier
 import com.godlike.common.telekinesis.EntityTkTarget
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.minecraft.client.KeyMapping
@@ -29,8 +30,10 @@ class ControlsHudOverlay : HudRenderCallback {
         val font = Minecraft.getInstance().font
         val player = Minecraft.getInstance().player!!
 
-        // val toggleTkText = keyText(TOGGLE_TK_MODE, hold = false).append(" ").append(text("key.godlike.tk_mode"))
-        // drawContext.drawCenteredString(font, toggleTkText, pw(15), ph(90), 0xeeeeee)
+        if (player.telekinesis().tier != TkFocusTier.NONE) {
+            val toggleTkText = keyText(TOGGLE_TK_MODE, hold = false).append(" ").append(text("key.godlike.tk_mode"))
+            drawContext.drawCenteredString(font, toggleTkText, pw(15), ph(90), 0xeeeeee)
+        }
 
         if (player.getMode() == Mode.TELEKINESIS) {
             if (!player.selection().clientChargingLaunch && player.selection().hasRaycastTarget) {

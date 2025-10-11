@@ -1,6 +1,6 @@
 package com.godlike.client.mixin;
 
-import com.godlike.common.items.TkFocusItemKt;
+import com.godlike.common.items.TkStaffItemKt;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
@@ -15,7 +15,7 @@ public abstract class PlayerRendererMixin {
     @Inject(at = @At("HEAD"), method = "getArmPose", cancellable = true)
     private static void getArmPose(AbstractClientPlayer player, InteractionHand hand, CallbackInfoReturnable<HumanoidModel.ArmPose> cir) {
         // If the player has an active telekinesis target, pose their arm
-        if (TkFocusItemKt.shouldAnimateTk(player)) {
+        if (TkStaffItemKt.shouldAnimateTk(player)) {
             cir.setReturnValue(HumanoidModel.ArmPose.BOW_AND_ARROW);
         }
     }

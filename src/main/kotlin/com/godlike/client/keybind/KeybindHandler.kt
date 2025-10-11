@@ -13,6 +13,7 @@ import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
 import com.godlike.common.components.selection
 import com.godlike.common.components.telekinesis
+import com.godlike.common.items.TkFocusTier
 import com.godlike.common.networking.*
 import com.godlike.common.networking.ModNetworking.CHANNEL
 import com.godlike.common.telekinesis.EntityTkTarget
@@ -58,13 +59,13 @@ fun handleModInputEvents() {
     val client = Minecraft.getInstance()
     val player = client.player!!
 
-    while (TOGGLE_TK_MODE.consumeClick() && !player.selection().clientChargingLaunch) {
+    while (TOGGLE_TK_MODE.consumeClick() && player.telekinesis().tier != TkFocusTier.NONE && !player.selection().clientChargingLaunch) {
         val currentMode = player.getMode()
         if (currentMode == Mode.TELEKINESIS) {
             CHANNEL.clientHandle().send(
                 SetModePacket(Mode.NONE.name)
             )
-        } else {
+        } else if (currentMode == Mode.NONE) {
             CHANNEL.clientHandle().send(
                 SetModePacket(Mode.TELEKINESIS.name)
             )

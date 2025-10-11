@@ -1,14 +1,12 @@
 package com.godlike.client.mixin;
 
 import com.godlike.common.components.TelekinesisComponentKt;
-import com.godlike.common.items.TkFocusItemKt;
+import com.godlike.common.items.TkStaffItemKt;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
@@ -42,7 +40,7 @@ public abstract class ItemInHandRendererMixin {
             CallbackInfo ci
     ) {
         // If the player has an active tk target, animate their hand
-        if (this.minecraft.player != null && this.minecraft.level != null && TkFocusItemKt.shouldAnimateTk(player)) {
+        if (this.minecraft.player != null && this.minecraft.level != null && TkStaffItemKt.shouldAnimateTk(player)) {
             boolean hasTarget = TelekinesisComponentKt.telekinesis(player).getActiveTkTarget() != null;
             double bobAmplitude = hasTarget ? 0.04 : 0.005;
             float bobTime = hasTarget ? 25.0f : 8.0f;

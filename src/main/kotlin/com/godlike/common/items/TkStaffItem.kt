@@ -16,24 +16,17 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.Level
 
-class TkFocusItem(
-    val tier: TkFocusTier
+class TkStaffItem (
+    override val tier: TkFocusTier
 ) : Item(
     OwoItemSettings()
         .group(ModItems.GODLIKE_GROUP)
         .fireResistant()
         .stacksTo(1)
-) {
+), TieredTkItem {
     override fun getName(stack: ItemStack): Component {
-        val color = when (tier) {
-            TkFocusTier.SIMPLE -> ChatFormatting.WHITE
-            TkFocusTier.ELEVATED -> ChatFormatting.DARK_GREEN
-            TkFocusTier.MAGNIFICENT -> ChatFormatting.AQUA
-            TkFocusTier.SUPREME -> ChatFormatting.LIGHT_PURPLE
-            TkFocusTier.GODLIKE -> ChatFormatting.DARK_PURPLE
-        }
-        return Component.literal("${tier.name.toLowerCase().capitalize()} Telekinetic Focus").withStyle(color, ChatFormatting.ITALIC)
-
+        return Component.literal("${tier.name.toLowerCase().capitalize()} Telekinetic Focus")
+            .withStyle(tier.getTextColor(), ChatFormatting.ITALIC)
     }
 
     override fun appendHoverText(
@@ -54,26 +47,4 @@ class TkFocusItem(
 fun Player.shouldAnimateTk(): Boolean {
     return this.getMode() == Mode.TELEKINESIS && (this.telekinesis().activeTkTarget != null
             || this.telekinesis().getTkTargets().any { it.chargingLaunch })
-}
-
-/**
- * Update the player's tk state based on the item they're holding.
- * When the player equips a telekinetic focus, switch to TK mode. When they unequip it, switch back to normal mode.
- */
-fun ServerPlayer.updateTkStateByItem(item: ItemStack) {
-    if (item.item is TkFocusItem && this.getMode() != Mode.TELEKINESIS) {
-        this.setMode(Mode.TELEKINESIS)
-    } else if (item.item !is TkFocusItem && this.getMode() == Mode.TELEKINESIS) {
-        this.setMode(Mode.NONE)
-    }
-
-    if (item.item is TkFocusItem && (item.item as TkFocusItem).tier != this.telekinesis().tier) {
-        // Clear the player's current TK targets if they switch to a focus of a different tier
-        this.telekinesis().clearTargets()
-
-        // Apply item's constraints on player's TK abilities
-        val focusItem = item.item as TkFocusItem
-        this.telekinesis().tier = focusItem.tier
-        CHANNEL.serverHandle(this).send(ResetDfsDepthPacket())
-    }
 }

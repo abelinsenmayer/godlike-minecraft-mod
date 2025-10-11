@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "godlike:item/simple_kinetic_core"
+  }
+}

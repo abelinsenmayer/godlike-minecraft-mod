@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "godlike:simple_kinetic_core",
+    "godlike:elevated_kinetic_core",
+    "godlike:magnificent_kinetic_core",
+    "godlike:supreme_kinetic_core",
+    "godlike:godlike_kinetic_core"
+  ]
+}
