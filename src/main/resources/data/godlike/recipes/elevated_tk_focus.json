@@ -1,25 +1,16 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "RDR",
-    "GDG",
-    "QBQ"
+    "  C",
+    " S ",
+    "S  "
   ],
   "key": {
-    "D": {
-      "item": "minecraft:diamond"
+    "S": {
+      "item": "minecraft:stick"
     },
-    "B": {
-      "item": "minecraft:blaze_rod"
-    },
-    "R": {
-      "item": "minecraft:redstone"
-    },
-    "Q": {
-      "item": "minecraft:quartz"
-    },
-    "G": {
-      "item": "minecraft:glass"
+    "C": {
+      "item": "godlike:elevated_kinetic_core"
     }
   },
   "result": {

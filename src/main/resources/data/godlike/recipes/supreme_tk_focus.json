@@ -1,25 +1,16 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "BCB",
-    "MRM",
-    "SRS"
+    "  C",
+    " S ",
+    "S  "
   ],
   "key": {
-    "B": {
-      "item": "minecraft:dragon_breath"
+    "S": {
+      "item": "minecraft:stick"
     },
     "C": {
-      "item": "minecraft:end_crystal"
-    },
-    "M": {
-      "item": "minecraft:phantom_membrane"
-    },
-    "S": {
-      "item": "minecraft:firework_star"
-    },
-    "R": {
-      "item": "minecraft:blaze_rod"
+      "item": "godlike:supreme_kinetic_core"
     }
   },
   "result": {

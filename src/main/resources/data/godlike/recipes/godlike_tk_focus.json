@@ -1,25 +1,16 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "TST",
-    "THT",
-    "NBN"
+    "  C",
+    " S ",
+    "S  "
   ],
   "key": {
     "S": {
-      "item": "minecraft:nether_star"
+      "item": "minecraft:stick"
     },
-    "H": {
-      "item": "minecraft:dragon_head"
-    },
-    "N": {
-      "item": "minecraft:netherite_ingot"
-    },
-    "B": {
-      "item": "minecraft:blaze_rod"
-    },
-    "T": {
-      "item": "minecraft:enchanting_table"
+    "C": {
+      "item": "godlike:godlike_kinetic_core"
     }
   },
   "result": {

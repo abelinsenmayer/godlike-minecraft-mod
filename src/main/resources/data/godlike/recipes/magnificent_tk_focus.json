@@ -1,28 +1,16 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "LSL",
-    "PDP",
-    "ABA"
+    "  C",
+    " S ",
+    "S  "
   ],
   "key": {
-    "D": {
-      "item": "minecraft:diamond"
-    },
-    "B": {
-      "item": "minecraft:blaze_rod"
-    },
-    "P": {
-      "item": "minecraft:ender_pearl"
-    },
-    "L": {
-      "item": "minecraft:lodestone"
-    },
     "S": {
-      "item": "minecraft:echo_shard"
+      "item": "minecraft:stick"
     },
-    "A": {
-      "item": "minecraft:amethyst_shard"
+    "C": {
+      "item": "godlike:magnificent_kinetic_core"
     }
   },
   "result": {
