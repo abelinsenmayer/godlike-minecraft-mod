@@ -34,7 +34,7 @@ class ModeComponent(private val player : Player) : AutoSyncedComponent {
                     player.selection().clear()
                 }
             }
-            if (value != Mode.TELEKINESIS && player is ServerPlayer) {
+            if (value != Mode.TELEKINESIS && value != Mode.PLACEMENT && player is ServerPlayer) {
                 dropTk(player)
             }
         }
@@ -76,6 +76,14 @@ enum class Mode(private val keybinds: List<KeyMapping>) {
         ModKeybinds.SET_TK_HOVERING,
         ModKeybinds.LAUNCH_TK,
         ModKeybinds.CHANGE_DFS_DISTANCE_TYPE,
+        ModKeybinds.TOGGLE_PLACEMENT_MODE,
+        ModKeybinds.PLACE_TK,
+    )),
+    PLACEMENT(listOf(
+        ModKeybinds.POINTER_PULL,
+        ModKeybinds.POINTER_PUSH,
+        ModKeybinds.TOGGLE_PLACEMENT_MODE,
+        ModKeybinds.PLACE_TK,
     ));
 
     /**

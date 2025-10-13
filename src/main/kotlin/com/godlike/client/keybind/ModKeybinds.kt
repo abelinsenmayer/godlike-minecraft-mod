@@ -99,6 +99,15 @@ object ModKeybinds {
         )
     )
 
+    val TOGGLE_PLACEMENT_MODE: KeyMapping = KeyBindingHelper.registerKeyBinding(
+        KeyMapping(
+            "key.godlike.toggle_placement_mode",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_T,
+            "category.godlike"
+        )
+    )
+
     fun registerKeybinds() {
         logger.info("Registering keybinds")
         // noop, just ensures static initializer is run

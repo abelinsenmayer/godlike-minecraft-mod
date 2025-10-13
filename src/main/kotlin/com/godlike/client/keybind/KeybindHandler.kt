@@ -7,8 +7,10 @@ import com.godlike.client.keybind.ModKeybinds.PLACE_TK
 import com.godlike.client.keybind.ModKeybinds.POINTER_PULL
 import com.godlike.client.keybind.ModKeybinds.POINTER_PUSH
 import com.godlike.client.keybind.ModKeybinds.SET_TK_HOVERING
+import com.godlike.client.keybind.ModKeybinds.TOGGLE_PLACEMENT_MODE
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
 import com.godlike.client.util.*
+import com.godlike.common.Godlike
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
 import com.godlike.common.components.selection
@@ -22,7 +24,6 @@ import com.godlike.common.telekinesis.ShipTkTarget
 import com.godlike.common.telekinesis.getPointerAtDistance
 import net.minecraft.client.Minecraft
 import net.minecraft.world.phys.Vec3
-import org.apache.commons.lang3.math.IEEE754rUtils
 
 const val POINTER_DELTA_INCREMENT = 0.5
 
@@ -69,6 +70,16 @@ fun handleModInputEvents() {
             CHANNEL.clientHandle().send(
                 SetModePacket(Mode.TELEKINESIS.name)
             )
+        }
+    }
+
+    while (TOGGLE_PLACEMENT_MODE.consumeClick() && (player.getMode() == Mode.TELEKINESIS || player.getMode() == Mode.PLACEMENT) && !player.selection().clientChargingLaunch) {
+        val currentMode = player.getMode()
+        if (currentMode == Mode.TELEKINESIS && player.telekinesis().activeTkTarget is ShipTkTarget) {
+            CHANNEL.clientHandle().send(PlacementPacket(true))
+            CHANNEL.clientHandle().send(HoverTkPacket(Minecraft.getInstance().cameraEntity!!.lookAngle))
+        } else if (currentMode == Mode.PLACEMENT) {
+            CHANNEL.clientHandle().send(PlacementPacket(false))
         }
     }
 

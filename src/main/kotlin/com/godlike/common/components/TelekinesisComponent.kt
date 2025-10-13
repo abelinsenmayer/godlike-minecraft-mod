@@ -1,5 +1,6 @@
 package com.godlike.common.components
 
+import com.godlike.common.Godlike
 import com.godlike.common.items.TkFocusTier
 import com.godlike.common.telekinesis.EntityTkTarget
 import com.godlike.common.telekinesis.ShipTkTarget
@@ -40,6 +41,11 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
             field = value
             sync()
         }
+    var placementTarget : TkTarget? = null
+        set(value) {
+            field = value
+            sync()
+        }
     var tier: TkFocusTier = TkFocusTier.SIMPLE
         set(value) {
             field = value
@@ -63,10 +69,15 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
                 tkTargets.add(target)
             }
         }
-        if (tag.contains("activeTkTarget")) {
-            activeTkTarget = TkTarget.fromNbtAndPlayer(tag.getCompound("activeTkTarget"), player)
+        activeTkTarget = if (tag.contains("activeTkTarget")) {
+            TkTarget.fromNbtAndPlayer(tag.getCompound("activeTkTarget"), player)
         } else {
-            activeTkTarget = null
+            null
+        }
+        placementTarget = if (tag.contains("placementTarget")) {
+            TkTarget.fromNbtAndPlayer(tag.getCompound("placementTarget"), player)
+        } else {
+            null
         }
         tier = tag.getString("tier").let {
             if (it == null || it.isEmpty()) {
@@ -85,6 +96,7 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
         }
         tag.put(TK_TARGETS_KEY, listTag)
         activeTkTarget?.let { tag.put("activeTkTarget", it.toNbt()) }
+        placementTarget?.let { tag.put("placementTarget", it.toNbt()) }
         tag.putString("tier", tier.name)
     }
 
@@ -104,7 +116,7 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
      */
     fun addTarget(target: TkTarget) {
         if (target is ShipTkTarget) {
-            // Set ship TK target to place as block after a delay
+            // Stop disassembly countdown if we are re-adding a ship TK target
             target.disassemblyTickCountdown = -1
         }
         val existing = tkTargets.find { it == target }

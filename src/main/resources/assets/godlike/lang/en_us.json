@@ -24,5 +24,6 @@
   "hud.godlike.hold": "(Hold)",
   "hud.godlike.release": "(Release)",
   "key.godlike.unstick_tk": "Dislodge (NOT YET IMPLEMENTED)",
-  "key.godlike.change_dfs_distance_type": "Cycle Selection Type"
+  "key.godlike.change_dfs_distance_type": "Cycle Selection Type",
+  "key.godlike.toggle_placement_mode": "Toggle precise placement"
 }

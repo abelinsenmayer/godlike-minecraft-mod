@@ -1,9 +1,11 @@
 package com.godlike.common.networking
 
+import com.godlike.common.Godlike
 import com.godlike.common.Godlike.logger
 import com.godlike.common.MOD_ID
 import com.godlike.common.components.Mode
 import com.godlike.common.components.setMode
+import com.godlike.common.components.telekinesis
 import com.godlike.common.telekinesis.*
 import com.godlike.common.vs2.Vs2Util
 import io.wispforest.owo.network.OwoNetChannel
@@ -70,6 +72,17 @@ object ModNetworking {
 
         CHANNEL.registerServerbound(LaunchTkPacket::class.java) { packet, ctx ->
             launchTk(ctx.player, packet.targetedPosition)
+        }
+
+        CHANNEL.registerServerbound(PlacementPacket::class.java) { packet, ctx ->
+            if (packet.starting) {
+                ctx.player.telekinesis().placementTarget = ctx.player.telekinesis().activeTkTarget
+                ctx.player.setMode(Mode.PLACEMENT)
+            } else {
+                ctx.player.telekinesis().placementTarget?.let { ctx.player.telekinesis().addTarget(it) }
+                ctx.player.telekinesis().placementTarget = null
+                ctx.player.setMode(Mode.TELEKINESIS)
+            }
         }
     }
 }

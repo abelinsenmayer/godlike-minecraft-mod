@@ -1,5 +1,6 @@
 package com.godlike.common.telekinesis
 
+import com.godlike.common.Godlike
 import com.godlike.common.Godlike.logger
 import com.godlike.common.components.ModEntityComponents
 import com.godlike.common.components.getTkTicker

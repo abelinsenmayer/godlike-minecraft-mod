@@ -9,6 +9,7 @@ import com.godlike.common.components.selection
 import com.godlike.common.components.telekinesis
 import com.godlike.common.items.TkFocusTier
 import com.godlike.common.telekinesis.EntityTkTarget
+import com.godlike.common.telekinesis.ShipTkTarget
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
@@ -33,6 +34,11 @@ class ControlsHudOverlay : HudRenderCallback {
         if (player.telekinesis().tier != TkFocusTier.NONE) {
             val toggleTkText = keyText(TOGGLE_TK_MODE, hold = false).append(" ").append(text("key.godlike.tk_mode"))
             drawContext.drawCenteredString(font, toggleTkText, pw(15), ph(90), 0xeeeeee)
+        }
+
+        if ((player.getMode() == Mode.TELEKINESIS && player.telekinesis().activeTkTarget is ShipTkTarget) || player.getMode() == Mode.PLACEMENT) {
+            val placementModeText = keyText(ModKeybinds.TOGGLE_PLACEMENT_MODE, hold = false).append(" ").append(text("key.godlike.toggle_placement_mode"))
+            drawContext.drawCenteredString(font, placementModeText, pw(85), ph(90), 0xeeeeee)
         }
 
         if (player.getMode() == Mode.TELEKINESIS) {
