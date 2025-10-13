@@ -1,17 +1,13 @@
 package com.godlike.common.items
 
-import com.godlike.common.components.*
-import dev.emi.trinkets.api.SlotReference
 import dev.emi.trinkets.api.TrinketItem
 import io.wispforest.owo.itemgroup.OwoItemSettings
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
-import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.entity.player.Player
-import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.Level
+
 
 class KineticCoreItem(
     override val tier: TkFocusTier

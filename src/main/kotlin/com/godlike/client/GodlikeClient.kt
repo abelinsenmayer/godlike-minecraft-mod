@@ -1,5 +1,6 @@
 package com.godlike.client
 
+import com.godlike.TrinketRendersInitializer
 import com.godlike.client.keybind.ModKeybinds
 import com.godlike.client.networking.ModClientNetworking
 import com.godlike.client.render.ControlsHudOverlay
@@ -33,5 +34,8 @@ object GodlikeClient : ClientModInitializer {
 
 		// Register model predicates
 		ModModelPredicates
+
+		// Register trinket renderers
+		TrinketRendersInitializer
 	}
 }

@@ -1,7 +1,6 @@
 package com.godlike.client.mixin;
 
 import com.godlike.common.components.SelectionComponentKt;
-import com.godlike.common.components.TelekinesisComponentKt;
 import com.godlike.common.items.TkStaffItem;
 import com.godlike.common.telekinesis.TkUtilKt;
 import com.mojang.blaze3d.vertex.PoseStack;
