@@ -2,6 +2,7 @@ package com.godlike.client
 
 import com.godlike.client.keybind.handleModInputEvents
 import com.godlike.client.keybind.sendTelekinesisTick
+import com.godlike.client.render.doPlacementFxRenderTick
 import com.godlike.client.render.highlightSelectedArea
 import com.godlike.client.render.doTkFxRenderTick
 import com.godlike.client.util.selectRaycastTarget
@@ -35,6 +36,9 @@ object ClientTickHandler {
                 highlightSelectedArea(player, context.matrixStack())
                 if (player.telekinesis().activeTkTarget != null) {
                     doTkFxRenderTick(player, context.matrixStack())
+                }
+                if (player.telekinesis().placementTarget != null) {
+                    doPlacementFxRenderTick(player, context.matrixStack())
                 }
             }
         })

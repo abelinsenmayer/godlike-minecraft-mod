@@ -2,16 +2,21 @@ package com.godlike.client.render
 
 import com.godlike.client.mixin.EntityInvoker
 import com.godlike.client.mixin.WorldRendererAccessor
+import com.godlike.client.util.DFS_SIZE_PERFORMANCE_CUTOFF
 import com.godlike.client.util.DfsDistanceType
 import com.godlike.client.util.canTkShip
+import com.godlike.common.Godlike
 import com.godlike.common.MOD_ID
 import com.godlike.common.components.selection
 import com.godlike.common.components.telekinesis
 import com.godlike.common.telekinesis.EntityTkTarget
 import com.godlike.common.telekinesis.ShipTkTarget
+import com.godlike.common.telekinesis.getPointer
 import com.godlike.common.util.toAABB
 import com.godlike.common.util.toVec3
+import com.godlike.common.util.toVec3i
 import com.godlike.common.util.toVector3d
+import com.godlike.common.vs2.Vs2Util
 import com.mojang.blaze3d.vertex.DefaultVertexFormat
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexFormat
@@ -24,8 +29,10 @@ import net.minecraft.client.renderer.LevelRenderer
 import net.minecraft.client.renderer.RenderStateShard
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Vec3i
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.phys.shapes.Shapes
@@ -39,7 +46,6 @@ import team.lodestar.lodestone.systems.rendering.VFXBuilders
 import team.lodestar.lodestone.systems.rendering.rendeertype.RenderTypeProvider
 import team.lodestar.lodestone.systems.rendering.rendeertype.RenderTypeToken
 import java.awt.Color
-import java.lang.Math.toRadians
 import kotlin.math.sin
 
 val HIGHLIGHT_CUBE_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation(MOD_ID, "textures/render/highlight_cube.png"))
@@ -118,6 +124,84 @@ fun doTkFxRenderTick(player: LocalPlayer, poseStack: PoseStack) {
         Color(1.0f, 1.0f, 1.0f, circleOpacity),
         doubleSided = true
     )
+}
+
+/**
+ * Creates rendered effects for placement mode that happen every tick for a specific player.
+ */
+fun doPlacementFxRenderTick(player: LocalPlayer, poseStack: PoseStack) {
+    val tkShip = player.telekinesis().placementTarget?.let {
+        when (it) {
+            is ShipTkTarget -> it.getClientShip(player)
+            is EntityTkTarget -> null
+            else -> null
+        }
+    }
+    if (tkShip == null) {
+        return
+    }
+
+    val pointerPos = player.getPointer()
+    val shipAABB = tkShip.shipAABB ?: return
+    val centerOfAABB = shipAABB.center(Vector3d())
+    val camera = Minecraft.getInstance().gameRenderer.mainCamera
+
+    val previewSizeRadius: Int = shipAABB.maxX() - shipAABB.minX()
+
+    if (previewSizeRadius in 1..<40) {
+        fun getPosRelativeToPointer(pos: Vec3i): Vec3i {
+            val posToCenter = centerOfAABB.toVec3().subtract(pos.toVec3())
+            return pointerPos.subtract(posToCenter).toVec3i()
+        }
+
+        // Get all blocks in the ship and their positions
+        val shipBlocks = HashMap<Vec3i, BlockState>()
+        for (x in shipAABB.minX()..shipAABB.maxX()) {
+            for (y in shipAABB.minY()..shipAABB.maxY()) {
+                for (z in shipAABB.minZ()..shipAABB.maxZ()) {
+                    val blockPos = BlockPos(x, y, z)
+                    val blockState = player.level().getBlockState(blockPos)
+
+                    fun isSurroundedByNotAir(pos: Vec3i): Boolean {
+                        for (dx in -1..1) {
+                            for (dy in -1..1) {
+                                for (dz in -1..1) {
+                                    if (dx == 0 && dy == 0 && dz == 0) {
+                                        continue
+                                    }
+                                    val neighborPos = pos.subtract(Vec3i(-dx, -dy, -dz))
+                                    val neighborState = player.level().getBlockState(BlockPos(neighborPos))
+                                    if (neighborState.isAir) {
+                                        return false
+                                    }
+                                }
+                            }
+                        }
+                        return true
+                    }
+
+                    if (!blockState.isAir && !isSurroundedByNotAir(Vec3i(x, y, z)))
+                        shipBlocks[getPosRelativeToPointer(blockPos.toVec3().toVec3i())] = blockState
+                }
+            }
+        }
+
+        // Recreate the ship at the pointer position using ghost blocks
+        for (pos in shipBlocks.keys) {
+            outlineBlockPos(BlockPos(pos), poseStack, camera,1.0f,1.0f,1.0f,1.0f)
+        }
+    } else {
+        renderRectangularPrism(
+            poseStack,
+            pointerPos.toVec3i().toVec3(),  // snap pointer to nearest block
+            (shipAABB.maxX() - shipAABB.minX()).toFloat(),
+            (shipAABB.maxY() - shipAABB.minY()).toFloat(),
+            (shipAABB.maxZ() - shipAABB.minZ()).toFloat(),
+            HIGHLIGHT_CUBE_TEXTURE,
+            true,
+        )
+    }
+
 }
 
 fun renderQuadFacingVector(
@@ -275,6 +359,94 @@ fun renderCube(
     poseStack.popPose()
 }
 
+fun renderRectangularPrism(
+    poseStack: PoseStack,
+    center: Vec3,
+    xSize: Float,
+    ySize: Float,
+    zSize: Float,
+    texture: RenderTypeToken,
+    renderInterior: Boolean = false,
+    rotation: Vector3f = Vector3f(0f, 0f, 0f),
+    color: Color = Color(1.0f, 1.0f, 1.0f, 1.0f)
+) {
+    val camera = Minecraft.getInstance().gameRenderer.mainCamera
+    val renderPos = center.subtract(camera.position)
+    poseStack.pushPose()
+    poseStack.translate(renderPos.x, renderPos.y, renderPos.z)
+    poseStack.mulPose(Axis.XP.rotationDegrees(rotation.x))
+    poseStack.mulPose(Axis.YP.rotationDegrees(rotation.y))
+    poseStack.mulPose(Axis.ZP.rotationDegrees(rotation.z))
+    val length = (xSize / 2).toDouble()
+    val width = (zSize / 2).toDouble()
+    val height = (ySize / 2).toDouble()
+
+    data class Face(val offset: Vec3, val rotation: Quaternionf, val width: Double, val height: Double)
+
+    val faces = mutableListOf(
+        Face(Vec3(0.0, 0.0, length), Axis.YP.rotationDegrees(0f), width, height),
+        Face(Vec3(0.0, 0.0, -length), Axis.YP.rotationDegrees(180f), width, height),
+        Face(Vec3(-width, 0.0, 0.0), Axis.YP.rotationDegrees(-90f), width, height),
+        Face(Vec3(width, 0.0, 0.0), Axis.YP.rotationDegrees(90f), width, height),
+        Face(Vec3(0.0, height, 0.0), Axis.XP.rotationDegrees(-90f), width, length),
+        Face(Vec3(0.0, -height, 0.0), Axis.XP.rotationDegrees(90f), width, length),
+    )
+    if (renderInterior) {
+        faces.addAll(listOf(
+            Face(Vec3(0.0, 0.0, length), Axis.YP.rotationDegrees(180f), width, height),
+            Face(Vec3(0.0, 0.0, -length), Axis.YP.rotationDegrees(0f), width, height),
+            Face(Vec3(-width, 0.0, 0.0), Axis.YP.rotationDegrees(90f), width, height),
+            Face(Vec3(width, 0.0, 0.0), Axis.YP.rotationDegrees(-90f), width, height),
+            Face(Vec3(0.0, height, 0.0), Axis.XP.rotationDegrees(90f), width, length),
+            Face(Vec3(0.0, -height, 0.0), Axis.XP.rotationDegrees(-90f), width, length),
+        ))
+    }
+
+    faces.forEach { face ->
+        poseStack.pushPose()
+        poseStack.translate(face.offset.x, face.offset.y, face.offset.z)
+        poseStack.mulPose(face.rotation)
+        VFXBuilders.createWorld()
+            .setColor(color)
+            .setAlpha(color.alpha * 255f)
+            .setRenderType(LodestoneRenderTypeRegistry.TRANSPARENT_TEXTURE.applyAndCache(texture))
+            .renderQuad(poseStack, face.width.toFloat(), face.height.toFloat())
+        poseStack.popPose()
+    }
+
+//    faces.forEach { (offset, rotation) ->
+//        poseStack.pushPose()
+//        poseStack.translate(offset.x, offset.y, offset.z)
+//        poseStack.mulPose(rotation)
+//        VFXBuilders.createWorld()
+//            .setColor(color)
+//            .setAlpha(color.alpha * 255f)
+//            .setRenderType(LodestoneRenderTypeRegistry.TRANSPARENT_TEXTURE.applyAndCache(texture))
+//            .renderQuad(poseStack, lwh.toFloat(), lwh.toFloat())
+//        poseStack.popPose()
+//    }
+    poseStack.popPose()
+
+    //    val faces = mutableListOf(
+//        Vec3(0.0, 0.0, length) to Axis.YP.rotationDegrees(0f),
+//        Vec3(0.0, 0.0, -length) to Axis.YP.rotationDegrees(180f),
+//        Vec3(-width, 0.0, 0.0) to Axis.YP.rotationDegrees(-90f),
+//        Vec3(width, 0.0, 0.0) to Axis.YP.rotationDegrees(90f),
+//        Vec3(0.0, height, 0.0) to Axis.XP.rotationDegrees(-90f),
+//        Vec3(0.0, -height, 0.0) to Axis.XP.rotationDegrees(90f),
+//    )
+//    if (renderInterior) {
+//        faces.addAll(listOf(
+//            Vec3(0.0, 0.0, length) to Axis.YP.rotationDegrees(180f),
+//            Vec3(0.0, 0.0, -length) to Axis.YP.rotationDegrees(0f),
+//            Vec3(-width, 0.0, 0.0) to Axis.YP.rotationDegrees(90f),
+//            Vec3(width, 0.0, 0.0) to Axis.YP.rotationDegrees(-90f),
+//            Vec3(0.0, height, 0.0) to Axis.XP.rotationDegrees(90f),
+//            Vec3(0.0, -height, 0.0) to Axis.XP.rotationDegrees(-90f),
+//        ))
+//    }
+}
+
 /**
  * Renders a sphere at the given position with the given size.
  *
@@ -352,7 +524,6 @@ fun highlightSelectedArea(player: LocalPlayer, poseStack: PoseStack) {
     } else {
         renderSphere(poseStack, highlightPosition, highlightSize, HIGHLIGHT_CUBE_TEXTURE)
     }
-
 }
 
 fun outlineShip(
