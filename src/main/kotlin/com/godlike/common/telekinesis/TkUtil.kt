@@ -5,7 +5,6 @@ import com.godlike.common.components.getMode
 import com.godlike.common.components.setMode
 import com.godlike.common.components.telekinesis
 import com.godlike.common.items.KineticCoreItem
-import com.godlike.common.items.TieredTkItem
 import com.godlike.common.items.TkFocusTier
 import com.godlike.common.items.TkStaffItem
 import com.godlike.common.networking.ModNetworking
@@ -19,8 +18,7 @@ import kotlin.jvm.optionals.getOrNull
  * Called every tick to update the player's TK tier based on their equipped items.
  */
 fun Player.updateTkTierByInventory() {
-    // Determine the player's TK tier based on their equipped TK items
-    // Determine which item will control the player's TK abilities. Staff takes precedence over core.
+    // Determine what TK items the player has equipped
     val mainHandItem = this.getItemBySlot(EquipmentSlot.MAINHAND).item
     val equippedStaff = if (mainHandItem is TkStaffItem) {
         mainHandItem
@@ -29,26 +27,34 @@ fun Player.updateTkTierByInventory() {
     }
     val equippedTkCore: KineticCoreItem? = TrinketsApi.getTrinketComponent(this).getOrNull()?.allEquipped?.firstOrNull { it.b.item is KineticCoreItem }?.b?.item as KineticCoreItem?
 
-    val tkItem: TieredTkItem? = (equippedStaff ?: equippedTkCore)
+    fun setTierIfNecessary(tier: TkFocusTier) {
+        if (tier != this.telekinesis().tier) {
+            // Clear the player's current TK targets if they switch to a focus of a different tier
+            this.telekinesis().clearTargets()
+            this.setMode(Mode.NONE)
 
-    if (tkItem == null) {
-        // No TK item equipped, this shouldn't happen since we only enter TK mode when equipping a TK item
+            // Apply item's constraints on player's TK abilities
+            this.telekinesis().tier = tier
+            ModNetworking.CHANNEL.serverHandle(this).send(ResetDfsDepthPacket())
+        }
+    }
+
+    // Determine the player's TK tier and mode based on their equipped items
+    if (equippedTkCore != null) {
+        // If the player has a telekinetic core equipped, it overrides any staff they might be holding
+        setTierIfNecessary(equippedTkCore.tier)
+    } else if (equippedStaff != null) {
+        // If the player has no core and is holding a staff, set them to tk mode
+        if (this.getMode() == Mode.NONE) {
+            this.setMode(Mode.TELEKINESIS)
+        }
+        setTierIfNecessary(equippedStaff.tier)
+    } else {
+        // If the player has no core and is not holding a staff, take them out of TK mode
         if (this.getMode() == Mode.TELEKINESIS) {
             this.setMode(Mode.NONE)
         }
         this.telekinesis().tier = TkFocusTier.NONE
-        return
-    }
-
-    // Handle the case where the player's tier changed
-    if (tkItem.tier != this.telekinesis().tier) {
-        // Clear the player's current TK targets if they switch to a focus of a different tier
-        this.telekinesis().clearTargets()
-        this.setMode(Mode.NONE)
-
-        // Apply item's constraints on player's TK abilities
-        this.telekinesis().tier = tkItem.tier
-        ModNetworking.CHANNEL.serverHandle(this).send(ResetDfsDepthPacket())
     }
 }
 
