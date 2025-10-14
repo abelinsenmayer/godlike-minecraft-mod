@@ -1,6 +1,5 @@
 package com.godlike.common.networking
 
-import com.godlike.common.Godlike
 import com.godlike.common.Godlike.logger
 import com.godlike.common.MOD_ID
 import com.godlike.common.components.Mode
@@ -59,7 +58,11 @@ object ModNetworking {
         }
 
         CHANNEL.registerServerbound(PlaceTkPacket::class.java) { packet, ctx ->
-            placeTk(ctx.player)
+            placeActiveTarget(ctx.player)
+        }
+
+        CHANNEL.registerServerbound(PrecisePlacementPacket::class.java) { packet, ctx ->
+            placePlacementTargetAt(ctx.player, packet.playerLookDirection)
         }
 
         CHANNEL.registerServerbound(HoverTkPacket::class.java) { packet, ctx ->

@@ -6,10 +6,12 @@ import com.godlike.common.vs2.Vs2Util.toJOML
 import com.godlike.common.vs2.Vs2Util.updateBlock
 import com.google.common.collect.Sets
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Vec3i
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.level.block.Rotation
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.phys.Vec3
 import org.joml.AxisAngle4d
 import org.joml.Matrix4d
 import org.joml.Vector3d
@@ -19,6 +21,82 @@ import org.valkyrienskies.mod.common.networking.PacketRestartChunkUpdates
 import org.valkyrienskies.mod.common.networking.PacketStopChunkUpdates
 import java.util.function.Supplier
 import kotlin.math.*
+
+fun disassembleAt(ship: ServerShip, level: ServerLevel, centerPos: Vec3i) {
+    val rotation: Rotation = Rotation.NONE
+
+    val shipToWorld = ship.transform.run {
+        Matrix4d()
+            .translate(centerPos.toVec3().toVector3d())
+//            .rotate(snapRotation(AxisAngle4d(shipToWorldRotation)))
+            .scale(shipToWorldScaling)
+            .translate(-positionInShip.x(), -positionInShip.y(), -positionInShip.z())
+    }
+    val alloc0 = Vector3d()
+
+    val chunksToBeUpdated = mutableMapOf<ChunkPos, Pair<ChunkPos, ChunkPos>>()
+
+    ship.activeChunksSet.forEach { chunkX, chunkZ ->
+        chunksToBeUpdated[ChunkPos(chunkX, chunkZ)] =
+            Pair(ChunkPos(chunkX, chunkZ), ChunkPos(chunkX, chunkZ))
+    }
+
+    val chunkPairs = chunksToBeUpdated.values.toList()
+    val chunkPoses = chunkPairs.flatMap { it.toList() }
+    val chunkPosesJOML = chunkPoses.map { toJOML(it) }
+
+    // Send a list of all the chunks that we plan on updating to players, so that they
+    // defer all updates until assembly is finished
+    level.players().forEach { player ->
+        PacketStopChunkUpdates(chunkPosesJOML).sendToClient(Vs2Util.playerWrapper(player))
+    }
+
+    val toUpdate = Sets.newHashSet<Triple<BlockPos, BlockPos, BlockState>>()
+
+    ship.activeChunksSet.forEach { chunkX, chunkZ ->
+        val chunk = level.getChunk(chunkX, chunkZ)
+        for (sectionIndex in 0 until chunk.sections.size) {
+            val section = chunk.sections[sectionIndex]
+
+            if (section == null || section.hasOnlyAir()) continue
+
+            val bottomY = sectionIndex shl 4
+
+            for (x in 0..15) {
+                for (y in 0..15) {
+                    for (z in 0..15) {
+                        val state = section.getBlockState(x, y, z)
+                        if (state.isAir) continue
+
+                        val realX = (chunkX shl 4) + x
+                        val realY = bottomY + y + level.minBuildHeight
+                        val realZ = (chunkZ shl 4) + z
+
+                        val inWorldPos = shipToWorld.transformPosition(alloc0.set(realX + 0.5, realY + 0.5, realZ + 0.5)).floor()
+
+                        val inWorldBlockPos = BlockPos(inWorldPos.x.toInt(), inWorldPos.y.toInt(), inWorldPos.z.toInt())
+                        val inShipPos = BlockPos(realX, realY, realZ)
+
+                        toUpdate.add(Triple(inShipPos, inWorldBlockPos, state))
+                        Vs2Util.relocateBlock(level, inShipPos, inWorldBlockPos, false, null, rotation)
+                    }
+                }
+            }
+        }
+    }
+    // We update the blocks after they're set to prevent blocks from breaking
+    for (triple in toUpdate) {
+        updateBlock(level, triple.first, triple.second, triple.third)
+    }
+
+    Vs2Util.executeIf(
+        level.server,
+        { chunkPoses.all { Vs2Util.isTickingChunk(level, it) } },
+    ) {
+        level.players()
+            .forEach { player -> PacketRestartChunkUpdates(chunkPosesJOML).sendToClient(Vs2Util.playerWrapper(player)) }
+    }
+}
 
 // Adapted from Eureka disassembly code
 // https://github.com/ValkyrienSkies/Eureka/blob/1.20.1/main/common/src/main/kotlin/org/valkyrienskies/eureka/util/ShipAssembler.kt

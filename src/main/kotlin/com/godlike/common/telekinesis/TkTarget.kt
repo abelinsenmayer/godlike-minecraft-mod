@@ -2,6 +2,7 @@ package com.godlike.common.telekinesis
 
 import com.godlike.common.Godlike
 import com.godlike.common.util.toAABB
+import net.minecraft.core.Vec3i
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundEvents
@@ -79,6 +80,8 @@ abstract class TkTarget(
     abstract fun addRotationDrag()
 
     abstract fun place(level : ServerLevel)
+
+    abstract fun placeAt(level: ServerLevel, pos: Vec3i)
 
     abstract fun launchToward(pos: Vec3)
 

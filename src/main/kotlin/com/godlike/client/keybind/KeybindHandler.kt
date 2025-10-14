@@ -35,13 +35,20 @@ fun sendTelekinesisTick() {
     val playerLookDirection = Minecraft.getInstance().cameraEntity!!.lookAngle
 
     var pointerDistanceDelta = 0.0
-    if (Minecraft.getInstance().player!!.getMode() == Mode.TELEKINESIS) {
+    var mode = Minecraft.getInstance().player!!.getMode()
+    if (mode == Mode.TELEKINESIS || mode == Mode.PLACEMENT) {
         // Only allow the player to change the pointer distance if they are in telekinesis mode;
         // we use these keybinds for other things in other modes.
         if (POINTER_PULL.isDown) {
+            while (POINTER_PULL.consumeClick()) {
+                // NOOP -- just make sure we aren't accumulating any clicks from holding down the key
+            }
             pointerDistanceDelta -= POINTER_DELTA_INCREMENT
         }
         if (POINTER_PUSH.isDown) {
+            while (POINTER_PUSH.consumeClick()) {
+                // NOOP -- just make sure we aren't accumulating any clicks from holding down the key
+            }
             pointerDistanceDelta += POINTER_DELTA_INCREMENT
         }
     }
@@ -138,8 +145,13 @@ fun handleModInputEvents() {
     }
 
     while (PLACE_TK.consumeClick() && !player.selection().clientChargingLaunch) {
-        if (player.getMode() == Mode.TELEKINESIS) {
-            CHANNEL.clientHandle().send(PlaceTkPacket())
+        if (player.getMode() == Mode.TELEKINESIS || player.getMode() == Mode.PLACEMENT) {
+            if (player.getMode() == Mode.PLACEMENT) {
+                CHANNEL.clientHandle().send(PrecisePlacementPacket(Minecraft.getInstance().cameraEntity!!.lookAngle))
+
+            } else {
+                CHANNEL.clientHandle().send(PlaceTkPacket())
+            }
         }
     }
 
@@ -168,10 +180,10 @@ fun handleModInputEvents() {
         player.selection().clientChargingLaunch = false
     }
 
-    while (player.telekinesis().activeTkTarget == null && POINTER_PUSH.consumeClick()) {
+    while (player.telekinesis().activeTkTarget == null && player.getMode() != Mode.PLACEMENT && POINTER_PUSH.consumeClick()) {
         player.selection().dfsDepth += 1
     }
-    while (player.telekinesis().activeTkTarget == null && POINTER_PULL.consumeClick()) {
+    while (player.telekinesis().activeTkTarget == null && player.getMode() != Mode.PLACEMENT && POINTER_PULL.consumeClick()) {
         player.selection().dfsDepth -= 1
     }
 }

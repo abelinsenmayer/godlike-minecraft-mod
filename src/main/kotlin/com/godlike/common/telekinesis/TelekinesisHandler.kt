@@ -1,13 +1,7 @@
 package com.godlike.common.telekinesis
 
-import com.godlike.common.Godlike
-import com.godlike.common.Godlike.logger
-import com.godlike.common.components.ModEntityComponents
-import com.godlike.common.components.getTkTicker
-import com.godlike.common.components.telekinesis
-import com.godlike.common.networking.ModNetworking
+import com.godlike.common.components.*
 import com.godlike.common.networking.TelekinesisControlsPacket
-import com.godlike.common.networking.TracerParticlePacket
 import com.godlike.common.util.*
 import com.godlike.common.vs2.Vs2Util
 import net.minecraft.core.BlockPos
@@ -68,11 +62,20 @@ fun dropTk(player: ServerPlayer) {
 /**
  * Place the player's currently-active telekinesis target.
  */
-fun placeTk(player: ServerPlayer) {
-    val toPlace = player.telekinesis().getTkTargets().filter { it.hoverPos == null }
-    toPlace.forEach { target ->
-        target.place(player.serverLevel())
-        player.telekinesis().removeTarget(target)
+fun placeActiveTarget(player: ServerPlayer) {
+    player.telekinesis().activeTkTarget?.let {
+        it.place(player.serverLevel())
+        player.telekinesis().removeTarget(it)
+    }
+}
+
+fun placePlacementTargetAt(player: ServerPlayer, lookDirection: Vec3) {
+    player.telekinesis().placementTarget?.let {
+        val pos = getPointer(player, lookDirection, player.telekinesis().placementTarget!!).add(Vec3(0.0, 0.0, 1.0)).toVec3i()
+        it.placeAt(player.serverLevel(), pos)
+        player.telekinesis().removeTarget(it)
+        player.telekinesis().placementTarget = null
+        player.setMode(Mode.TELEKINESIS)
     }
 }
 

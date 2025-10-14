@@ -141,64 +141,74 @@ fun doPlacementFxRenderTick(player: LocalPlayer, poseStack: PoseStack) {
         return
     }
 
-    val pointerPos = player.getPointer()
+    val pointerPos = player.getPointer().toVec3i().toVec3().add(Vec3(1.0, 1.0, 1.0))  // Round pointer to the closest block
     val shipAABB = tkShip.shipAABB ?: return
     val centerOfAABB = shipAABB.center(Vector3d())
     val camera = Minecraft.getInstance().gameRenderer.mainCamera
 
-    val previewSizeRadius: Int = shipAABB.maxX() - shipAABB.minX()
+    fun getPosRelativeToPointer(pos: Vec3i): Vec3i {
+        val posToCenter = centerOfAABB.toVec3().subtract(pos.toVec3())
+        return pointerPos.subtract(posToCenter).toVec3i()
+    }
 
-    if (previewSizeRadius in 1..<40) {
-        fun getPosRelativeToPointer(pos: Vec3i): Vec3i {
-            val posToCenter = centerOfAABB.toVec3().subtract(pos.toVec3())
-            return pointerPos.subtract(posToCenter).toVec3i()
-        }
+    // Get all blocks in the ship and their positions
+    val shipBlocks = HashMap<Vec3i, BlockState>()
+    for (x in shipAABB.minX()..shipAABB.maxX()) {
+        for (y in shipAABB.minY()..shipAABB.maxY()) {
+            for (z in shipAABB.minZ()..shipAABB.maxZ()) {
+                val blockPos = BlockPos(x, y, z)
+                val blockState = player.level().getBlockState(blockPos)
 
-        // Get all blocks in the ship and their positions
-        val shipBlocks = HashMap<Vec3i, BlockState>()
-        for (x in shipAABB.minX()..shipAABB.maxX()) {
-            for (y in shipAABB.minY()..shipAABB.maxY()) {
-                for (z in shipAABB.minZ()..shipAABB.maxZ()) {
-                    val blockPos = BlockPos(x, y, z)
-                    val blockState = player.level().getBlockState(blockPos)
-
-                    fun isSurroundedByNotAir(pos: Vec3i): Boolean {
-                        for (dx in -1..1) {
-                            for (dy in -1..1) {
-                                for (dz in -1..1) {
-                                    if (dx == 0 && dy == 0 && dz == 0) {
-                                        continue
-                                    }
-                                    val neighborPos = pos.subtract(Vec3i(-dx, -dy, -dz))
-                                    val neighborState = player.level().getBlockState(BlockPos(neighborPos))
-                                    if (neighborState.isAir) {
-                                        return false
-                                    }
+                fun isSurroundedByNotAir(pos: Vec3i): Boolean {
+                    for (dx in -1..1) {
+                        for (dy in -1..1) {
+                            for (dz in -1..1) {
+                                if (dx == 0 && dy == 0 && dz == 0) {
+                                    continue
+                                }
+                                val neighborPos = pos.subtract(Vec3i(-dx, -dy, -dz))
+                                val neighborState = player.level().getBlockState(BlockPos(neighborPos))
+                                if (neighborState.isAir) {
+                                    return false
                                 }
                             }
                         }
-                        return true
                     }
-
-                    if (!blockState.isAir && !isSurroundedByNotAir(Vec3i(x, y, z)))
-                        shipBlocks[getPosRelativeToPointer(blockPos.toVec3().toVec3i())] = blockState
+                    return true
                 }
+
+                if (!blockState.isAir && !isSurroundedByNotAir(Vec3i(x, y, z)))
+                    shipBlocks[getPosRelativeToPointer(blockPos.toVec3().toVec3i())] = blockState
             }
         }
+    }
 
+    // Determine whether this is a valid spot to place the target
+    val isValid = shipBlocks.all { (pos, state) ->
+        !player.level().getBlockState(BlockPos(pos)).isSolid
+    }
+
+    val previewSizeRadius: Int = shipAABB.maxX() - shipAABB.minX()
+
+    if (previewSizeRadius in 1..<40) {
         // Recreate the ship at the pointer position using ghost blocks
         for (pos in shipBlocks.keys) {
-            outlineBlockPos(BlockPos(pos), poseStack, camera,1.0f,1.0f,1.0f,1.0f)
+            if (isValid) {
+                outlineBlockPos(BlockPos(pos), poseStack, camera,1.0f,1.0f,1.0f,1.0f)
+            } else {
+                outlineBlockPos(BlockPos(pos), poseStack, camera,1.0f,0.0f,0.0f,1.0f)
+            }
         }
     } else {
         renderRectangularPrism(
             poseStack,
-            pointerPos.toVec3i().toVec3(),  // snap pointer to nearest block
+            pointerPos,  // snap pointer to nearest block
             (shipAABB.maxX() - shipAABB.minX()).toFloat(),
             (shipAABB.maxY() - shipAABB.minY()).toFloat(),
             (shipAABB.maxZ() - shipAABB.minZ()).toFloat(),
             HIGHLIGHT_CUBE_TEXTURE,
             true,
+            color = if (isValid) { Color(1.0f, 1.0f, 1.0f, 1.0f) } else { Color(1.0f, 0.0f, 0.0f, 1.0f) }
         )
     }
 

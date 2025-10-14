@@ -86,6 +86,11 @@ class ControlsHudOverlay : HudRenderCallback {
                 drawContext.drawString(font, dfsModeText, pw(4), ph(85), 0xeeeeee)
             }
         }
+
+        if (player.getMode() == Mode.PLACEMENT) {
+            val placementText = keyText(ModKeybinds.PLACE_TK, hold = false).append(" ").append(text("key.godlike.place_tk"))
+            drawContext.drawCenteredString(font, placementText, pw(80), ph(55), 0xeeeeee)
+        }
     }
 
     private fun text(langKey: String): MutableComponent {
