@@ -73,8 +73,8 @@ class ControlsHudOverlay : HudRenderCallback {
                 drawContext.drawCenteredString(font, hoverText, pw(80), ph(50), 0xeeeeee)
 
                 if (player.telekinesis().activeTkTarget !is EntityTkTarget) {
-                    val rotateText = keyText(ModKeybinds.ROTATE_TK, hold = true).append(" ").append(text("key.godlike.rotate_tk"))
-                    drawContext.drawCenteredString(font, rotateText, pw(15), ph(55), 0xeeeeee)
+                    val rotationControlsText = Component.literal("[Arrow keys] (Hold) Rotate")
+                    drawContext.drawCenteredString(font, rotationControlsText, pw(80), ph(85), 0xeeeeee)
 
                     val placeText = keyText(ModKeybinds.PLACE_TK, hold = false).append(" ").append(text("key.godlike.place_tk"))
                     drawContext.drawCenteredString(font, placeText, pw(80), ph(55), 0xeeeeee)

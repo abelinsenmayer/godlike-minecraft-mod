@@ -84,6 +84,10 @@ class EntityTkTarget(
         // NOOP for entity
     }
 
+    override fun rotate(up: Boolean, down: Boolean, left: Boolean, right: Boolean, playerEyePos: Vec3) {
+        // NOOP for entity
+    }
+
     override fun addRotationDrag() {
         // NOOP for entity
     }

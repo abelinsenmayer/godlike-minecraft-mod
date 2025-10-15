@@ -1,5 +1,6 @@
 package com.godlike.common.telekinesis
 
+import com.godlike.common.Godlike
 import com.godlike.common.Godlike.logger
 import com.godlike.common.components.telekinesis
 import com.godlike.common.util.*
@@ -12,6 +13,8 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
+import org.joml.AxisAngle4d
+import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.valkyrienskies.core.api.ships.ClientShip
 import org.valkyrienskies.core.api.ships.ServerShip
@@ -157,6 +160,44 @@ class ShipTkTarget(
         val torqueAxis = shipToPointer.cross(playerToShip).normalize()
         val torque = ship.inertiaData.momentOfInertiaTensor.transform(torqueAxis.toVector3d()).toVec3().scale(6.0)
 
+        torqueApplier().applyInvariantTorque(torque.toVector3d())
+    }
+
+    override fun rotate(up: Boolean, down: Boolean, left: Boolean, right: Boolean, playerEyePos: Vec3) {
+        val turningVertically = (up || down) && !(up && down)
+        val turningHorizontally = (left || right) && !(left && right)
+
+        val playerToTarget = playerEyePos.subtract(pos())
+        val horizontalAxis = playerToTarget.cross(Vec3(0.0, 1.0, 0.0)).normalize().toVector3d()
+
+        val torqueAxis: Vector3d = if (turningVertically && turningHorizontally) {
+            val verticalComponent = if (up) horizontalAxis else horizontalAxis.negate(Vector3d())
+            val horizontalComponent = if (left) Vector3d(0.0, -1.0, 0.0) else Vector3d(0.0, 1.0, 0.0)
+            verticalComponent.add(horizontalComponent).normalize()
+        } else if (turningVertically) {
+            if (up) {
+                horizontalAxis
+            } else {
+                horizontalAxis.negate()
+            }
+        } else if (turningHorizontally) {
+            if (left) {
+                Vector3d(0.0, -1.0, 0.0)
+            } else {
+                Vector3d(0.0, 1.0, 0.0)
+            }
+        } else {
+            return
+        }
+
+        val exponent = if (this.player != null) {
+            player!!.telekinesis().tier.massScalarExponent
+        } else {
+            1.0
+        }
+        val massScalar = 2 / (1 + (2 * (mass() / (DIRT_MASS * 2.5))).pow(exponent))
+        val torque = ship.inertiaData.momentOfInertiaTensor.transform(torqueAxis).toVec3().normalize()
+            .scale(ship.inertiaData.mass * SHIP_FORCE_SCALAR * massScalar)
         torqueApplier().applyInvariantTorque(torque.toVector3d())
     }
 

@@ -72,7 +72,6 @@ enum class Mode(private val keybinds: List<KeyMapping>) {
         ModKeybinds.POINTER_PULL,
         ModKeybinds.POINTER_PUSH,
         ModKeybinds.PICK_TO_TK,
-        ModKeybinds.ROTATE_TK,
         ModKeybinds.SET_TK_HOVERING,
         ModKeybinds.LAUNCH_TK,
         ModKeybinds.CHANGE_DFS_DISTANCE_TYPE,

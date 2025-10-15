@@ -25,5 +25,9 @@
   "hud.godlike.release": "(Release)",
   "key.godlike.unstick_tk": "Dislodge (NOT YET IMPLEMENTED)",
   "key.godlike.change_dfs_distance_type": "Cycle Selection Type",
-  "key.godlike.toggle_placement_mode": "Toggle precise placement"
+  "key.godlike.toggle_placement_mode": "Toggle precise placement",
+  "key.godlike.rotate_tk_down": "Rotate down",
+  "key.godlike.rotate_tk_up": "Rotate up",
+  "key.godlike.rotate_tk_right": "Rotate right",
+  "key.godlike.rotate_tk_left": "Rotate left"
 }

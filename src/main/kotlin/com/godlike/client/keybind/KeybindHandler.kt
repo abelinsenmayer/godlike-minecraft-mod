@@ -52,10 +52,40 @@ fun sendTelekinesisTick() {
             pointerDistanceDelta += POINTER_DELTA_INCREMENT
         }
     }
-    val isRotating = ModKeybinds.ROTATE_TK.isDown
+
+    // Handle rotation controls
+    var rotatingLeft = false
+    var rotatingRight = false
+    var rotatingUp = false
+    var rotatingDown = false
+
+    if (ModKeybinds.ROTATE_TK_LEFT.isDown) {
+        while (ModKeybinds.ROTATE_TK_LEFT.consumeClick()) {
+            // NOOP -- just make sure we aren't accumulating any clicks from holding down the key
+        }
+        rotatingLeft = true
+    }
+    if (ModKeybinds.ROTATE_TK_RIGHT.isDown) {
+        while (ModKeybinds.ROTATE_TK_RIGHT.consumeClick()) {
+            // NOOP -- just make sure we aren't accumulating any clicks from holding down the key
+        }
+        rotatingRight = true
+    }
+    if (ModKeybinds.ROTATE_TK_UP.isDown) {
+        while (ModKeybinds.ROTATE_TK_UP.consumeClick()) {
+            // NOOP -- just make sure we aren't accumulating any clicks from holding down the key
+        }
+        rotatingUp = true
+    }
+    if (ModKeybinds.ROTATE_TK_DOWN.isDown) {
+        while (ModKeybinds.ROTATE_TK_DOWN.consumeClick()) {
+            // NOOP -- just make sure we aren't accumulating any clicks from holding down the key
+        }
+        rotatingDown = true
+    }
 
     CHANNEL.clientHandle().send(
-        TelekinesisControlsPacket(playerLookDirection, pointerDistanceDelta, isRotating)
+        TelekinesisControlsPacket(playerLookDirection, pointerDistanceDelta, rotatingLeft, rotatingRight, rotatingUp, rotatingDown)
     )
 }
 

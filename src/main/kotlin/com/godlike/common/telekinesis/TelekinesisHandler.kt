@@ -144,26 +144,28 @@ fun serverTelekinesisTick(telekinesisControls: TelekinesisControlsPacket, player
         var pointer = getPointer(player, telekinesisControls.playerLookDirection, target)
 
         target.addLiftForce()
-        if (telekinesisControls.rotating() && target.hoverPos == null) {
-            target.rotateTowardPointer(pointer, player.position().add(0.0, 1.5, 0.0))
+        val isRotating = telekinesisControls.rotatingLeft || telekinesisControls.rotatingRight || 
+                         telekinesisControls.rotatingUp || telekinesisControls.rotatingDown
+        if (isRotating && target.hoverPos == null) {
+            target.rotate(telekinesisControls.rotatingUp, telekinesisControls.rotatingDown, telekinesisControls.rotatingLeft, telekinesisControls.rotatingRight, player.position().add(0.0, 1.5, 0.0))
+        }
+
+        target.addRotationDrag()
+        if (target.hoverPos != null) {
+            target.moveToward(target.hoverPos!!)
         } else {
-            target.addRotationDrag()
-            if (target.hoverPos != null) {
-                target.moveToward(target.hoverPos!!)
-            } else {
-                // If we're moving a ship that's "stuck", try to unstick it by gradually snapping the pointer to an axis
-                if (target is ShipTkTarget) {
-                    target.updateStuckTicks(pointer)
-                    val snapDistance = target.stuckTicks / 2
-                    val snapTo = target.getAxisPointers(target.pos().distanceTo(pointer))
-                        .filter { it.distanceTo(pointer) < snapDistance }
-                        .minByOrNull { it.distanceTo(pointer) }
-                    if (snapTo != null) {
-                        pointer = snapTo
-                    }
+            // If we're moving a ship that's "stuck", try to unstick it by gradually snapping the pointer to an axis
+            if (target is ShipTkTarget) {
+                target.updateStuckTicks(pointer)
+                val snapDistance = target.stuckTicks / 2
+                val snapTo = target.getAxisPointers(target.pos().distanceTo(pointer))
+                    .filter { it.distanceTo(pointer) < snapDistance }
+                    .minByOrNull { it.distanceTo(pointer) }
+                if (snapTo != null) {
+                    pointer = snapTo
                 }
-                target.moveToward(pointer)
             }
+            target.moveToward(pointer)
         }
     }
 }

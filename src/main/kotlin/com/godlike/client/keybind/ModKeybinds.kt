@@ -36,11 +36,38 @@ object ModKeybinds {
         )
     )
 
-    val ROTATE_TK: KeyMapping = KeyBindingHelper.registerKeyBinding(
+    val ROTATE_TK_LEFT: KeyMapping = KeyBindingHelper.registerKeyBinding(
         KeyMapping(
-            "key.godlike.rotate_tk",
+            "key.godlike.rotate_tk_left",
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_R,
+            GLFW.GLFW_KEY_LEFT,
+            "category.godlike"
+        )
+    )
+
+    val ROTATE_TK_RIGHT: KeyMapping = KeyBindingHelper.registerKeyBinding(
+        KeyMapping(
+            "key.godlike.rotate_tk_right",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_RIGHT,
+            "category.godlike"
+        )
+    )
+
+    val ROTATE_TK_UP: KeyMapping = KeyBindingHelper.registerKeyBinding(
+        KeyMapping(
+            "key.godlike.rotate_tk_up",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_UP,
+            "category.godlike"
+        )
+    )
+
+    val ROTATE_TK_DOWN: KeyMapping = KeyBindingHelper.registerKeyBinding(
+        KeyMapping(
+            "key.godlike.rotate_tk_down",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_DOWN,
             "category.godlike"
         )
     )

@@ -77,6 +77,8 @@ abstract class TkTarget(
 
     abstract fun rotateTowardPointer(pointer: Vec3, playerEyePos: Vec3)
 
+    abstract fun rotate(up: Boolean, down: Boolean, left: Boolean, right: Boolean, playerEyePos: Vec3)
+
     abstract fun addRotationDrag()
 
     abstract fun place(level : ServerLevel)
