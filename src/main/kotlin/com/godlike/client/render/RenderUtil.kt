@@ -12,6 +12,7 @@ import com.godlike.common.components.telekinesis
 import com.godlike.common.telekinesis.EntityTkTarget
 import com.godlike.common.telekinesis.ShipTkTarget
 import com.godlike.common.telekinesis.getPointer
+import com.godlike.common.telekinesis.placement.transformVectorUsingPlacementDirection
 import com.godlike.common.util.toAABB
 import com.godlike.common.util.toVec3
 import com.godlike.common.util.toVec3i
@@ -147,7 +148,13 @@ fun doPlacementFxRenderTick(player: LocalPlayer, poseStack: PoseStack) {
     val camera = Minecraft.getInstance().gameRenderer.mainCamera
 
     fun getPosRelativeToPointer(pos: Vec3i): Vec3i {
-        val posToCenter = centerOfAABB.toVec3().subtract(pos.toVec3())
+        var posToCenter = centerOfAABB.toVec3().subtract(pos.toVec3())
+        posToCenter = transformVectorUsingPlacementDirection(
+            player.telekinesis().placementDirectionTop,
+            player.telekinesis().placementDirectionFront,
+            posToCenter
+        )
+
         return pointerPos.subtract(posToCenter).toVec3i()
     }
 

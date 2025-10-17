@@ -90,11 +90,18 @@ dependencies {
 	}
 
 	modImplementation("maven.modrinth:valkyrien-skies:${project.vs2_version}")
-
 	modImplementation(include("dev.emi:trinkets:${project.trinkets_version}"))
 	modImplementation("com.jamieswhiteshirt:reach-entity-attributes:${project.rea_version}")
 
 	modImplementation(include("maven.modrinth:coloredglowlib:${project.colored_glow_lib_version}+nocca"))
+
+	testImplementation 'io.kotest:kotest-assertions-core:5.7.2'
+	testImplementation 'io.kotest:kotest-property:5.7.2'
+	testImplementation 'io.kotest:kotest-runner-junit5:5.7.2'
+}
+
+test {
+	useJUnitPlatform()
 }
 
 configurations.configureEach {

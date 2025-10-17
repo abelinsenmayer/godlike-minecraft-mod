@@ -6,6 +6,10 @@ import com.godlike.client.keybind.ModKeybinds.PICK_TO_TK
 import com.godlike.client.keybind.ModKeybinds.PLACE_TK
 import com.godlike.client.keybind.ModKeybinds.POINTER_PULL
 import com.godlike.client.keybind.ModKeybinds.POINTER_PUSH
+import com.godlike.client.keybind.ModKeybinds.ROTATE_TK_DOWN
+import com.godlike.client.keybind.ModKeybinds.ROTATE_TK_LEFT
+import com.godlike.client.keybind.ModKeybinds.ROTATE_TK_RIGHT
+import com.godlike.client.keybind.ModKeybinds.ROTATE_TK_UP
 import com.godlike.client.keybind.ModKeybinds.SET_TK_HOVERING
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_PLACEMENT_MODE
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
@@ -22,7 +26,10 @@ import com.godlike.common.telekinesis.EntityTkTarget
 import com.godlike.common.telekinesis.LAUNCH_POINTER_DISTANCE
 import com.godlike.common.telekinesis.ShipTkTarget
 import com.godlike.common.telekinesis.getPointerAtDistance
+import com.godlike.common.telekinesis.placement.Direction2D
+import com.godlike.common.telekinesis.placement.rotateRelativeToFacing
 import net.minecraft.client.Minecraft
+import net.minecraft.core.Direction
 import net.minecraft.world.phys.Vec3
 
 const val POINTER_DELTA_INCREMENT = 0.5
@@ -35,7 +42,7 @@ fun sendTelekinesisTick() {
     val playerLookDirection = Minecraft.getInstance().cameraEntity!!.lookAngle
 
     var pointerDistanceDelta = 0.0
-    var mode = Minecraft.getInstance().player!!.getMode()
+    val mode = Minecraft.getInstance().player!!.getMode()
     if (mode == Mode.TELEKINESIS || mode == Mode.PLACEMENT) {
         // Only allow the player to change the pointer distance if they are in telekinesis mode;
         // we use these keybinds for other things in other modes.
@@ -59,29 +66,31 @@ fun sendTelekinesisTick() {
     var rotatingUp = false
     var rotatingDown = false
 
-    if (ModKeybinds.ROTATE_TK_LEFT.isDown) {
-        while (ModKeybinds.ROTATE_TK_LEFT.consumeClick()) {
-            // NOOP -- just make sure we aren't accumulating any clicks from holding down the key
+    if (mode == Mode.TELEKINESIS) {
+        if (ROTATE_TK_LEFT.isDown) {
+            while (ROTATE_TK_LEFT.consumeClick()) {
+                // NOOP -- just make sure we aren't accumulating any clicks from holding down the key
+            }
+            rotatingLeft = true
         }
-        rotatingLeft = true
-    }
-    if (ModKeybinds.ROTATE_TK_RIGHT.isDown) {
-        while (ModKeybinds.ROTATE_TK_RIGHT.consumeClick()) {
-            // NOOP -- just make sure we aren't accumulating any clicks from holding down the key
+        if (ROTATE_TK_RIGHT.isDown) {
+            while (ROTATE_TK_RIGHT.consumeClick()) {
+                // NOOP -- just make sure we aren't accumulating any clicks from holding down the key
+            }
+            rotatingRight = true
         }
-        rotatingRight = true
-    }
-    if (ModKeybinds.ROTATE_TK_UP.isDown) {
-        while (ModKeybinds.ROTATE_TK_UP.consumeClick()) {
-            // NOOP -- just make sure we aren't accumulating any clicks from holding down the key
+        if (ROTATE_TK_UP.isDown) {
+            while (ROTATE_TK_UP.consumeClick()) {
+                // NOOP -- just make sure we aren't accumulating any clicks from holding down the key
+            }
+            rotatingUp = true
         }
-        rotatingUp = true
-    }
-    if (ModKeybinds.ROTATE_TK_DOWN.isDown) {
-        while (ModKeybinds.ROTATE_TK_DOWN.consumeClick()) {
-            // NOOP -- just make sure we aren't accumulating any clicks from holding down the key
+        if (ROTATE_TK_DOWN.isDown) {
+            while (ROTATE_TK_DOWN.consumeClick()) {
+                // NOOP -- just make sure we aren't accumulating any clicks from holding down the key
+            }
+            rotatingDown = true
         }
-        rotatingDown = true
     }
 
     CHANNEL.clientHandle().send(
@@ -115,6 +124,8 @@ fun handleModInputEvents() {
         if (currentMode == Mode.TELEKINESIS && player.telekinesis().activeTkTarget is ShipTkTarget) {
             CHANNEL.clientHandle().send(PlacementPacket(true))
             CHANNEL.clientHandle().send(HoverTkPacket(Minecraft.getInstance().cameraEntity!!.lookAngle))
+            // Reset placement angles
+            CHANNEL.clientHandle().send(PlacementDirectionPacket(Direction.UP, Direction.SOUTH))
         } else if (currentMode == Mode.PLACEMENT) {
             CHANNEL.clientHandle().send(PlacementPacket(false))
         }
@@ -215,5 +226,31 @@ fun handleModInputEvents() {
     }
     while (player.telekinesis().activeTkTarget == null && player.getMode() != Mode.PLACEMENT && POINTER_PULL.consumeClick()) {
         player.selection().dfsDepth -= 1
+    }
+
+    if (player.getMode() == Mode.PLACEMENT) {
+        val lookingDirection = player.direction
+        val topDirection = player.telekinesis().placementDirectionTop
+        val frontDirection = player.telekinesis().placementDirectionFront
+
+        while (ROTATE_TK_UP.consumeClick()) {
+            val (newTopDirection, newFrontDirection) = rotateRelativeToFacing(topDirection, frontDirection, lookingDirection, Direction2D.UP)
+            CHANNEL.clientHandle().send(PlacementDirectionPacket(newTopDirection, newFrontDirection))
+        }
+
+        while (ROTATE_TK_DOWN.consumeClick()) {
+            val (newTopDirection, newFrontDirection) = rotateRelativeToFacing(topDirection, frontDirection, lookingDirection, Direction2D.DOWN)
+            CHANNEL.clientHandle().send(PlacementDirectionPacket(newTopDirection, newFrontDirection))
+        }
+
+        while (ROTATE_TK_LEFT.consumeClick()) {
+            val (newTopDirection, newFrontDirection) = rotateRelativeToFacing(topDirection, frontDirection, lookingDirection, Direction2D.LEFT)
+            CHANNEL.clientHandle().send(PlacementDirectionPacket(newTopDirection, newFrontDirection))
+        }
+
+        while (ROTATE_TK_RIGHT.consumeClick()) {
+            val (newTopDirection, newFrontDirection) = rotateRelativeToFacing(topDirection, frontDirection, lookingDirection, Direction2D.RIGHT)
+            CHANNEL.clientHandle().send(PlacementDirectionPacket(newTopDirection, newFrontDirection))
+        }
     }
 }

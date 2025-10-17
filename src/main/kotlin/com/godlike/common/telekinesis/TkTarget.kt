@@ -2,6 +2,7 @@ package com.godlike.common.telekinesis
 
 import com.godlike.common.Godlike
 import com.godlike.common.util.toAABB
+import net.minecraft.core.Direction
 import net.minecraft.core.Vec3i
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
@@ -83,7 +84,7 @@ abstract class TkTarget(
 
     abstract fun place(level : ServerLevel)
 
-    abstract fun placeAt(level: ServerLevel, pos: Vec3i)
+    abstract fun placeAt(level: ServerLevel, pos: Vec3i, topFacing: Direction, frontFacing: Direction)
 
     abstract fun launchToward(pos: Vec3)
 

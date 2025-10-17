@@ -72,7 +72,7 @@ fun placeActiveTarget(player: ServerPlayer) {
 fun placePlacementTargetAt(player: ServerPlayer, lookDirection: Vec3) {
     player.telekinesis().placementTarget?.let {
         val pos = getPointer(player, lookDirection, player.telekinesis().placementTarget!!).add(Vec3(0.0, 0.0, 1.0)).toVec3i()
-        it.placeAt(player.serverLevel(), pos)
+        it.placeAt(player.serverLevel(), pos, player.telekinesis().placementDirectionTop, player.telekinesis().placementDirectionFront)
         player.telekinesis().removeTarget(it)
         player.telekinesis().placementTarget = null
         player.setMode(Mode.TELEKINESIS)

@@ -1,17 +1,18 @@
 package com.godlike.common.util
 
 import com.godlike.common.Godlike.logger
+import com.godlike.common.telekinesis.placement.transformVectorUsingPlacementDirection
 import com.godlike.common.vs2.Vs2Util
 import com.godlike.common.vs2.Vs2Util.toJOML
 import com.godlike.common.vs2.Vs2Util.updateBlock
 import com.google.common.collect.Sets
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
 import net.minecraft.core.Vec3i
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.level.block.Rotation
 import net.minecraft.world.level.block.state.BlockState
-import net.minecraft.world.phys.Vec3
 import org.joml.AxisAngle4d
 import org.joml.Matrix4d
 import org.joml.Vector3d
@@ -19,19 +20,34 @@ import org.valkyrienskies.core.api.ships.ServerShip
 import org.valkyrienskies.core.impl.networking.simple.sendToClient
 import org.valkyrienskies.mod.common.networking.PacketRestartChunkUpdates
 import org.valkyrienskies.mod.common.networking.PacketStopChunkUpdates
-import java.util.function.Supplier
 import kotlin.math.*
 
-fun disassembleAt(ship: ServerShip, level: ServerLevel, centerPos: Vec3i) {
+fun disassembleAt(ship: ServerShip, level: ServerLevel, centerPos: Vec3i, topFacing: Direction, frontFacing: Direction) {
     val rotation: Rotation = Rotation.NONE
 
     val shipToWorld = ship.transform.run {
         Matrix4d()
-            .translate(centerPos.toVec3().toVector3d())
-//            .rotate(snapRotation(AxisAngle4d(shipToWorldRotation)))
+            .translate(-positionInShip.x(), -positionInShip.y(), -positionInShip.z())  // move the pos relative to the origin
+            .translate(centerPos.toVec3().toVector3d())  // move the pos relative to the local we're placing
             .scale(shipToWorldScaling)
-            .translate(-positionInShip.x(), -positionInShip.y(), -positionInShip.z())
     }
+
+//    fun transformToWorld(pos: Vector3d): Vector3d {
+//        val positionInShip = ship.transform.positionInShip
+//        val shipToWorldScaling = ship.transform.shipToWorldScaling
+//        val eventualPosition = Vec3(positionInShip.x(), positionInShip.y(), positionInShip.z())
+//            .add(-positionInShip.x(), -positionInShip.y(), -positionInShip.z())
+//            .add(centerPos.toVec3())
+//        val posRelativeToCenter = eventualPosition.subtract(centerPos.toVec3())
+//        val translatedRelativePos = transformVectorUsingPlacementDirection(topFacing, frontFacing, posRelativeToCenter)
+//        val matrix = Matrix4d()
+//            .translate(-positionInShip.x(), -positionInShip.y(), -positionInShip.z())  // move the pos relative to the origin
+//            .translate(centerPos.toVec3().toVector3d())  // move the pos relative to the local we're placing
+//            .translate(translatedRelativePos.toVector3d())  // Account for rotation
+//            .scale(shipToWorldScaling)
+//        return pos.mulDirection(matrix)
+//    }
+
     val alloc0 = Vector3d()
 
     val chunksToBeUpdated = mutableMapOf<ChunkPos, Pair<ChunkPos, ChunkPos>>()
@@ -73,8 +89,11 @@ fun disassembleAt(ship: ServerShip, level: ServerLevel, centerPos: Vec3i) {
                         val realZ = (chunkZ shl 4) + z
 
                         val inWorldPos = shipToWorld.transformPosition(alloc0.set(realX + 0.5, realY + 0.5, realZ + 0.5)).floor()
+                        val posToCenter = inWorldPos.toVec3().subtract(centerPos.toVec3())
+                        val rotatedPosToCenter = transformVectorUsingPlacementDirection(topFacing, frontFacing, posToCenter)
+                        val rotatedPos = centerPos.toVec3().add(rotatedPosToCenter)
 
-                        val inWorldBlockPos = BlockPos(inWorldPos.x.toInt(), inWorldPos.y.toInt(), inWorldPos.z.toInt())
+                        val inWorldBlockPos = BlockPos(rotatedPos.x.toInt(), rotatedPos.y.toInt(), rotatedPos.z.toInt())
                         val inShipPos = BlockPos(realX, realY, realZ)
 
                         toUpdate.add(Triple(inShipPos, inWorldBlockPos, state))

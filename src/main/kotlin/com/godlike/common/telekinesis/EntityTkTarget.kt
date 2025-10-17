@@ -5,6 +5,7 @@ import com.godlike.common.Godlike.logger
 import com.godlike.common.components.telekinesis
 import com.godlike.common.util.negate
 import com.godlike.common.util.toVector3d
+import net.minecraft.core.Direction
 import net.minecraft.core.Vec3i
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
@@ -96,7 +97,7 @@ class EntityTkTarget(
         // NOOP for entity
     }
 
-    override fun placeAt(level: ServerLevel, pos: Vec3i) {
+    override fun placeAt(level: ServerLevel, pos: Vec3i, topFacing: Direction, frontFacing: Direction) {
         // NOOP for entity
     }
 

@@ -1,12 +1,12 @@
 package com.godlike.common.components
 
-import com.godlike.common.Godlike
 import com.godlike.common.items.TkFocusTier
 import com.godlike.common.telekinesis.EntityTkTarget
 import com.godlike.common.telekinesis.ShipTkTarget
 import com.godlike.common.telekinesis.TkTarget
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent
 import net.minecraft.client.player.LocalPlayer
+import net.minecraft.core.Direction
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
 import net.minecraft.server.level.ServerPlayer
@@ -46,6 +46,16 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
             field = value
             sync()
         }
+    var placementDirectionTop: Direction = Direction.UP
+        set(value) {
+            field = value
+            sync()
+        }
+    var placementDirectionFront: Direction = Direction.SOUTH
+        set(value) {
+            field = value
+            sync()
+        }
     var tier: TkFocusTier = TkFocusTier.SIMPLE
         set(value) {
             field = value
@@ -79,6 +89,12 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
         } else {
             null
         }
+        if (tag.contains("placementDirectionTop")) {
+            placementDirectionTop = Direction.entries.first { it.name == tag.getString("placementDirectionTop") }
+        }
+        if (tag.contains("placementDirectionFront")) {
+            placementDirectionFront = Direction.entries.first { it.name == tag.getString("placementDirectionFront") }
+        }
         tier = tag.getString("tier").let {
             if (it == null || it.isEmpty()) {
                 return@let TkFocusTier.SIMPLE
@@ -97,6 +113,8 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
         tag.put(TK_TARGETS_KEY, listTag)
         activeTkTarget?.let { tag.put("activeTkTarget", it.toNbt()) }
         placementTarget?.let { tag.put("placementTarget", it.toNbt()) }
+        tag.putString("placementDirectionTop", placementDirectionTop.name)
+        tag.putString("placementDirectionFront", placementDirectionFront.name)
         tag.putString("tier", tier.name)
     }
 

@@ -87,5 +87,10 @@ object ModNetworking {
                 ctx.player.setMode(Mode.TELEKINESIS)
             }
         }
+
+        CHANNEL.registerServerbound(PlacementDirectionPacket::class.java) { packet, ctx ->
+            ctx.player.telekinesis().placementDirectionTop = packet.topDirection
+            ctx.player.telekinesis().placementDirectionFront = packet.frontDirection
+        }
     }
 }

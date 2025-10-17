@@ -6,6 +6,7 @@ import com.godlike.common.components.telekinesis
 import com.godlike.common.util.*
 import com.godlike.common.vs2.Vs2Util
 import net.minecraft.client.player.LocalPlayer
+import net.minecraft.core.Direction
 import net.minecraft.core.Vec3i
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
@@ -100,8 +101,8 @@ class ShipTkTarget(
         disassemble(ship, level)
     }
 
-    override fun placeAt(level: ServerLevel, pos: Vec3i) {
-        disassembleAt(ship, level, pos)
+    override fun placeAt(level: ServerLevel, pos: Vec3i, topFacing: Direction, frontFacing: Direction) {
+        disassembleAt(ship, level, pos, topFacing, frontFacing)
     }
 
     override fun launchToward(pos: Vec3) {
