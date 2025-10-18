@@ -97,8 +97,9 @@ class EntityTkTarget(
         // NOOP for entity
     }
 
-    override fun placeAt(level: ServerLevel, pos: Vec3i, topFacing: Direction, frontFacing: Direction) {
+    override fun placeAt(level: ServerLevel, pos: Vec3i, topFacing: Direction, frontFacing: Direction) : Boolean {
         // NOOP for entity
+        return false
     }
 
     override fun launchToward(pos: Vec3) {

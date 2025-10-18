@@ -1,7 +1,8 @@
 package com.godlike.common.util
 
+import com.godlike.common.Godlike
 import com.godlike.common.Godlike.logger
-import com.godlike.common.telekinesis.placement.transformVectorUsingPlacementDirection
+import com.godlike.common.telekinesis.placement.*
 import com.godlike.common.vs2.Vs2Util
 import com.godlike.common.vs2.Vs2Util.toJOML
 import com.godlike.common.vs2.Vs2Util.updateBlock
@@ -13,6 +14,7 @@ import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.level.block.Rotation
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.phys.Vec3
 import org.joml.AxisAngle4d
 import org.joml.Matrix4d
 import org.joml.Vector3d
@@ -22,99 +24,39 @@ import org.valkyrienskies.mod.common.networking.PacketRestartChunkUpdates
 import org.valkyrienskies.mod.common.networking.PacketStopChunkUpdates
 import kotlin.math.*
 
-fun disassembleAt(ship: ServerShip, level: ServerLevel, centerPos: Vec3i, topFacing: Direction, frontFacing: Direction) {
-    val rotation: Rotation = Rotation.NONE
+/**
+ * Disassembles the given ship at the given position.
+ * @return true if the ship was disassembled successfully, false otherwise
+ */
+fun disassembleAt(ship: ServerShip, level: ServerLevel, placeShipAt: Vec3i, topFacing: Direction, frontFacing: Direction): Boolean {
+    val shipAABB = ship.shipAABB ?: return false
+    val centerOfAABB = shipAABB.center(Vector3d())
 
-    val shipToWorld = ship.transform.run {
-        Matrix4d()
-            .translate(-positionInShip.x(), -positionInShip.y(), -positionInShip.z())  // move the pos relative to the origin
-            .translate(centerPos.toVec3().toVector3d())  // move the pos relative to the local we're placing
-            .scale(shipToWorldScaling)
+    // Get all blocks in the ship and their placement preview position
+    val shipPosToPlacementPos = getBlocksInShipAt(ship, level, false).map { (pos, _) ->
+        pos to getPosRelativeToPointer(
+            pos,
+            placeShipAt.toVec3(),
+            centerOfAABB.toVec3(),
+            topFacing,
+            frontFacing
+        )
     }
 
-//    fun transformToWorld(pos: Vector3d): Vector3d {
-//        val positionInShip = ship.transform.positionInShip
-//        val shipToWorldScaling = ship.transform.shipToWorldScaling
-//        val eventualPosition = Vec3(positionInShip.x(), positionInShip.y(), positionInShip.z())
-//            .add(-positionInShip.x(), -positionInShip.y(), -positionInShip.z())
-//            .add(centerPos.toVec3())
-//        val posRelativeToCenter = eventualPosition.subtract(centerPos.toVec3())
-//        val translatedRelativePos = transformVectorUsingPlacementDirection(topFacing, frontFacing, posRelativeToCenter)
-//        val matrix = Matrix4d()
-//            .translate(-positionInShip.x(), -positionInShip.y(), -positionInShip.z())  // move the pos relative to the origin
-//            .translate(centerPos.toVec3().toVector3d())  // move the pos relative to the local we're placing
-//            .translate(translatedRelativePos.toVector3d())  // Account for rotation
-//            .scale(shipToWorldScaling)
-//        return pos.mulDirection(matrix)
-//    }
-
-    val alloc0 = Vector3d()
-
-    val chunksToBeUpdated = mutableMapOf<ChunkPos, Pair<ChunkPos, ChunkPos>>()
-
-    ship.activeChunksSet.forEach { chunkX, chunkZ ->
-        chunksToBeUpdated[ChunkPos(chunkX, chunkZ)] =
-            Pair(ChunkPos(chunkX, chunkZ), ChunkPos(chunkX, chunkZ))
+    // Determine whether this is a valid spot to place the target
+    val tooFarFromShip = tooFarForPlacement(placeShipAt.toVec3(), ship.transform.positionInWorld.toVec3(), shipAABB.getCornerToCornerSize())
+    val isValid = shipPosToPlacementPos.all { (_, placementPos) ->
+        !level.getBlockState(BlockPos(placementPos)).isSolid
+    } && !tooFarFromShip
+    if (!isValid) {
+        return false
     }
 
-    val chunkPairs = chunksToBeUpdated.values.toList()
-    val chunkPoses = chunkPairs.flatMap { it.toList() }
-    val chunkPosesJOML = chunkPoses.map { toJOML(it) }
-
-    // Send a list of all the chunks that we plan on updating to players, so that they
-    // defer all updates until assembly is finished
-    level.players().forEach { player ->
-        PacketStopChunkUpdates(chunkPosesJOML).sendToClient(Vs2Util.playerWrapper(player))
+    // Relocate all blocks in the ship to their new positions
+    shipPosToPlacementPos.forEach { (shipPos, placementPos) ->
+        Vs2Util.relocateBlock(level, BlockPos(shipPos), BlockPos(placementPos), true, null, Rotation.NONE)
     }
-
-    val toUpdate = Sets.newHashSet<Triple<BlockPos, BlockPos, BlockState>>()
-
-    ship.activeChunksSet.forEach { chunkX, chunkZ ->
-        val chunk = level.getChunk(chunkX, chunkZ)
-        for (sectionIndex in 0 until chunk.sections.size) {
-            val section = chunk.sections[sectionIndex]
-
-            if (section == null || section.hasOnlyAir()) continue
-
-            val bottomY = sectionIndex shl 4
-
-            for (x in 0..15) {
-                for (y in 0..15) {
-                    for (z in 0..15) {
-                        val state = section.getBlockState(x, y, z)
-                        if (state.isAir) continue
-
-                        val realX = (chunkX shl 4) + x
-                        val realY = bottomY + y + level.minBuildHeight
-                        val realZ = (chunkZ shl 4) + z
-
-                        val inWorldPos = shipToWorld.transformPosition(alloc0.set(realX + 0.5, realY + 0.5, realZ + 0.5)).floor()
-                        val posToCenter = inWorldPos.toVec3().subtract(centerPos.toVec3())
-                        val rotatedPosToCenter = transformVectorUsingPlacementDirection(topFacing, frontFacing, posToCenter)
-                        val rotatedPos = centerPos.toVec3().add(rotatedPosToCenter)
-
-                        val inWorldBlockPos = BlockPos(rotatedPos.x.toInt(), rotatedPos.y.toInt(), rotatedPos.z.toInt())
-                        val inShipPos = BlockPos(realX, realY, realZ)
-
-                        toUpdate.add(Triple(inShipPos, inWorldBlockPos, state))
-                        Vs2Util.relocateBlock(level, inShipPos, inWorldBlockPos, false, null, rotation)
-                    }
-                }
-            }
-        }
-    }
-    // We update the blocks after they're set to prevent blocks from breaking
-    for (triple in toUpdate) {
-        updateBlock(level, triple.first, triple.second, triple.third)
-    }
-
-    Vs2Util.executeIf(
-        level.server,
-        { chunkPoses.all { Vs2Util.isTickingChunk(level, it) } },
-    ) {
-        level.players()
-            .forEach { player -> PacketRestartChunkUpdates(chunkPosesJOML).sendToClient(Vs2Util.playerWrapper(player)) }
-    }
+    return true
 }
 
 // Adapted from Eureka disassembly code

@@ -1,7 +1,10 @@
 package com.godlike.common.telekinesis
 
+import com.godlike.common.Godlike
 import com.godlike.common.components.*
 import com.godlike.common.networking.TelekinesisControlsPacket
+import com.godlike.common.telekinesis.placement.getBlocksInShipAt
+import com.godlike.common.telekinesis.placement.getPosRelativeToPointer
 import com.godlike.common.util.*
 import com.godlike.common.vs2.Vs2Util
 import net.minecraft.core.BlockPos
@@ -9,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.phys.Vec3
+import org.joml.Vector3d
 import org.valkyrienskies.core.api.ships.ServerShip
 
 const val LAUNCH_POINTER_DISTANCE = 100.0
@@ -71,11 +75,18 @@ fun placeActiveTarget(player: ServerPlayer) {
 
 fun placePlacementTargetAt(player: ServerPlayer, lookDirection: Vec3) {
     player.telekinesis().placementTarget?.let {
-        val pos = getPointer(player, lookDirection, player.telekinesis().placementTarget!!).add(Vec3(0.0, 0.0, 1.0)).toVec3i()
-        it.placeAt(player.serverLevel(), pos, player.telekinesis().placementDirectionTop, player.telekinesis().placementDirectionFront)
-        player.telekinesis().removeTarget(it)
-        player.telekinesis().placementTarget = null
-        player.setMode(Mode.TELEKINESIS)
+        val pointerPos = getAbsolutePointer(player, lookDirection).add(Vec3(1.0, 1.0, 1.0)).toVec3i()
+        if (it.placeAt(
+                player.serverLevel(),
+                pointerPos,
+                player.telekinesis().placementDirectionTop,
+                player.telekinesis().placementDirectionFront
+            )
+        ) {
+            player.telekinesis().removeTarget(it)
+            player.telekinesis().placementTarget = null
+            player.setMode(Mode.TELEKINESIS)
+        }
     }
 }
 
@@ -110,10 +121,16 @@ fun launchTk(player: ServerPlayer, targetedPosition: Vec3) {
 fun getPointer(player: ServerPlayer, lookDirection: Vec3, target: TkTarget) : Vec3 {
     // Find where the player is looking at on the sphere defined by the target's distance from them
     val eyePosition = player.position().add(0.0, 1.5, 0.0)
-    val pointerDistance = ModEntityComponents.TELEKINESIS_DATA.get(player).pointerDistance
+    val pointerDistance = player.telekinesis().pointerDistance
     val pointer = findPointOnSphereAtRadius(eyePosition, pointerDistance, lookDirection)
         .subtract(target.pos().subtract(eyePosition).normalize().scale(0.03))
     return pointer
+}
+
+fun getAbsolutePointer(player: ServerPlayer, lookDirection: Vec3): Vec3 {
+    val eyePosition = player.position().add(0.0, 1.5, 0.0)
+    val pointerDistance = player.telekinesis().pointerDistance
+    return eyePosition.add(lookDirection.x * pointerDistance, lookDirection.y * pointerDistance, lookDirection.z * pointerDistance)
 }
 
 fun getPointerAtDistance(player: Player, lookDirection: Vec3, distance: Double) : Vec3 {

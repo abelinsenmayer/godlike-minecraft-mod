@@ -84,7 +84,7 @@ abstract class TkTarget(
 
     abstract fun place(level : ServerLevel)
 
-    abstract fun placeAt(level: ServerLevel, pos: Vec3i, topFacing: Direction, frontFacing: Direction)
+    abstract fun placeAt(level: ServerLevel, pos: Vec3i, topFacing: Direction, frontFacing: Direction): Boolean
 
     abstract fun launchToward(pos: Vec3)
 

@@ -101,8 +101,8 @@ class ShipTkTarget(
         disassemble(ship, level)
     }
 
-    override fun placeAt(level: ServerLevel, pos: Vec3i, topFacing: Direction, frontFacing: Direction) {
-        disassembleAt(ship, level, pos, topFacing, frontFacing)
+    override fun placeAt(level: ServerLevel, pos: Vec3i, topFacing: Direction, frontFacing: Direction): Boolean {
+        return disassembleAt(ship, level, pos, topFacing, frontFacing)
     }
 
     override fun launchToward(pos: Vec3) {

@@ -12,7 +12,7 @@ import com.godlike.common.components.telekinesis
 import com.godlike.common.telekinesis.EntityTkTarget
 import com.godlike.common.telekinesis.ShipTkTarget
 import com.godlike.common.telekinesis.getPointer
-import com.godlike.common.telekinesis.placement.transformVectorUsingPlacementDirection
+import com.godlike.common.telekinesis.placement.*
 import com.godlike.common.util.toAABB
 import com.godlike.common.util.toVec3
 import com.godlike.common.util.toVec3i
@@ -48,6 +48,7 @@ import team.lodestar.lodestone.systems.rendering.rendeertype.RenderTypeProvider
 import team.lodestar.lodestone.systems.rendering.rendeertype.RenderTypeToken
 import java.awt.Color
 import kotlin.math.sin
+import kotlin.random.Random
 
 val HIGHLIGHT_CUBE_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation(MOD_ID, "textures/render/highlight_cube.png"))
 val CRESCENT_TEXTURE: RenderTypeToken = RenderTypeToken.createToken(ResourceLocation(MOD_ID, "textures/render/crescent.png"))
@@ -143,57 +144,23 @@ fun doPlacementFxRenderTick(player: LocalPlayer, poseStack: PoseStack) {
     }
 
     val pointerPos = player.getPointer().toVec3i().toVec3().add(Vec3(1.0, 1.0, 1.0))  // Round pointer to the closest block
+    if (Random.nextFloat() > 0.9) {
+        Godlike.logger.info("client pointer: $pointerPos")
+    }
     val shipAABB = tkShip.shipAABB ?: return
     val centerOfAABB = shipAABB.center(Vector3d())
     val camera = Minecraft.getInstance().gameRenderer.mainCamera
 
-    fun getPosRelativeToPointer(pos: Vec3i): Vec3i {
-        var posToCenter = centerOfAABB.toVec3().subtract(pos.toVec3())
-        posToCenter = transformVectorUsingPlacementDirection(
-            player.telekinesis().placementDirectionTop,
-            player.telekinesis().placementDirectionFront,
-            posToCenter
-        )
-
-        return pointerPos.subtract(posToCenter).toVec3i()
-    }
-
-    // Get all blocks in the ship and their positions
-    val shipBlocks = HashMap<Vec3i, BlockState>()
-    for (x in shipAABB.minX()..shipAABB.maxX()) {
-        for (y in shipAABB.minY()..shipAABB.maxY()) {
-            for (z in shipAABB.minZ()..shipAABB.maxZ()) {
-                val blockPos = BlockPos(x, y, z)
-                val blockState = player.level().getBlockState(blockPos)
-
-                fun isSurroundedByNotAir(pos: Vec3i): Boolean {
-                    for (dx in -1..1) {
-                        for (dy in -1..1) {
-                            for (dz in -1..1) {
-                                if (dx == 0 && dy == 0 && dz == 0) {
-                                    continue
-                                }
-                                val neighborPos = pos.subtract(Vec3i(-dx, -dy, -dz))
-                                val neighborState = player.level().getBlockState(BlockPos(neighborPos))
-                                if (neighborState.isAir) {
-                                    return false
-                                }
-                            }
-                        }
-                    }
-                    return true
-                }
-
-                if (!blockState.isAir && !isSurroundedByNotAir(Vec3i(x, y, z)))
-                    shipBlocks[getPosRelativeToPointer(blockPos.toVec3().toVec3i())] = blockState
-            }
-        }
-    }
+    // Get all blocks in the ship and their placement preview position
+    val shipBlocks: HashMap<Vec3i, BlockState> = getBlocksInShipAt(tkShip, player.level(), true)
+        .map { (pos, state) -> getPosRelativeToPointer(pos, pointerPos, centerOfAABB.toVec3(), player) to state }
+        .toMap(HashMap())
 
     // Determine whether this is a valid spot to place the target
+    val tooFarFromShip = tooFarForPlacement(pointerPos, tkShip.transform.positionInWorld.toVec3(), shipAABB.getCornerToCornerSize())
     val isValid = shipBlocks.all { (pos, state) ->
         !player.level().getBlockState(BlockPos(pos)).isSolid
-    }
+    } && !tooFarFromShip
 
     val previewSizeRadius: Int = shipAABB.maxX() - shipAABB.minX()
 
