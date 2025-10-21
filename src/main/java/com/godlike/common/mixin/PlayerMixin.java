@@ -1,5 +1,6 @@
 package com.godlike.common.mixin;
 
+import com.godlike.common.telekinesis.TelekinesisHandlerKt;
 import com.godlike.common.telekinesis.TkUtilKt;
 import io.github.fabricators_of_create.porting_lib.attributes.extensions.PlayerAttributesExtensions;
 import io.github.fabricators_of_create.porting_lib.entity.extensions.PlayerExtension;
@@ -12,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -32,5 +34,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerAttribut
         }
 
         TkUtilKt.updateTkTierByInventory((ServerPlayer)(Object)this);
+        TelekinesisHandlerKt.handleTkMovementInputs((ServerPlayer)(Object)this);
     }
 }

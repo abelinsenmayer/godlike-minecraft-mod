@@ -32,5 +32,8 @@ object Godlike : ModInitializer {
 
 		// Register events
 		ModEvents
+
+		// Start server tick handler
+		ServerTickHandler.start()
 	}
 }

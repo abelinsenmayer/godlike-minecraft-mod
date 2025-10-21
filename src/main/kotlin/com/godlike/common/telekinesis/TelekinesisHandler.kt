@@ -1,18 +1,20 @@
 package com.godlike.common.telekinesis
 
-import com.godlike.common.Godlike
 import com.godlike.common.components.*
 import com.godlike.common.networking.TelekinesisControlsPacket
-import com.godlike.common.telekinesis.placement.getBlocksInShipAt
-import com.godlike.common.telekinesis.placement.getPosRelativeToPointer
 import com.godlike.common.util.*
 import com.godlike.common.vs2.Vs2Util
 import net.minecraft.core.BlockPos
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.level.ClipContext
+import net.minecraft.world.level.Level
+import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec3
-import org.joml.Vector3d
 import org.valkyrienskies.core.api.ships.ServerShip
 
 const val LAUNCH_POINTER_DISTANCE = 100.0
@@ -193,4 +195,20 @@ fun ServerPlayer.clearNonexistentTargets() {
             this.telekinesis().removeTarget(target)
         }
     }
+}
+
+fun ServerPlayer.handleTkMovementInputs() {
+    val powers = this.telekinesis().tier.grantedPowers
+    if (this.isCrouching && powers.contains(com.godlike.common.items.TkPower.SLOW_FALL)) {
+        this.addEffect(MobEffectInstance(MobEffects.SLOW_FALLING, 5, 0, false, false, false))
+    }
+
+    if (this.telekinesis().isLevitating) {
+        this.addEffect(MobEffectInstance(MobEffects.LEVITATION, 5, 2, false, false, false))
+    }
+}
+
+fun ServerPlayer.addVelocity(v: Vec3) {
+    this.push(v.x, v.y, v.z)
+    this.hurtMarked = true
 }

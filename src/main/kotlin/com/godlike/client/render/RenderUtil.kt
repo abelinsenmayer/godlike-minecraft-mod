@@ -144,9 +144,6 @@ fun doPlacementFxRenderTick(player: LocalPlayer, poseStack: PoseStack) {
     }
 
     val pointerPos = player.getPointer().toVec3i().toVec3().add(Vec3(1.0, 1.0, 1.0))  // Round pointer to the closest block
-    if (Random.nextFloat() > 0.9) {
-        Godlike.logger.info("client pointer: $pointerPos")
-    }
     val shipAABB = tkShip.shipAABB ?: return
     val centerOfAABB = shipAABB.center(Vector3d())
     val camera = Minecraft.getInstance().gameRenderer.mainCamera

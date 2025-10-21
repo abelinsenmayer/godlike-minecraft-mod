@@ -1,7 +1,8 @@
 package com.godlike.client
 
 import com.godlike.client.keybind.handleModInputEvents
-import com.godlike.client.keybind.sendTelekinesisTick
+import com.godlike.client.keybind.tickLevitationStateUpdates
+import com.godlike.client.keybind.handleTkControlInputs
 import com.godlike.client.render.doPlacementFxRenderTick
 import com.godlike.client.render.highlightSelectedArea
 import com.godlike.client.render.doTkFxRenderTick
@@ -9,6 +10,7 @@ import com.godlike.client.util.selectRaycastTarget
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
 import com.godlike.common.components.telekinesis
+import com.godlike.common.items.TkFocusTier
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.Minecraft
@@ -53,7 +55,11 @@ object ClientTickHandler {
         }
 
         if (player.telekinesis().getTkTargets().isNotEmpty()) {
-            sendTelekinesisTick()
+            handleTkControlInputs()
+        }
+
+        if (player.telekinesis().tier != TkFocusTier.NONE) {
+            tickLevitationStateUpdates()
         }
     }
 }

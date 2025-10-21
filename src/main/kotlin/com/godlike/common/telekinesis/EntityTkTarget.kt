@@ -9,6 +9,7 @@ import net.minecraft.core.Direction
 import net.minecraft.core.Vec3i
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
@@ -42,7 +43,11 @@ class EntityTkTarget(
     }
 
     private fun addForce(force: Vec3) {
-        entity.push(force.x, force.y, force.z)
+        if (entity is ServerPlayer) {
+            (entity as ServerPlayer).addVelocity(force)
+        } else {
+            entity.push(force.x, force.y, force.z)
+        }
     }
 
     override fun moveToward(pos: Vec3) {

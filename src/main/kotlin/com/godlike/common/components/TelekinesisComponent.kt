@@ -1,5 +1,6 @@
 package com.godlike.common.components
 
+import com.godlike.common.Godlike
 import com.godlike.common.items.TkFocusTier
 import com.godlike.common.telekinesis.EntityTkTarget
 import com.godlike.common.telekinesis.ShipTkTarget
@@ -61,6 +62,11 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
             field = value
             sync()
         }
+    var isLevitating : Boolean = false
+        set(value) {
+            field = value
+            sync()
+        }
 
     override fun shouldSyncWith(player: ServerPlayer?): Boolean {
         // we only want to sync this data with the player that owns it
@@ -101,6 +107,9 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
             }
             TkFocusTier.valueOf(it)
         }
+        if (tag.contains("isLevitating")) {
+            isLevitating = tag.getBoolean("isLevitating")
+        }
         sync()
     }
 
@@ -116,12 +125,11 @@ class TelekinesisComponent(private val player: Player) : AutoSyncedComponent {
         tag.putString("placementDirectionTop", placementDirectionTop.name)
         tag.putString("placementDirectionFront", placementDirectionFront.name)
         tag.putString("tier", tier.name)
+        tag.putBoolean("isLevitating", isLevitating)
     }
 
     private fun sync() {
-        if (player is ServerPlayer) {
-            ModEntityComponents.TELEKINESIS_DATA.sync(player)
-        }
+        ModEntityComponents.TELEKINESIS_DATA.sync(player)
     }
 
     fun getTkTargets(): List<TkTarget> {

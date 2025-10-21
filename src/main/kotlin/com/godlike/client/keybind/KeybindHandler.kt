@@ -14,31 +14,29 @@ import com.godlike.client.keybind.ModKeybinds.SET_TK_HOVERING
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_PLACEMENT_MODE
 import com.godlike.client.keybind.ModKeybinds.TOGGLE_TK_MODE
 import com.godlike.client.util.*
-import com.godlike.common.Godlike
 import com.godlike.common.components.Mode
 import com.godlike.common.components.getMode
 import com.godlike.common.components.selection
 import com.godlike.common.components.telekinesis
 import com.godlike.common.items.TkFocusTier
+import com.godlike.common.items.TkPower
 import com.godlike.common.networking.*
 import com.godlike.common.networking.ModNetworking.CHANNEL
-import com.godlike.common.telekinesis.EntityTkTarget
-import com.godlike.common.telekinesis.LAUNCH_POINTER_DISTANCE
-import com.godlike.common.telekinesis.ShipTkTarget
-import com.godlike.common.telekinesis.getPointerAtDistance
+import com.godlike.common.telekinesis.*
 import com.godlike.common.telekinesis.placement.Direction2D
 import com.godlike.common.telekinesis.placement.rotateRelativeToFacing
 import net.minecraft.client.Minecraft
+import net.minecraft.client.player.LocalPlayer
 import net.minecraft.core.Direction
 import net.minecraft.world.phys.Vec3
 
 const val POINTER_DELTA_INCREMENT = 0.5
 
 /**
- * Called every client tick to handle keybinds related to telekinesis.
+ * Called every client tick to handle inputs related to controlling the player's active TK target
  * Constructs a [TelekinesisControlsPacket] based on key inputs and send it to the server.
  */
-fun sendTelekinesisTick() {
+fun handleTkControlInputs() {
     val playerLookDirection = Minecraft.getInstance().cameraEntity!!.lookAngle
 
     var pointerDistanceDelta = 0.0
@@ -99,6 +97,30 @@ fun sendTelekinesisTick() {
 }
 
 /**
+ * Updates the player's levitation state based on their inputs
+ */
+fun tickLevitationStateUpdates() {
+    val client = Minecraft.getInstance()
+    val player = client.player!!
+
+    var jumpedMidAir = false
+    while (Minecraft.getInstance().options.keyJump.consumeClick()) {
+        jumpedMidAir = !player.onGround() && !player.abilities.mayfly
+    }
+
+    val isHoldingJumpKey = Minecraft.getInstance().options.keyJump.isDown
+    val shouldLevitate = isHoldingJumpKey && player.telekinesis().tier.grantedPowers.contains(TkPower.LEVITATION)
+
+    // Update levitation. Start if they've jumped midair, or stop it if they let go of the jump key
+    val levitateChanged = (!shouldLevitate && player.telekinesis().isLevitating) || (jumpedMidAir && !player.telekinesis().isLevitating)
+
+    // Only send a packet if the state of some power has changed
+    if (levitateChanged) {
+        CHANNEL.clientHandle().send(LevitatingStatusPacket(shouldLevitate))
+    }
+}
+
+/**
  * Called at the top of the client tick to handle input events. This means that it is called before any other
  * keybinds are processed.
  */
@@ -106,6 +128,7 @@ fun handleModInputEvents() {
     val client = Minecraft.getInstance()
     val player = client.player!!
 
+    // Toggling TK mode
     while (TOGGLE_TK_MODE.consumeClick() && player.telekinesis().tier != TkFocusTier.NONE && !player.selection().clientChargingLaunch) {
         val currentMode = player.getMode()
         if (currentMode == Mode.TELEKINESIS) {
@@ -119,6 +142,7 @@ fun handleModInputEvents() {
         }
     }
 
+    // Toggling placement mode
     while (TOGGLE_PLACEMENT_MODE.consumeClick() && (player.getMode() == Mode.TELEKINESIS || player.getMode() == Mode.PLACEMENT) && !player.selection().clientChargingLaunch) {
         val currentMode = player.getMode()
         if (currentMode == Mode.TELEKINESIS && player.telekinesis().activeTkTarget is ShipTkTarget) {
@@ -131,6 +155,7 @@ fun handleModInputEvents() {
         }
     }
 
+    // Pick to TK
     while (PICK_TO_TK.consumeClick()) {
         if (player.getMode() == Mode.TELEKINESIS && !player.selection().clientChargingLaunch) {
             // If we are carrying something, drop it. Otherwise, pick up the block/entity/ship
@@ -169,6 +194,7 @@ fun handleModInputEvents() {
         }
     }
 
+    // Change selection shape
     while (CHANGE_DFS_DISTANCE_TYPE.consumeClick() && !player.selection().clientChargingLaunch) {
         if (player.getMode() == Mode.TELEKINESIS) {
             val newType = when(player.selection().dfsDistanceType) {
@@ -179,12 +205,14 @@ fun handleModInputEvents() {
         }
     }
 
+    // Hover TK
     while (SET_TK_HOVERING.consumeClick() && !player.selection().clientChargingLaunch) {
         if (player.getMode() == Mode.TELEKINESIS) {
             CHANNEL.clientHandle().send(HoverTkPacket(Minecraft.getInstance().cameraEntity!!.lookAngle))
         }
     }
 
+    // Place TK
     while (PLACE_TK.consumeClick() && !player.selection().clientChargingLaunch) {
         if (player.getMode() == Mode.TELEKINESIS || player.getMode() == Mode.PLACEMENT) {
             if (player.getMode() == Mode.PLACEMENT) {
@@ -196,6 +224,7 @@ fun handleModInputEvents() {
         }
     }
 
+    // Launch TK
     if (LAUNCH_TK.isDown && !player.selection().clientChargingLaunch) {
         CHANNEL.clientHandle().send(SetChargingLaunchPacket(true))
         player.selection().clientChargingLaunch = true
@@ -221,6 +250,7 @@ fun handleModInputEvents() {
         player.selection().clientChargingLaunch = false
     }
 
+    // DFS depth control for selection
     while (player.telekinesis().activeTkTarget == null && player.getMode() != Mode.PLACEMENT && POINTER_PUSH.consumeClick()) {
         player.selection().dfsDepth += 1
     }
@@ -228,6 +258,7 @@ fun handleModInputEvents() {
         player.selection().dfsDepth -= 1
     }
 
+    // Rotate placement preview
     if (player.getMode() == Mode.PLACEMENT) {
         val lookingDirection = player.direction
         val topDirection = player.telekinesis().placementDirectionTop

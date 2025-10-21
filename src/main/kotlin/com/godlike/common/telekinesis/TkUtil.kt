@@ -6,6 +6,7 @@ import com.godlike.common.components.setMode
 import com.godlike.common.components.telekinesis
 import com.godlike.common.items.KineticCoreItem
 import com.godlike.common.items.TkFocusTier
+import com.godlike.common.items.TkPower
 import com.godlike.common.items.TkStaffItem
 import com.godlike.common.networking.ModNetworking
 import com.godlike.common.networking.ResetDfsDepthPacket
@@ -36,6 +37,13 @@ fun Player.updateTkTierByInventory() {
             // Apply item's constraints on player's TK abilities
             this.telekinesis().tier = tier
             ModNetworking.CHANNEL.serverHandle(this).send(ResetDfsDepthPacket())
+
+            // Apply the player's TK movement abilities
+            this.abilities.mayfly = tier.grantedPowers.contains(TkPower.FLIGHT) || this.isCreative
+            if (!this.abilities.mayfly) {
+                this.abilities.flying = false
+            }
+            this.onUpdateAbilities()
         }
     }
 
@@ -54,7 +62,7 @@ fun Player.updateTkTierByInventory() {
         if (this.getMode() == Mode.TELEKINESIS) {
             this.setMode(Mode.NONE)
         }
-        this.telekinesis().tier = TkFocusTier.NONE
+        setTierIfNecessary(TkFocusTier.NONE)
     }
 }
 

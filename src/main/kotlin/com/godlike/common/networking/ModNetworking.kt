@@ -92,5 +92,13 @@ object ModNetworking {
             ctx.player.telekinesis().placementDirectionTop = packet.topDirection
             ctx.player.telekinesis().placementDirectionFront = packet.frontDirection
         }
+
+        CHANNEL.registerServerbound(LevitatingStatusPacket::class.java) { packet, ctx ->
+            ctx.player.telekinesis().isLevitating = packet.levitating
+        }
+
+        CHANNEL.registerServerbound(LevitationStartPacket::class.java) { packet, ctx ->
+            ctx.player.telekinesis().isLevitating = true
+        }
     }
 }
