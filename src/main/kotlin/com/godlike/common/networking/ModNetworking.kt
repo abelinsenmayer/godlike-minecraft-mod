@@ -100,5 +100,15 @@ object ModNetworking {
         CHANNEL.registerServerbound(LevitationStartPacket::class.java) { packet, ctx ->
             ctx.player.telekinesis().isLevitating = true
         }
+
+        CHANNEL.registerServerbound(ElytraBoostPacket::class.java) { packet, ctx ->
+            ctx.player.handleElytraBoost()
+        }
+
+        CHANNEL.registerServerbound(StopFallFlyingPacket::class.java) { packet, ctx ->
+            ctx.player.stopFallFlying()
+            ctx.player.abilities.flying = true
+            ctx.player.onUpdateAbilities()
+        }
     }
 }

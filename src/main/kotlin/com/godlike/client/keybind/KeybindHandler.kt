@@ -155,6 +155,20 @@ fun handleModInputEvents() {
         }
     }
 
+    // Boost into elytra flight
+    while (Minecraft.getInstance().options.keySprint.consumeClick()) {
+        if ((player.abilities.flying || player.isFallFlying) && player.telekinesis().tier.grantedPowers.contains(TkPower.ELYTRA_BOOST)) {
+            CHANNEL.clientHandle().send(ElytraBoostPacket())
+        }
+    }
+
+    // Stop fall-flying on crouch
+    while (Minecraft.getInstance().options.keyShift.consumeClick()) {
+        if (player.isFallFlying && player.abilities.mayfly) {
+            CHANNEL.clientHandle().send(StopFallFlyingPacket())
+        }
+    }
+
     // Pick to TK
     while (PICK_TO_TK.consumeClick()) {
         if (player.getMode() == Mode.TELEKINESIS && !player.selection().clientChargingLaunch) {

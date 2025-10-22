@@ -1,5 +1,6 @@
 package com.godlike.common.telekinesis
 
+import com.godlike.common.Godlike
 import com.godlike.common.components.*
 import com.godlike.common.networking.TelekinesisControlsPacket
 import com.godlike.common.util.*
@@ -10,10 +11,6 @@ import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.level.ClipContext
-import net.minecraft.world.level.Level
-import net.minecraft.world.phys.BlockHitResult
-import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec3
 import org.valkyrienskies.core.api.ships.ServerShip
 
@@ -199,13 +196,25 @@ fun ServerPlayer.clearNonexistentTargets() {
 
 fun ServerPlayer.handleTkMovementInputs() {
     val powers = this.telekinesis().tier.grantedPowers
+
+    // Slow falling
     if (this.isCrouching && powers.contains(com.godlike.common.items.TkPower.SLOW_FALL)) {
         this.addEffect(MobEffectInstance(MobEffects.SLOW_FALLING, 5, 0, false, false, false))
     }
 
+    // Levitation
     if (this.telekinesis().isLevitating) {
         this.addEffect(MobEffectInstance(MobEffects.LEVITATION, 5, 2, false, false, false))
     }
+}
+
+fun ServerPlayer.handleElytraBoost() {
+    if (this.abilities.flying) {
+        this.startFallFlying()
+        this.abilities.flying = false
+        this.onUpdateAbilities()
+    }
+    this.addVelocity(this.lookAngle.normalize().scale(5.0))
 }
 
 fun ServerPlayer.addVelocity(v: Vec3) {
