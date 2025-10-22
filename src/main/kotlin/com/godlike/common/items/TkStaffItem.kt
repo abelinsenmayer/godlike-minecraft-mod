@@ -41,5 +41,20 @@ class TkStaffItem (
         tooltipComponents.add(Component.literal("Max radius: ${tier.selectionRadius} blocks").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY))
         tooltipComponents.add(Component.literal("Range: ${tier.range.toInt()} blocks").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY))
         tooltipComponents.add(Component.literal("Target max health: ${tier.maxHealth}").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY))
+        if (tier.grantedPowers.isNotEmpty()) {
+            tooltipComponents.add(Component.literal("Additional abilities:"))
+            if (tier.grantedPowers.contains(TkPower.SLOW_FALL)) {
+                tooltipComponents.add(Component.literal("Slow fall [crouch while airborne]").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY))
+            }
+            if (tier.grantedPowers.contains(TkPower.LEVITATION)) {
+                tooltipComponents.add(Component.literal("Levitation [double jump and hold]").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY))
+            }
+            if (tier.grantedPowers.contains(TkPower.FLIGHT)) {
+                tooltipComponents.add(Component.literal("Flight [double jump]").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY))
+            }
+            if (tier.grantedPowers.contains(TkPower.ELYTRA_BOOST)) {
+                tooltipComponents.add(Component.literal("Flight boost [tap sprint while flying]").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY))
+            }
+        }
     }
 }

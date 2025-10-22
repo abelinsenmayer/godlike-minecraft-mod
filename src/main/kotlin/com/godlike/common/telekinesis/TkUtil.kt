@@ -15,6 +15,15 @@ import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.player.Player
 import kotlin.jvm.optionals.getOrNull
 
+fun Player.applyAbilitiesForTkTier() {
+    val tier = this.telekinesis().tier
+    this.abilities.mayfly = tier.grantedPowers.contains(TkPower.FLIGHT) || this.isCreative
+    if (!this.abilities.mayfly) {
+        this.abilities.flying = false
+    }
+    this.onUpdateAbilities()
+}
+
 /**
  * Called every tick to update the player's TK tier based on their equipped items.
  */
@@ -39,11 +48,7 @@ fun Player.updateTkTierByInventory() {
             ModNetworking.CHANNEL.serverHandle(this).send(ResetDfsDepthPacket())
 
             // Apply the player's TK movement abilities
-            this.abilities.mayfly = tier.grantedPowers.contains(TkPower.FLIGHT) || this.isCreative
-            if (!this.abilities.mayfly) {
-                this.abilities.flying = false
-            }
-            this.onUpdateAbilities()
+            this.applyAbilitiesForTkTier()
         }
     }
 
