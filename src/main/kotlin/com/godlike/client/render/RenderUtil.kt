@@ -207,6 +207,7 @@ fun renderQuadFacingVector(
     color: Color = Color(1.0f, 1.0f, 1.0f, 1.0f),
     doubleSided: Boolean = false,
     rotationDegrees: Float = 0f,
+    uv: Pair<Pair<Float, Float>, Pair<Float, Float>>? = null,
 ) {
     val forward = facing.normalize().toVector3d()
     val right = Vector3d(Minecraft.getInstance().gameRenderer.mainCamera.upVector).cross(forward).normalize()
@@ -236,20 +237,21 @@ fun renderQuadFacingVector(
         poseStack.mulPose(Axis.ZP.rotationDegrees(rotationDegrees))
     }
 
-    VFXBuilders.createWorld()
+    val vfxBuilder = VFXBuilders.createWorld()
         .setColor(color)
         .setAlpha(color.alpha * 255f)
         .setRenderType(LodestoneRenderTypeRegistry.TRANSPARENT_TEXTURE.applyAndCache(texture))
-        .renderQuad(poseStack, width, height)
+
+    if (uv != null) {
+        vfxBuilder.setUV(uv.first.first, uv.first.second, uv.second.first, uv.second.second)
+    }
+
+    vfxBuilder.renderQuad(poseStack, width, height)
 
     if (doubleSided) {
         poseStack.pushPose()
         poseStack.mulPose(Axis.YP.rotationDegrees(180f)) // Flip the quad to face the opposite direction
-        VFXBuilders.createWorld()
-            .setColor(color)
-            .setAlpha(color.alpha * 255f)
-            .setRenderType(LodestoneRenderTypeRegistry.TRANSPARENT_TEXTURE.applyAndCache(texture))
-            .renderQuad(poseStack, width, height)
+        vfxBuilder.renderQuad(poseStack, width, height)
         poseStack.popPose()
     }
 
@@ -558,4 +560,10 @@ fun outlineBlockPos(
         targetPos.z - cameraPos.z(),
         red, green, blue, alpha
     )
+}
+
+fun pixelCoordsToUV(coords: Pair<Float, Float>, textureWidth: Int, textureHeight: Int): Pair<Float, Float> {
+    val u = coords.first / textureWidth
+    val v = coords.second / textureHeight
+    return Pair(u,v)
 }
