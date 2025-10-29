@@ -194,6 +194,20 @@ fun renderQuadFacingVector(
     color: Color = Color(1.0f, 1.0f, 1.0f, 1.0f),
     doubleSided: Boolean = false,
 ) {
+    renderQuadFacingVector(poseStack, pos, size, size, facing, texture, color, doubleSided)
+}
+
+fun renderQuadFacingVector(
+    poseStack: PoseStack,
+    pos: Vec3,
+    width: Float,
+    height: Float,
+    facing: Vec3,
+    texture: RenderTypeToken,
+    color: Color = Color(1.0f, 1.0f, 1.0f, 1.0f),
+    doubleSided: Boolean = false,
+    rotationDegrees: Float = 0f,
+) {
     val forward = facing.normalize().toVector3d()
     val right = Vector3d(Minecraft.getInstance().gameRenderer.mainCamera.upVector).cross(forward).normalize()
     val up = Vector3d(forward).cross(right).normalize()
@@ -217,11 +231,16 @@ fun renderQuadFacingVector(
     poseStack.translate(renderPos.x, renderPos.y, renderPos.z)
     poseStack.mulPoseMatrix(rotation)
 
+    // Apply rotation around the facing axis
+    if (rotationDegrees != 0f) {
+        poseStack.mulPose(Axis.ZP.rotationDegrees(rotationDegrees))
+    }
+
     VFXBuilders.createWorld()
         .setColor(color)
         .setAlpha(color.alpha * 255f)
         .setRenderType(LodestoneRenderTypeRegistry.TRANSPARENT_TEXTURE.applyAndCache(texture))
-        .renderQuad(poseStack, size, size)
+        .renderQuad(poseStack, width, height)
 
     if (doubleSided) {
         poseStack.pushPose()
@@ -230,7 +249,7 @@ fun renderQuadFacingVector(
             .setColor(color)
             .setAlpha(color.alpha * 255f)
             .setRenderType(LodestoneRenderTypeRegistry.TRANSPARENT_TEXTURE.applyAndCache(texture))
-            .renderQuad(poseStack, size, size)
+            .renderQuad(poseStack, width, height)
         poseStack.popPose()
     }
 
@@ -394,38 +413,7 @@ fun renderRectangularPrism(
             .renderQuad(poseStack, face.width.toFloat(), face.height.toFloat())
         poseStack.popPose()
     }
-
-//    faces.forEach { (offset, rotation) ->
-//        poseStack.pushPose()
-//        poseStack.translate(offset.x, offset.y, offset.z)
-//        poseStack.mulPose(rotation)
-//        VFXBuilders.createWorld()
-//            .setColor(color)
-//            .setAlpha(color.alpha * 255f)
-//            .setRenderType(LodestoneRenderTypeRegistry.TRANSPARENT_TEXTURE.applyAndCache(texture))
-//            .renderQuad(poseStack, lwh.toFloat(), lwh.toFloat())
-//        poseStack.popPose()
-//    }
     poseStack.popPose()
-
-    //    val faces = mutableListOf(
-//        Vec3(0.0, 0.0, length) to Axis.YP.rotationDegrees(0f),
-//        Vec3(0.0, 0.0, -length) to Axis.YP.rotationDegrees(180f),
-//        Vec3(-width, 0.0, 0.0) to Axis.YP.rotationDegrees(-90f),
-//        Vec3(width, 0.0, 0.0) to Axis.YP.rotationDegrees(90f),
-//        Vec3(0.0, height, 0.0) to Axis.XP.rotationDegrees(-90f),
-//        Vec3(0.0, -height, 0.0) to Axis.XP.rotationDegrees(90f),
-//    )
-//    if (renderInterior) {
-//        faces.addAll(listOf(
-//            Vec3(0.0, 0.0, length) to Axis.YP.rotationDegrees(180f),
-//            Vec3(0.0, 0.0, -length) to Axis.YP.rotationDegrees(0f),
-//            Vec3(-width, 0.0, 0.0) to Axis.YP.rotationDegrees(90f),
-//            Vec3(width, 0.0, 0.0) to Axis.YP.rotationDegrees(-90f),
-//            Vec3(0.0, height, 0.0) to Axis.XP.rotationDegrees(90f),
-//            Vec3(0.0, -height, 0.0) to Axis.XP.rotationDegrees(-90f),
-//        ))
-//    }
 }
 
 /**

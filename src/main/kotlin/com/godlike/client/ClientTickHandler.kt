@@ -42,6 +42,7 @@ object ClientTickHandler {
                 if (player.telekinesis().placementTarget != null) {
                     doPlacementFxRenderTick(player, context.matrixStack())
                 }
+//                renderPlayerAuras(player.clientLevel, context.matrixStack(), context.tickDelta())
             }
         })
     }
